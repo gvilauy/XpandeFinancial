@@ -10,5 +10,15 @@
     <orderEntry type="module" module-name="XpandeCustomization" exported="" />
     <orderEntry type="module" module-name="adempiere" exported="" />
     <orderEntry type="module" module-name="XpandeCore" exported="" />
+    <orderEntry type="module" module-name="XpandeCFE" exported="" />
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/Desarrollo/xpande/ExternalJars/axis-1.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
