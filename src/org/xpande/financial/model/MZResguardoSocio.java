@@ -194,11 +194,14 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
 		//	Std Period open?
+		/*
 		if (!MPeriod.isOpen(getCtx(), getDateDoc(), dt.getDocBaseType(), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return DocAction.STATUS_Invalid;
 		}
+		*/
+
 		//	Add up Amounts
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
@@ -715,12 +718,12 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		// Totales por tipo de retencion / percepcion
 
 		/* OpenUp Ltda. - #8696 - Raul Capecce - Las retenciones se calculan a partir de la moneda de origen */
-		String sqlReten = " SELECT ret.Z_RetencionSocio_ID, ret.codigodgi, ret.emitedgi, SUM(resl.amtretencion) total"
+		String sqlReten = " SELECT ret.Z_RetencionSocio_ID, ret.codigodgi, ret.emitiedgi, SUM(resl.amtretencion) total"
 				+ " FROM Z_ResguardoSocio res"
 				+ " INNER JOIN Z_ResguardoSocioRet resl ON res.Z_ResguardoSocio_ID = resl.Z_ResguardoSocio_ID"
 				+ " INNER JOIN Z_RetencionSocio ret ON resl.Z_RetencionSocio_ID = ret.Z_RetencionSocio_ID"
 				+ " WHERE res.Z_ResguardoSocio_ID = " + this.get_ID()
-				+ " GROUP BY ret.Z_RetencionSocio_ID, ret.codigodgi, ret.emitedgi";
+				+ " GROUP BY ret.Z_RetencionSocio_ID, ret.codigodgi, ret.emitiedgi";
 		/* OpenUp Ltda. - #8696 - FIN */
 
 		PreparedStatement pstmt = DB.prepareStatement (sqlReten, get_TrxName());
@@ -736,7 +739,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 				boolean isDgi = false;
 				String codigo = rs.getString("codigodgi");
 				try {
-					isDgi = rs.getString("emiteDGI").equalsIgnoreCase("Y") ? true : false;
+					isDgi = rs.getString("emitieDGI").equalsIgnoreCase("Y") ? true : false;
 				} catch (Exception e) {}
 				BigDecimal montoSum = rs.getBigDecimal("total");
 
@@ -892,7 +895,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 
 		/* 60  */ receptor.setTipoDocRecep(tipoDocRecep);
 		MCountry mCountry = null;
-		mCountry = MCountry.get(ctx, "858");
+		mCountry = MCountry.get(getCtx(), 336);
 
 		if (mCountry == null) throw new AdempiereException("CFEMessages.RECEPTOR_61");
 		/* 61  */ receptor.setCodPaisRecep(mCountry.getCountryCode());
