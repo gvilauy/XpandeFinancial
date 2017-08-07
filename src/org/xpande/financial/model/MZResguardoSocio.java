@@ -603,6 +603,11 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 						" where z_resguardosocio_id =" + this.get_ID() +
 						" and c_taxcategory_id in (select c_taxcategory_id from z_retencionsociotax where z_retencionsocio_id =" + retencionSocio.get_ID() + ")" + filtroDoc;
 				totalBase = DB.getSQLValueBDEx(get_TrxName(), sql);
+
+				// Si no hay impuestos en comprobantes que apliquen la retencion, no tengo monto base.
+				if (totalBase == null){
+					totalBase = Env.ZERO;
+				}
 			}
 
 		}
