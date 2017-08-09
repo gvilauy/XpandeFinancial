@@ -92,6 +92,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		}
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
+			options[newIndex++] = DocumentEngine.ACTION_None;
 			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
 			//options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
@@ -257,7 +258,13 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		// Si es contra-resguardo, seteo ADENDA para impresión
+		MDocType docType = (MDocType) this.getC_DocType();
+		if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
+			this.setDescription("CONTRADOCUMENTO DE E-RESGUARDO");
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -423,7 +430,10 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
       return sb.toString();
     }
 
-
+	/***
+	 * Metodo para calcular importes de retenciones para los comprobantes seleccionados en este resguardos.
+	 * Xpande. Created by Gabriel Vila on 8/9/17.
+	 */
 	public void calcularRetenciones() {
 
 		String action = "", sql = "";
@@ -537,6 +547,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		return lines;
 	}
 
+
 	/***
 	 * Obtiene y retorna lista de retenciones que aplican en esta emisión de resguardo.
 	 * Xpande. Created by Gabriel Vila on 8/2/17.
@@ -618,6 +629,22 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		return totalBase;
 	}
 
+	@Override
+	protected boolean beforeDelete() {
+
+		// Si estoy eliminando un Contra-Resguardo, me aseguro de eliminar referencias contra su resguardo asociado
+		MDocType docType = (MDocType) this.getC_DocType();
+		if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
+			MZResguardoSocio resguardoSocioRef = (MZResguardoSocio) this.getZ_ResguardoSocio_Ref();
+			if ((resguardoSocioRef != null) && (resguardoSocioRef.get_ID() > 0)){
+
+				String action = " update z_resguardosocio set z_resguardosocio_ref_id = null where z_resguardosocio_id =" + resguardoSocioRef.get_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+		}
+
+		return true;
+	}
 
 	private void cfe() {
 
@@ -632,7 +659,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 			loadEncabezado_eResguardo(objECfe);
 			loadDetalleProductosOServicios_eResguardo(objECfe);
 
-			//loadReferencia();
+			loadReferencia();
 
 			loadCAE(objECfe);
 			loadAdenda(objECfe);
@@ -708,7 +735,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		try {
 			/* 110 */ totales.setTpoMoneda(TipMonType.valueOf(mCurrency.getISO_Code()));
 			if (mCurrency.getC_Currency_ID() != 142) {
-				/* OpenUp Ltda - #5749 - Raul Capecce - Se calculaba al reves, ahora se calcula correctamente la tasa de conversion */
+
 				BigDecimal currRate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), 142, 0, this.getDateDoc(), null);
 
 				if (currRate.equals(Env.ZERO)) throw new AdempiereException("CFEMessages.TOTALES_111");
@@ -722,14 +749,12 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 
 		// Totales por tipo de retencion / percepcion
 
-		/* OpenUp Ltda. - #8696 - Raul Capecce - Las retenciones se calculan a partir de la moneda de origen */
 		String sqlReten = " SELECT ret.Z_RetencionSocio_ID, ret.codigodgi, ret.emitiedgi, SUM(resl.amtretencion) total"
 				+ " FROM Z_ResguardoSocio res"
 				+ " INNER JOIN Z_ResguardoSocioRet resl ON res.Z_ResguardoSocio_ID = resl.Z_ResguardoSocio_ID"
 				+ " INNER JOIN Z_RetencionSocio ret ON resl.Z_RetencionSocio_ID = ret.Z_RetencionSocio_ID"
 				+ " WHERE res.Z_ResguardoSocio_ID = " + this.get_ID()
 				+ " GROUP BY ret.Z_RetencionSocio_ID, ret.codigodgi, ret.emitiedgi";
-		/* OpenUp Ltda. - #8696 - FIN */
 
 		PreparedStatement pstmt = DB.prepareStatement (sqlReten, get_TrxName());
 		ResultSet rs;
@@ -764,11 +789,10 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 				}
 				TotalesResg.RetencPercep retPerc = new TotalesResg.RetencPercep();
 
-				/* OpenUp Ltda. - #7974 - Raul Capecce - 05/12/2016
-				 * En el caso de que sea un documento de contraresguardo a anular completamente, los montos sumados se establecen con el signo opuesto */
-				//if (doc != null && doc.getValue().equals("contraresguardo")) {
-				//	montoSum = montoSum.multiply(BigDecimal.valueOf(-1));
-				//}
+				// Contra-Resguardo, doy vuelta el signo.
+				if (doc.getDocBaseType().equalsIgnoreCase("RGC")) {
+					montoSum = montoSum.negate();
+				}
 				/* 127 */ retPerc.setCodRet(codigo);
 				/* 128 */ retPerc.setValRetPerc(montoSum);
 				totalSum = totalSum.add(montoSum);
@@ -958,11 +982,11 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 
 			MDocType docType = (MDocType) this.getC_DocType();
 
-			/*
-			if (docType != null && docType.getValue().equals("contraresguardo")) {
+			// Contra-Resguardo
+			if (docType.getDocBaseType().equalsIgnoreCase("RGC")) {
 				itemResg.setIndFact(BigInteger.valueOf(9));
 			}
-			*/
+
 
 			List<RetPercResg> listRetPercs = itemResg.getRetencPercep();
 			RetPercResg retPersc = new RetPercResg();
@@ -971,10 +995,8 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 			/*  20 */ retPersc.setCodRet(mRetention.getCodigoDGI());
 			/*  21    Dato condicional, opcional, no se carga */
 
-			/* OpenUp Ltda. - #8696 - Raul Capecce - Las retenciones se calculan a partir de la moneda de origen */
 			/*  22 */ retPersc.setMntSujetoaRet(mResguardoLine.getAmtBase().setScale(2, RoundingMode.HALF_UP));
 			/*  23 */ retPersc.setValRetPerc(mResguardoLine.getAmtRetencion().setScale(2, RoundingMode.HALF_UP));
-			/* OpenUp Ltda. - #8696 - FIN */
 
 			itemResgs.add(itemResg);
 		}
@@ -996,7 +1018,14 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 
 	protected void loadAdenda(CFEEmpresasType objECfe) {
 
+		MDocType docType = (MDocType) this.getC_DocType();
+
 		objECfe.setAdenda(this.getDescription());
+
+		// Contra-Resguardo
+		if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
+			objECfe.setAdenda("Corrección de e-Resguardo");
+		}
 
 	}
 
@@ -1044,20 +1073,6 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 			PrintWriter pw = new PrintWriter(file);
 			pw.println(xml);
 			pw.close();
-
-
-
-
-//			// XML DE PRUEBA DADO POR SISTECO - NO FUNCION� TAMPOCO
-//			FileReader frPrueba = new FileReader(new File("/home/raul/Desarrollo/Proyectos/DGI/Facturaci�n Electr�nica/ProyectoCFE/Sisteco/PuebasXML/MailConsulta1/Respuesta/SistecoXMLCFE896827462540413998-OK.xml"));
-//	        BufferedReader brPrueba = new BufferedReader(frPrueba);
-//	        String lineaPrueba = null;
-//	        xml = "";
-//	        while((lineaPrueba=brPrueba.readLine())!=null) {
-//				xml += lineaPrueba;
-//			}
-
-
 
 
 			Service service = new Service();
@@ -1163,6 +1178,59 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 			throw new AdempiereException(e);
 		}
 
+	}
+
+	private void loadReferencia() {
+
+		MDocType docType = (MDocType) this.getC_DocType();
+
+		// Si no es Contra-Resguardo, no hago nada.
+		if (!docType.getDocBaseType().equalsIgnoreCase("RGC")) {
+			return;
+		}
+
+		// Obtengo resguardo asociado a este contra-resguardo
+		MZResguardoSocio resguardoSocioRef = (MZResguardoSocio) this.getZ_ResguardoSocio_Ref();
+		if ((resguardoSocioRef == null) || (resguardoSocioRef.get_ID() <= 0)) {
+			throw new AdempiereException("CFEMessages.INFOREF_NOREF_182");
+		}
+
+		Referencia referencias = new Referencia();
+		Referencia.Referencia1 referencia = new Referencia.Referencia1();
+		referencias.getReferencia1().add(referencia);
+
+		/*   1 */ referencia.setNroLinRef(1);
+
+		///*   2    Siempre se referencia un resguardo a anular en el documento contraresguardo, no se debe indicar en este caso */
+		//CfeType cfeTypeRef = getCFETypeFromInvoice(mResguardoRef);
+		//if ((cfeTypeRef == CfeType.eTicket_NC || cfeTypeRef == CfeType.eTicket_NC) && cfeTypeRef != CfeType.eTicket)
+//			throw new AdempiereException(CFEMessages.INFOREF_003_ASOCETICKET);
+//		if ((cfeTypeRef == CfeType.eFactura_NC || cfeTypeRef == CfeType.eFactura_NC) && cfeTypeRef != CfeType.eFactura)
+			//throw new AdempiereException(CFEMessages.INFOREF_003_ASOCEFACTURA);
+		//try {
+//			/*   3 */ referencia.setTpoDocRef(BigInteger.valueOf(Long.valueOf(CfeUtils.getCfeTypes().inverse().get(cfeTypeRef))));
+		//} catch(Exception ex){
+//			throw new AdempiereException(CFEMessages.INFOREF_003_PARSEERROR);
+		//}
+
+		referencia.setTpoDocRef(BigInteger.valueOf(182));
+
+		MSequence sec = new MSequence(getCtx(), docType.getDefiniteSequence_ID(), null);
+		if(sec.getPrefix() != null){
+			/*   4 */ referencia.setSerie(sec.getPrefix());
+		} else throw new AdempiereException("CFEMessages.INFOREF_004_NODEF");
+
+		if (resguardoSocioRef.getDocumentNo() != null) {
+			String documentNo = resguardoSocioRef.getDocumentNo();
+			documentNo = documentNo.replaceAll("[^0-9]", ""); // Expresión regular para quitar todo lo que no es número
+			String docno = org.apache.commons.lang.StringUtils.leftPad(String.valueOf(documentNo), 7, "0");
+
+			/*   5 */ referencia.setNroCFERef(new BigInteger(docno));
+		} else throw new AdempiereException("CFEMessages.INFOREF_005_NODEF");
+
+		/*   6  Como se cuenta con un resguardo referenicado, no es necesario setear este campo */
+
+		/*   7 */ referencia.setFechaCFEref(Timestamp_to_XmlGregorianCalendar_OnlyDate(resguardoSocioRef.getDateDoc(), false));
 	}
 
 }

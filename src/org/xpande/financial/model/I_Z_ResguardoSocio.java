@@ -204,6 +204,19 @@ public interface I_Z_ResguardoSocio
 	  */
 	public String getDocumentNo();
 
+    /** Column name EsContraResguardo */
+    public static final String COLUMNNAME_EsContraResguardo = "EsContraResguardo";
+
+	/** Set EsContraResguardo.
+	  * Es un documento que refiere a una emisión de un Contra-Resguardo financiero
+	  */
+	public void setEsContraResguardo(boolean EsContraResguardo);
+
+	/** Get EsContraResguardo.
+	  * Es un documento que refiere a una emisión de un Contra-Resguardo financiero
+	  */
+	public boolean isEsContraResguardo();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -278,6 +291,32 @@ public interface I_Z_ResguardoSocio
 	  */
 	public String getProcessButton2();
 
+    /** Column name ProcessButton3 */
+    public static final String COLUMNNAME_ProcessButton3 = "ProcessButton3";
+
+	/** Set ProcessButton3.
+	  * Botón para proceso
+	  */
+	public void setProcessButton3(String ProcessButton3);
+
+	/** Get ProcessButton3.
+	  * Botón para proceso
+	  */
+	public String getProcessButton3();
+
+    /** Column name ProcessButton4 */
+    public static final String COLUMNNAME_ProcessButton4 = "ProcessButton4";
+
+	/** Set ProcessButton4.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton4(String ProcessButton4);
+
+	/** Get ProcessButton4.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton4();
+
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -350,4 +389,19 @@ public interface I_Z_ResguardoSocio
 
 	/** Get Z_ResguardoSocio ID	  */
 	public int getZ_ResguardoSocio_ID();
+
+    /** Column name Z_ResguardoSocio_Ref_ID */
+    public static final String COLUMNNAME_Z_ResguardoSocio_Ref_ID = "Z_ResguardoSocio_Ref_ID";
+
+	/** Set Z_ResguardoSocio_Ref_ID.
+	  * Referencia a emisión de resguardo financiero
+	  */
+	public void setZ_ResguardoSocio_Ref_ID(int Z_ResguardoSocio_Ref_ID);
+
+	/** Get Z_ResguardoSocio_Ref_ID.
+	  * Referencia a emisión de resguardo financiero
+	  */
+	public int getZ_ResguardoSocio_Ref_ID();
+
+	public I_Z_ResguardoSocio getZ_ResguardoSocio_Ref() throws RuntimeException;
 }

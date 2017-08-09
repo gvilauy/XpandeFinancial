@@ -33,7 +33,7 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170802L;
+	private static final long serialVersionUID = 20170809L;
 
     /** Standard Constructor */
     public X_Z_ResguardoSocio (Properties ctx, int Z_ResguardoSocio_ID, String trxName)
@@ -51,6 +51,8 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 			setDocStatus (null);
 // DR
 			setDocumentNo (null);
+			setEsContraResguardo (false);
+// N
 			setIsApproved (false);
 // N
 			setPeriodoControlado (false);
@@ -348,6 +350,30 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 		return (String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
+	/** Set EsContraResguardo.
+		@param EsContraResguardo 
+		Es un documento que refiere a una emisión de un Contra-Resguardo financiero
+	  */
+	public void setEsContraResguardo (boolean EsContraResguardo)
+	{
+		set_Value (COLUMNNAME_EsContraResguardo, Boolean.valueOf(EsContraResguardo));
+	}
+
+	/** Get EsContraResguardo.
+		@return Es un documento que refiere a una emisión de un Contra-Resguardo financiero
+	  */
+	public boolean isEsContraResguardo () 
+	{
+		Object oo = get_Value(COLUMNNAME_EsContraResguardo);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Approved.
 		@param IsApproved 
 		Indicates if this document requires approval
@@ -451,6 +477,40 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 		return (String)get_Value(COLUMNNAME_ProcessButton2);
 	}
 
+	/** Set ProcessButton3.
+		@param ProcessButton3 
+		Botón para proceso
+	  */
+	public void setProcessButton3 (String ProcessButton3)
+	{
+		set_Value (COLUMNNAME_ProcessButton3, ProcessButton3);
+	}
+
+	/** Get ProcessButton3.
+		@return Botón para proceso
+	  */
+	public String getProcessButton3 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton3);
+	}
+
+	/** Set ProcessButton4.
+		@param ProcessButton4 
+		Botón de Proceso
+	  */
+	public void setProcessButton4 (String ProcessButton4)
+	{
+		set_Value (COLUMNNAME_ProcessButton4, ProcessButton4);
+	}
+
+	/** Get ProcessButton4.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton4 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton4);
+	}
+
 	/** Set Processed.
 		@param Processed 
 		The document has been processed
@@ -551,6 +611,34 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 	public int getZ_ResguardoSocio_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ResguardoSocio_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_ResguardoSocio getZ_ResguardoSocio_Ref() throws RuntimeException
+    {
+		return (I_Z_ResguardoSocio)MTable.get(getCtx(), I_Z_ResguardoSocio.Table_Name)
+			.getPO(getZ_ResguardoSocio_Ref_ID(), get_TrxName());	}
+
+	/** Set Z_ResguardoSocio_Ref_ID.
+		@param Z_ResguardoSocio_Ref_ID 
+		Referencia a emisión de resguardo financiero
+	  */
+	public void setZ_ResguardoSocio_Ref_ID (int Z_ResguardoSocio_Ref_ID)
+	{
+		if (Z_ResguardoSocio_Ref_ID < 1) 
+			set_Value (COLUMNNAME_Z_ResguardoSocio_Ref_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_ResguardoSocio_Ref_ID, Integer.valueOf(Z_ResguardoSocio_Ref_ID));
+	}
+
+	/** Get Z_ResguardoSocio_Ref_ID.
+		@return Referencia a emisión de resguardo financiero
+	  */
+	public int getZ_ResguardoSocio_Ref_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ResguardoSocio_Ref_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
