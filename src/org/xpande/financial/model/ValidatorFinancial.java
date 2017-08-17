@@ -103,8 +103,11 @@ public class ValidatorFinancial implements ModelValidator {
             sql = " select rg.documentno, rg.docstatus, rgd.c_invoice_id " +
                     " from z_resguardosociodoc rgd " +
                     " inner join z_resguardosocio rg on rgd.z_resguardosocio_id = rg.z_resguardosocio_id " +
+                    " inner join c_doctype doc on rg.c_doctype_id = doc.c_doctype_id " +
                     " where rgd.c_invoice_id =" + model.get_ID() +
-                    " and rg.docstatus != 'VO'";
+                    " and rg.docstatus != 'VO'" +
+                    " and doc.docbasetype='RGU' " +
+                    " and rg.z_resguardosocio_ref_id is null ";
 
         	pstmt = DB.prepareStatement(sql, model.get_TrxName());
         	rs = pstmt.executeQuery();
