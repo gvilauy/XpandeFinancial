@@ -48,6 +48,8 @@ public class MZMedioPagoFolio extends X_Z_MedioPagoFolio {
                 item.saveEx();
             }
 
+            this.setIsExecuted(true);
+            this.saveEx();
         }
         catch (Exception e){
             throw new AdempiereException(e);

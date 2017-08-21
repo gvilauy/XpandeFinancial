@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_MedioPagoItem
+/** Generated Interface for Z_EmisionMedioPago
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_MedioPagoItem 
+public interface I_Z_EmisionMedioPago 
 {
 
-    /** TableName=Z_MedioPagoItem */
-    public static final String Table_Name = "Z_MedioPagoItem";
+    /** TableName=Z_EmisionMedioPago */
+    public static final String Table_Name = "Z_EmisionMedioPago";
 
-    /** AD_Table_ID=1000113 */
+    /** AD_Table_ID=1000126 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -108,6 +108,21 @@ public interface I_Z_MedioPagoItem
 
 	public I_C_Currency getC_Currency() throws RuntimeException;
 
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/** Set Document Type.
+	  * Document type or rules
+	  */
+	public void setC_DocType_ID(int C_DocType_ID);
+
+	/** Get Document Type.
+	  * Document type or rules
+	  */
+	public int getC_DocType_ID();
+
+	public I_C_DocType getC_DocType() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -124,6 +139,32 @@ public interface I_Z_MedioPagoItem
 	  */
 	public int getCreatedBy();
 
+    /** Column name CurrencyRate */
+    public static final String COLUMNNAME_CurrencyRate = "CurrencyRate";
+
+	/** Set Rate.
+	  * Currency Conversion Rate
+	  */
+	public void setCurrencyRate(BigDecimal CurrencyRate);
+
+	/** Get Rate.
+	  * Currency Conversion Rate
+	  */
+	public BigDecimal getCurrencyRate();
+
+    /** Column name DateDoc */
+    public static final String COLUMNNAME_DateDoc = "DateDoc";
+
+	/** Set Document Date.
+	  * Date of the Document
+	  */
+	public void setDateDoc(Timestamp DateDoc);
+
+	/** Get Document Date.
+	  * Date of the Document
+	  */
+	public Timestamp getDateDoc();
+
     /** Column name DateEmitted */
     public static final String COLUMNNAME_DateEmitted = "DateEmitted";
 
@@ -137,18 +178,57 @@ public interface I_Z_MedioPagoItem
 	  */
 	public Timestamp getDateEmitted();
 
-    /** Column name DocumentSerie */
-    public static final String COLUMNNAME_DocumentSerie = "DocumentSerie";
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
-	/** Set DocumentSerie.
-	  * Serie de un Documento
+	/** Set Description.
+	  * Optional short description of the record
 	  */
-	public void setDocumentSerie(String DocumentSerie);
+	public void setDescription(String Description);
 
-	/** Get DocumentSerie.
-	  * Serie de un Documento
+	/** Get Description.
+	  * Optional short description of the record
 	  */
-	public String getDocumentSerie();
+	public String getDescription();
+
+    /** Column name DocAction */
+    public static final String COLUMNNAME_DocAction = "DocAction";
+
+	/** Set Document Action.
+	  * The targeted status of the document
+	  */
+	public void setDocAction(String DocAction);
+
+	/** Get Document Action.
+	  * The targeted status of the document
+	  */
+	public String getDocAction();
+
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
+
+	/** Set Document Status.
+	  * The current status of the document
+	  */
+	public void setDocStatus(String DocStatus);
+
+	/** Get Document Status.
+	  * The current status of the document
+	  */
+	public String getDocStatus();
+
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/** Set Document No.
+	  * Document sequence number of the document
+	  */
+	public void setDocumentNo(String DocumentNo);
+
+	/** Get Document No.
+	  * Document sequence number of the document
+	  */
+	public String getDocumentNo();
 
     /** Column name DueDate */
     public static final String COLUMNNAME_DueDate = "DueDate";
@@ -163,19 +243,6 @@ public interface I_Z_MedioPagoItem
 	  */
 	public Timestamp getDueDate();
 
-    /** Column name Emitido */
-    public static final String COLUMNNAME_Emitido = "Emitido";
-
-	/** Set Emitido.
-	  * Documento emitido
-	  */
-	public void setEmitido(boolean Emitido);
-
-	/** Get Emitido.
-	  * Documento emitido
-	  */
-	public boolean isEmitido();
-
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -189,70 +256,53 @@ public interface I_Z_MedioPagoItem
 	  */
 	public boolean isActive();
 
-    /** Column name IsPrinted */
-    public static final String COLUMNNAME_IsPrinted = "IsPrinted";
+    /** Column name IsApproved */
+    public static final String COLUMNNAME_IsApproved = "IsApproved";
 
-	/** Set Printed.
-	  * Indicates if this document / line is printed
+	/** Set Approved.
+	  * Indicates if this document requires approval
 	  */
-	public void setIsPrinted(boolean IsPrinted);
+	public void setIsApproved(boolean IsApproved);
 
-	/** Get Printed.
-	  * Indicates if this document / line is printed
+	/** Get Approved.
+	  * Indicates if this document requires approval
 	  */
-	public boolean isPrinted();
+	public boolean isApproved();
 
-    /** Column name IsReceipt */
-    public static final String COLUMNNAME_IsReceipt = "IsReceipt";
+    /** Column name PaymentRule */
+    public static final String COLUMNNAME_PaymentRule = "PaymentRule";
 
-	/** Set Receipt.
-	  * This is a sales transaction (receipt)
+	/** Set Payment Rule.
+	  * How you pay the invoice
 	  */
-	public void setIsReceipt(boolean IsReceipt);
+	public void setPaymentRule(String PaymentRule);
 
-	/** Get Receipt.
-	  * This is a sales transaction (receipt)
+	/** Get Payment Rule.
+	  * How you pay the invoice
 	  */
-	public boolean isReceipt();
+	public String getPaymentRule();
 
-    /** Column name LeyendaImpresion1 */
-    public static final String COLUMNNAME_LeyendaImpresion1 = "LeyendaImpresion1";
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
-	/** Set LeyendaImpresion1.
-	  * Leyenda de impresión
+	/** Set Processed.
+	  * The document has been processed
 	  */
-	public void setLeyendaImpresion1(String LeyendaImpresion1);
+	public void setProcessed(boolean Processed);
 
-	/** Get LeyendaImpresion1.
-	  * Leyenda de impresión
+	/** Get Processed.
+	  * The document has been processed
 	  */
-	public String getLeyendaImpresion1();
+	public boolean isProcessed();
 
-    /** Column name LeyendaImpresion2 */
-    public static final String COLUMNNAME_LeyendaImpresion2 = "LeyendaImpresion2";
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
 
-	/** Set LeyendaImpresion2.
-	  * Leyenda de impresión
-	  */
-	public void setLeyendaImpresion2(String LeyendaImpresion2);
+	/** Set Process Now	  */
+	public void setProcessing(boolean Processing);
 
-	/** Get LeyendaImpresion2.
-	  * Leyenda de impresión
-	  */
-	public String getLeyendaImpresion2();
-
-    /** Column name NroMedioPago */
-    public static final String COLUMNNAME_NroMedioPago = "NroMedioPago";
-
-	/** Set NroMedioPago.
-	  * Numero de medio de pago
-	  */
-	public void setNroMedioPago(String NroMedioPago);
-
-	/** Get NroMedioPago.
-	  * Numero de medio de pago
-	  */
-	public String getNroMedioPago();
+	/** Get Process Now	  */
+	public boolean isProcessing();
 
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";
@@ -292,8 +342,6 @@ public interface I_Z_MedioPagoItem
 	/** Get Z_EmisionMedioPago ID	  */
 	public int getZ_EmisionMedioPago_ID();
 
-	public I_Z_EmisionMedioPago getZ_EmisionMedioPago() throws RuntimeException;
-
     /** Column name Z_MedioPagoFolio_ID */
     public static final String COLUMNNAME_Z_MedioPagoFolio_ID = "Z_MedioPagoFolio_ID";
 
@@ -324,6 +372,8 @@ public interface I_Z_MedioPagoItem
 
 	/** Get Z_MedioPagoItem ID	  */
 	public int getZ_MedioPagoItem_ID();
+
+	public I_Z_MedioPagoItem getZ_MedioPagoItem() throws RuntimeException;
 
     /** Column name Z_OrdenPago_ID */
     public static final String COLUMNNAME_Z_OrdenPago_ID = "Z_OrdenPago_ID";

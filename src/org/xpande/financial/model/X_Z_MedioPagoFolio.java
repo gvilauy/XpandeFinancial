@@ -30,7 +30,7 @@ public class X_Z_MedioPagoFolio extends PO implements I_Z_MedioPagoFolio, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170816L;
+	private static final long serialVersionUID = 20170821L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoFolio (Properties ctx, int Z_MedioPagoFolio_ID, String trxName)
@@ -40,6 +40,8 @@ public class X_Z_MedioPagoFolio extends PO implements I_Z_MedioPagoFolio, I_Pers
         {
 			setC_BankAccount_ID (0);
 			setC_Currency_ID (0);
+			setDisponible (true);
+// Y
 			setEmisionManual (false);
 // N
 			setIsExecuted (false);
@@ -151,6 +153,30 @@ public class X_Z_MedioPagoFolio extends PO implements I_Z_MedioPagoFolio, I_Pers
 	public String getDescription () 
 	{
 		return (String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Disponible.
+		@param Disponible 
+		Si un elemento esta Disponible o no
+	  */
+	public void setDisponible (boolean Disponible)
+	{
+		set_Value (COLUMNNAME_Disponible, Boolean.valueOf(Disponible));
+	}
+
+	/** Get Disponible.
+		@return Si un elemento esta Disponible o no
+	  */
+	public boolean isDisponible () 
+	{
+		Object oo = get_Value(COLUMNNAME_Disponible);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set DocumentSerie.

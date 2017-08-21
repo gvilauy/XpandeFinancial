@@ -122,6 +122,19 @@ public interface I_Z_MedioPagoFolio
 	  */
 	public String getDescription();
 
+    /** Column name Disponible */
+    public static final String COLUMNNAME_Disponible = "Disponible";
+
+	/** Set Disponible.
+	  * Si un elemento esta Disponible o no
+	  */
+	public void setDisponible(boolean Disponible);
+
+	/** Get Disponible.
+	  * Si un elemento esta Disponible o no
+	  */
+	public boolean isDisponible();
+
     /** Column name DocumentSerie */
     public static final String COLUMNNAME_DocumentSerie = "DocumentSerie";
 

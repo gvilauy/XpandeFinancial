@@ -33,7 +33,7 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170816L;
+	private static final long serialVersionUID = 20170821L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoItem (Properties ctx, int Z_MedioPagoItem_ID, String trxName)
@@ -361,6 +361,31 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 		return bd;
 	}
 
+	public I_Z_EmisionMedioPago getZ_EmisionMedioPago() throws RuntimeException
+    {
+		return (I_Z_EmisionMedioPago)MTable.get(getCtx(), I_Z_EmisionMedioPago.Table_Name)
+			.getPO(getZ_EmisionMedioPago_ID(), get_TrxName());	}
+
+	/** Set Z_EmisionMedioPago ID.
+		@param Z_EmisionMedioPago_ID Z_EmisionMedioPago ID	  */
+	public void setZ_EmisionMedioPago_ID (int Z_EmisionMedioPago_ID)
+	{
+		if (Z_EmisionMedioPago_ID < 1) 
+			set_Value (COLUMNNAME_Z_EmisionMedioPago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_EmisionMedioPago_ID, Integer.valueOf(Z_EmisionMedioPago_ID));
+	}
+
+	/** Get Z_EmisionMedioPago ID.
+		@return Z_EmisionMedioPago ID	  */
+	public int getZ_EmisionMedioPago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_EmisionMedioPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_Z_MedioPagoFolio getZ_MedioPagoFolio() throws RuntimeException
     {
 		return (I_Z_MedioPagoFolio)MTable.get(getCtx(), I_Z_MedioPagoFolio.Table_Name)
@@ -426,6 +451,31 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	public int getZ_MedioPagoItem_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoItem_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException
+    {
+		return (I_Z_OrdenPago)MTable.get(getCtx(), I_Z_OrdenPago.Table_Name)
+			.getPO(getZ_OrdenPago_ID(), get_TrxName());	}
+
+	/** Set Z_OrdenPago ID.
+		@param Z_OrdenPago_ID Z_OrdenPago ID	  */
+	public void setZ_OrdenPago_ID (int Z_OrdenPago_ID)
+	{
+		if (Z_OrdenPago_ID < 1) 
+			set_Value (COLUMNNAME_Z_OrdenPago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_OrdenPago_ID, Integer.valueOf(Z_OrdenPago_ID));
+	}
+
+	/** Get Z_OrdenPago ID.
+		@return Z_OrdenPago ID	  */
+	public int getZ_OrdenPago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_OrdenPago_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
