@@ -5,6 +5,7 @@ import org.compiere.model.*;
 import java.util.Properties;
 
 /**
+ * Callout Financieros.
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
  * Xpande. Created by Gabriel Vila on 8/21/17.
  */
@@ -30,6 +31,29 @@ public class CalloutFinancial extends CalloutEngine {
 
         MBankAccount bankAccount = new MBankAccount(ctx, cBankAccountID, null);
         mTab.setValue("C_Currency_ID", bankAccount.getC_Currency_ID());
+
+        return "";
+    }
+
+    /***
+     * Setea DocBaseType según ID de documento recibido.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String docBaseTypeByDocType(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            return "";
+        }
+
+        int cDocTypeID = ((Integer) value).intValue();
+
+        MDocType docType = new MDocType(ctx, cDocTypeID, null);
+        mTab.setValue("DocBaseType", docType.getDocBaseType());
 
         return "";
     }

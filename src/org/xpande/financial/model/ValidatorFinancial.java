@@ -69,36 +69,6 @@ public class ValidatorFinancial implements ModelValidator {
 
         String message = null;
 
-        if (timing == TIMING_BEFORE_COMPLETE){
-
-            // Para comprobantes de venta, valido datos para CFE.
-            if (model.isSOTrx()){
-
-                // Valido que la localización de este comprobante de venta tenga departamento, ciudad y dirección.
-                MBPartnerLocation partnerLocation = (MBPartnerLocation) model.getC_BPartner_Location();
-                MLocation location = (MLocation) partnerLocation.getC_Location();
-                if ((location.getAddress1() == null) || (location.getAddress1().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Dirección en la Localización del Socio de Negocio de este Comprobante.";
-                    return message;
-                }
-                if ((location.getRegionName() == null) || (location.getRegionName().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Departamento en la Localización del Socio de Negocio de este Comprobante.";
-                    return message;
-                }
-                if ((location.getCity() == null) || (location.getCity().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Ciudad en la Localización del Socio de Negocio de este Comprobante.";
-                    return message;
-                }
-
-                // Valido que el socio de negocio de este comprobante tenga número de identificación
-                MBPartner partner = (MBPartner) model.getC_BPartner();
-                if ((partner.getTaxID() == null) || (partner.getTaxID().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Número de Identificación en el Socio de Negocio.";
-                }
-            }
-
-        }
-
         if ((timing == TIMING_BEFORE_REACTIVATE) || (timing == TIMING_BEFORE_VOID)){
 
             // Antes de reactivar o anular valido que esta invoice no tengo movimientos posteriores

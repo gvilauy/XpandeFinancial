@@ -678,7 +678,8 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 			// Query
 		    sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (hdr.documentserie || hdr.documentno) as documentno, " +
 						" hdr.dateinvoiced, hdr.c_currency_id, hdr.grandtotal, " +
-						" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype " +
+						" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, " +
+					" coalesce(paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
 					" from c_invoice hdr " +
 					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
 					" inner join c_doctype doc on hdr.c_doctypetarget_id = doc.c_doctype_id " +
@@ -746,7 +747,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				ordenPagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
 				ordenPagoLin.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
 				ordenPagoLin.setDateDoc(rs.getTimestamp("dateinvoiced"));
-				ordenPagoLin.setDueDateDoc(rs.getTimestamp("dateinvoiced"));
+				ordenPagoLin.setDueDateDoc(rs.getTimestamp("duedate"));
 				ordenPagoLin.setDocumentNoRef(rs.getString("documentno"));
 				ordenPagoLin.setDueDateMedioPago(ordenPagoLin.getDueDateDoc());
 				ordenPagoLin.setEstadoAprobacion("APROBADO");
@@ -941,6 +942,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
 				// Creo linea para medio de pago a considerarse al completar la orden de pago
 				MZOrdenPagoMedio ordenPagoMedio = new MZOrdenPagoMedio(getCtx(), 0, get_TrxName());
+				ordenPagoMedio.setZ_GeneraOrdenPago_ID(this.get_ID());
 				ordenPagoMedio.setZ_OrdenPago_ID(ordenPago.get_ID());
 				ordenPagoMedio.setC_BankAccount_ID(this.getC_BankAccount_ID());
 				ordenPagoMedio.setDueDate(maxDueDate);
