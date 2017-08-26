@@ -1,6 +1,7 @@
 package org.xpande.financial.callout;
 
 import org.compiere.model.*;
+import org.xpande.financial.model.MZFinancialConfig;
 
 import java.util.Properties;
 
@@ -57,5 +58,37 @@ public class CalloutFinancial extends CalloutEngine {
 
         return "";
     }
+
+
+    /***
+     * Setea vencimiento manual en un documento, cuando el termino de pago recibido esta marcado como manual en la configuracion financiera.
+     * Xpande. Created by Gabriel Vila on 8/25/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String vencManualByPaymentTerm(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            return "";
+        }
+
+        int cPaymentTermID = ((Integer) value).intValue();
+
+        // Marco vencimiento manual si este termino de pago esta configurado como termino de pago manual en configuración financiera
+        MZFinancialConfig financialConfig = MZFinancialConfig.getDefault(ctx, null);
+        if (financialConfig.getC_PaymentTerm_ID() == cPaymentTermID){
+            mTab.setValue("VencimientoManual", true);
+        }
+        else{
+            mTab.setValue("VencimientoManual", false);
+        }
+
+        return "";
+    }
+
 
 }
