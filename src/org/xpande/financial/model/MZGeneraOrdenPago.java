@@ -656,10 +656,10 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				whereClause = " AND hdr.DateInvoiced <='" + this.getDateEmittedTo() + "' ";
 			}
 			if (this.getDueDateFrom() != null){
-				whereClause = " AND invsch.DueDate >='" + this.getDueDateFrom() + "' ";
+				whereClause = " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced) >='" + this.getDueDateFrom() + "' ";
 			}
 			if (this.getDueDateTo() != null){
-				whereClause = " AND invsch.DueDate <='" + this.getDueDateTo() + "' ";
+				whereClause = " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced) <='" + this.getDueDateTo() + "' ";
 			}
 
 			// Filtros de monedas
@@ -677,12 +677,13 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
 			// Query
 		    sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (hdr.documentserie || hdr.documentno) as documentno, " +
-						" hdr.dateinvoiced, hdr.c_currency_id, hdr.grandtotal, " +
+						" hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal,  " +
 						" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, " +
-					" coalesce(paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
+					" coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
 					" from c_invoice hdr " +
 					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
 					" inner join c_doctype doc on hdr.c_doctypetarget_id = doc.c_doctype_id " +
+					" left outer join c_invoicepayschedule ips on hdr.c_invoice_id = ips.c_invoice_id " +
 					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
 					" and hdr.issotrx='N' " +
 					" and hdr.c_invoice_id not in (select c_invoice_id from z_generaordenpagolin " +
