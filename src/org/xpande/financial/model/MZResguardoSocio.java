@@ -517,6 +517,16 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 					// Acumulo monto a retener en la retencion
 					resguardoSocioRet.setAmtRetencion(resguardoSocioRet.getAmtRetencion().add(amtRetencionDoc));
 
+					// Guardo detalle de monto retenido a comprobante y concepto de retencion.
+					MZResguardoSocioDocRet resguardoSocioDocRet = new MZResguardoSocioDocRet(getCtx(), 0, get_TrxName());
+					resguardoSocioDocRet.setZ_ResguardoSocio_ID(this.get_ID());
+					resguardoSocioDocRet.setZ_ResguardoSocioDoc_ID(resguardoSocioDoc.get_ID());
+					resguardoSocioDocRet.setZ_RetencionSocio_ID(retencionSocio.get_ID());
+					resguardoSocioDocRet.setAmtBase(totalBaseDoc);
+					resguardoSocioDocRet.setAmtRetencion(amtRetencionDoc);
+					resguardoSocioDocRet.setPorcRetencion(retencionSocio.getPorcRetencion());
+					resguardoSocioDocRet.saveEx();
+
 					// Acumulo en total de esta emisión
 					this.setTotalAmt(this.getTotalAmt().add(amtRetencionDoc));
 
