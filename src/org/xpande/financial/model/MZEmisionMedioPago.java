@@ -444,4 +444,17 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
         .append(getSummary()).append("]");
       return sb.toString();
     }
+
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		// Seteo PaymentRule para el medio de pago asociado a esta emisión
+		if ((newRecord) || (is_ValueChanged(X_Z_EmisionMedioPago.COLUMNNAME_Z_MedioPago_ID))){
+			if (this.getZ_MedioPago_ID() > 0){
+				this.setPaymentRule(((MZMedioPago) this.getZ_MedioPago()).getValue());
+			}
+		}
+
+		return true;
+	}
 }
