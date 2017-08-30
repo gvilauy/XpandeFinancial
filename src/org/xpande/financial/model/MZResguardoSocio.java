@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -525,6 +526,13 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 					resguardoSocioDocRet.setAmtBase(totalBaseDoc);
 					resguardoSocioDocRet.setAmtRetencion(amtRetencionDoc);
 					resguardoSocioDocRet.setPorcRetencion(retencionSocio.getPorcRetencion());
+
+					// Referencia
+					Timestamp ts = resguardoSocioDoc.getDateDoc();
+					SimpleDateFormat format = new SimpleDateFormat("dd/MM/YYY");
+					resguardoSocioDocRet.setReference(((MDocType) resguardoSocioDoc.getC_DocType()).getPrintName().trim() + " "
+							+ resguardoSocioDoc.getDocumentNoRef() + " " + format.format(ts));
+
 					resguardoSocioDocRet.saveEx();
 
 					// Acumulo en total de esta emisión
