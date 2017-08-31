@@ -248,6 +248,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				m_processMsg = ordenPago.getProcessMsg();
 				return DocAction.STATUS_Invalid;
 			}
+			ordenPago.saveEx();
 		}
 
 		// Genera medios de pago necesarios

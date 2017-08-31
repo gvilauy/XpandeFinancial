@@ -278,6 +278,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					m_processMsg = emisionMedioPago.getProcessMsg();
 					return DocAction.STATUS_Invalid;
 				}
+				emisionMedioPago.saveEx();
 
 			}
 
