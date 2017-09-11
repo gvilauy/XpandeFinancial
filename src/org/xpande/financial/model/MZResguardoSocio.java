@@ -260,6 +260,14 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		log.info(toString());
 		//
 
+
+		// Validaciones del documento
+		String message =  this.validateDocument();
+		if (message != null){
+			m_processMsg = message;
+			return DocAction.STATUS_Invalid;
+		}
+
 		// Si es contra-resguardo, seteo ADENDA para impresión
 		MDocType docType = (MDocType) this.getC_DocType();
 		if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
@@ -285,6 +293,51 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
 
+
+	/***
+	 * Validaciones al documento al momento de completar.
+	 * Xpande. Created by Gabriel Vila on 9/9/17.
+	 * @return
+	 */
+	private String validateDocument() {
+
+		String message = null;
+
+		try{
+
+			// No se permite generar resguardo con monto negativo o cero
+			if ((this.getTotalAmt() == null) || (this.getTotalAmt().compareTo(Env.ZERO) <= 0)){
+				return "No se permite completar Resguardos con Monto menor o igual a cero.";
+			}
+
+			int cPeriodID = 0;
+
+			// Obtengo y recorro documentos de este resguardo para validaciones
+			List<MZResguardoSocioDoc> docs = this.getResguardoDocs();
+			for (MZResguardoSocioDoc resguardoSocioDoc: docs){
+
+				// Valido documentos del mismo periodo, ya que no es posible mezclar documentos de distintos periodos en un mismo resguardo.
+				MPeriod period = MPeriod.get(getCtx(), resguardoSocioDoc.getDateDoc(), 0);
+				if ((period == null) || (period.get_ID() <= 0)){
+					return "No se pudo obtener Período contable para Fecha : " + resguardoSocioDoc.getDateDoc();
+				}
+				if (cPeriodID > 0){
+					if (period.get_ID() != cPeriodID){
+						return "No se permite completar Resguardos conteniendo Documentos de distintos períodos.";
+					}
+				}
+				else{
+					cPeriodID = period.get_ID();
+				}
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
 
 
 	/**
