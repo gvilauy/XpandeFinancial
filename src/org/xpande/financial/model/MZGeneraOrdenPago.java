@@ -889,6 +889,9 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 			MDocType[] docs = MDocType.getOfDocBaseType(getCtx(),"OOP");
 			MDocType docOP = docs[0];
 
+			// Moneda de las ordenes de pago = moneda de la cuenta bancaria seleccionada en la generacion
+			int cCurrencyBankAccount = ((MBankAccount) this.getC_BankAccount()).getC_Currency_ID();
+
 			// Obtengo y recorro socios de negocio considerados en este proceso
 			List<MZGeneraOrdenPagoSocio> ordenPagoSocios = this.getSocios();
 			for (MZGeneraOrdenPagoSocio ordenPagoSocio: ordenPagoSocios){
@@ -897,7 +900,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				MZOrdenPago ordenPago = new MZOrdenPago(getCtx(), 0, get_TrxName());
 				ordenPago.setZ_GeneraOrdenPago_ID(this.get_ID());
 				ordenPago.setC_BPartner_ID(ordenPagoSocio.getC_BPartner_ID());
-				ordenPago.setC_Currency_ID(this.getC_Currency_ID());
+				ordenPago.setC_Currency_ID(cCurrencyBankAccount);
 				ordenPago.setC_DocType_ID(docOP.get_ID());
 				ordenPago.setDateDoc(this.getDateDoc());
 				ordenPago.setTotalAmt(Env.ZERO);
