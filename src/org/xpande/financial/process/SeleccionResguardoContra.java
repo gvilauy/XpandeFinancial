@@ -23,10 +23,7 @@ import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.utils.CurrencyUtils;
-import org.xpande.financial.model.MZResguardoSocio;
-import org.xpande.financial.model.MZResguardoSocioDoc;
-import org.xpande.financial.model.MZResguardoSocioDocTax;
-import org.xpande.financial.model.MZResguardoSocioRet;
+import org.xpande.financial.model.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -117,7 +114,23 @@ public class SeleccionResguardoContra extends SeleccionResguardoContraAbstract
 						newDocTax.setC_Invoice_ID(oldDocTax.getC_Invoice_ID());
 						newDocTax.saveEx();
 					}
+
+					// Cargo detalle de retenciones de este documento
+					List<MZResguardoSocioDocRet> docRets = oldDoc.getResguardoDocRets();
+					for (MZResguardoSocioDocRet oldDocRet: docRets){
+						MZResguardoSocioDocRet docRet = new MZResguardoSocioDocRet(getCtx(), 0, get_TrxName());
+						docRet.setZ_RetencionSocio_ID(oldDocRet.getZ_RetencionSocio_ID());
+						docRet.setZ_ResguardoSocioDoc_ID(newDoc.get_ID());
+						docRet.setZ_ResguardoSocio_ID(newDoc.getZ_ResguardoSocio_ID());
+						docRet.setReference(oldDocRet.getReference());
+						docRet.setPorcRetencion(oldDocRet.getPorcRetencion());
+						docRet.setAmtRetencion(oldDocRet.getAmtRetencion());
+						docRet.setAmtBase(oldDocRet.getAmtBase());
+						docRet.saveEx();
+					}
+
 				}
+
 
 			});
 

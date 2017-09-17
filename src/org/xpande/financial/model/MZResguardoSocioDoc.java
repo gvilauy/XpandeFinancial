@@ -63,4 +63,19 @@ public class MZResguardoSocioDoc extends X_Z_ResguardoSocioDoc {
         return lines;
     }
 
+
+    /***
+     * Obtiene y retorna lista con detalle de retenciones por cada documento
+     * Xpande. Created by Gabriel Vila on 8/2/17.
+     * @return
+     */
+    public List<MZResguardoSocioDocRet> getResguardoDocRets(){
+
+        String whereClause = X_Z_ResguardoSocioDocRet.COLUMNNAME_Z_ResguardoSocioDoc_ID + " =" + this.get_ID();
+
+        List<MZResguardoSocioDocRet> lines = new Query(getCtx(), I_Z_ResguardoSocioDocRet.Table_Name, whereClause, get_TrxName()).list();
+
+        return lines;
+    }
+
 }
