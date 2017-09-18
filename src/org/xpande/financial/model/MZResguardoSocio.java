@@ -1304,4 +1304,49 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		/*   7 */ referencia.setFechaCFEref(Timestamp_to_XmlGregorianCalendar_OnlyDate(resguardoSocioRef.getDateDoc(), false));
 	}
 
+	/***
+	 * Metodo que verifica si una determinada invoice tiene un resguardo emitido o no.
+	 * Xpande. Created by Gabriel Vila on 9/18/17.
+	 * @param ctx
+	 * @param cInvoiceID : ID de la invoice a considerar
+	 * @param trxName
+	 * @return
+	 */
+    public static boolean invoiceTieneResguardo(Properties ctx, int cInvoiceID, String trxName) {
+
+    	boolean value = false;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+		    sql = " select rgd.c_invoice_id " +
+					" from z_resguardosociodoc rgd " +
+					" inner join z_resguardosocio rg on rgd.z_resguardosocio_id = rg.z_resguardosocio_id " +
+					" inner join c_doctype doc on rg.c_doctype_id = doc.c_doctype_id " +
+					" where rg.docstatus='CO' " +
+					" and doc.docbasetype='RGU' " +
+					" and rgd.c_invoice_id =" + cInvoiceID +
+					" and rg.z_resguardosocio_id not in " +
+					" (select coalesce(z_resguardosocio_ref_id,0) from z_resguardosocio " +
+					" where docstatus='CO')";
+
+			pstmt = DB.prepareStatement(sql, trxName);
+			rs = pstmt.executeQuery();
+
+			if (rs.next()){
+				value = true;
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return value;
+    }
 }

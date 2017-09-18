@@ -644,7 +644,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 		
 		try{
 
-			// Medio de pago por defecto en caso que el socio no tengo medio de pago predeterminado.
+			// Medio de pago por defecto en caso que el socio no tengo medio de pago predeterminado (por defecto CHEQUE)
 			MZMedioPago medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
 
 			String whereClause = "";
@@ -754,7 +754,9 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				ordenPagoLin.setDueDateMedioPago(ordenPagoLin.getDueDateDoc());
 				ordenPagoLin.setEstadoAprobacion("APROBADO");
 				ordenPagoLin.setC_Invoice_ID(rs.getInt("c_invoice_id"));
-				//ordenPagoLin.setResguardoEmitido();
+
+				ordenPagoLin.setResguardoEmitido(MZResguardoSocio.invoiceTieneResguardo(getCtx(), ordenPagoLin.getC_Invoice_ID(), get_TrxName()));
+
 				ordenPagoLin.saveEx();
 			}
 
@@ -912,6 +914,23 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				Timestamp maxDueDate = fechaHoy;
 				List<MZGeneraOrdenPagoLin> generaLins = ordenPagoSocio.getSelectedDocuments();
 				for (MZGeneraOrdenPagoLin generaLin: generaLins){
+
+					// Si el documento de esta linea se corresponde con una invoice, valido que tenga resguardo.
+					// En caso de no tenerlo, verifico si aplican retenciones para esta invoice o no, en cuyo caso aviso y salgo.
+					if (generaLin.getC_Invoice_ID() > 0){
+						// Refreso dato para esta invoice con respecto a si tiene o no un resguardo
+						generaLin.setResguardoEmitido(MZResguardoSocio.invoiceTieneResguardo(getCtx(), generaLin.getC_Invoice_ID(), get_TrxName()));
+						generaLin.saveEx();
+						if (!generaLin.isResguardoEmitido()){
+							// No tiene resguardo emitido, verifico si para esta invoice se deben aplicar retenciones
+							boolean aplicaReteneciones = MZRetencionSocio.invoiceAplicanRetenciones(getCtx(), generaLin.getC_Invoice_ID(), get_TrxName());
+							if (aplicaReteneciones) {
+								MBPartner partner = (MBPartner) ordenPago.getC_BPartner();
+								return " No es posible generar orden de pago para el Socio de Negocio : " + partner.getName() + "\n" +
+										" El mismo tiene un comprobante que requiere la emisión de resguardo : " + generaLin.getDocumentNoRef();
+							}
+						}
+					}
 
 					// Genero linea de orden de pago para este documento
 					MZOrdenPagoLin ordenPagoLin = new MZOrdenPagoLin(getCtx(), 0, get_TrxName());
