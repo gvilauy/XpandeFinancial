@@ -33,7 +33,7 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170918L;
+	private static final long serialVersionUID = 20170921L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoReplace (Properties ctx, int Z_MedioPagoReplace_ID, String trxName)
@@ -52,6 +52,8 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 			setIsApproved (false);
 // N
 			setProcessed (false);
+// N
+			setSolicitaFecVenc (false);
 // N
 			setZ_MedioPago_ID (0);
 			setZ_MedioPagoMotivoRep_ID (0);
@@ -581,6 +583,30 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set SolicitaFecVenc.
+		@param SolicitaFecVenc 
+		Solicita Fecha de Vencimiento si o no
+	  */
+	public void setSolicitaFecVenc (boolean SolicitaFecVenc)
+	{
+		set_Value (COLUMNNAME_SolicitaFecVenc, Boolean.valueOf(SolicitaFecVenc));
+	}
+
+	/** Get SolicitaFecVenc.
+		@return Solicita Fecha de Vencimiento si o no
+	  */
+	public boolean isSolicitaFecVenc () 
+	{
+		Object oo = get_Value(COLUMNNAME_SolicitaFecVenc);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

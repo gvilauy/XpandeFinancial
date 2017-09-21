@@ -118,6 +118,19 @@ public interface I_Z_MedioPagoMotivoRep
 	  */
 	public String getName();
 
+    /** Column name SolicitaFecVenc */
+    public static final String COLUMNNAME_SolicitaFecVenc = "SolicitaFecVenc";
+
+	/** Set SolicitaFecVenc.
+	  * Solicita Fecha de Vencimiento si o no
+	  */
+	public void setSolicitaFecVenc(boolean SolicitaFecVenc);
+
+	/** Get SolicitaFecVenc.
+	  * Solicita Fecha de Vencimiento si o no
+	  */
+	public boolean isSolicitaFecVenc();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 

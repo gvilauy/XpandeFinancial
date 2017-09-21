@@ -18,9 +18,12 @@ package org.xpande.financial.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
@@ -387,4 +390,93 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
         .append(getSummary()).append("]");
       return sb.toString();
     }
+
+
+	/***
+	 * Obtiene y carga medios de pago a considerar en este proceso según filtros indicados por el usuarios.
+	 * Xpande. Created by Gabriel Vila on 9/21/17.
+	 * @return
+	 */
+	public String getDocuments() {
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			String whereClause = " and mpi.z_mediopago_id =" + this.getZ_MedioPago_ID();
+
+			if (this.getC_BPartner_ID() > 0){
+				whereClause += " and mpi.c_bpartner_id =" + this.getC_BPartner_ID();
+			}
+			if (this.getNumeroDesde() > 0){
+				whereClause += " and cast(mpi.nromediopago as numeric(10,0)) >=" + this.getNumeroDesde();
+			}
+			if (this.getNumeroHasta() > 0){
+				whereClause += " and cast(mpi.nromediopago as numeric(10,0)) <=" + this.getNumeroDesde();
+			}
+			if (this.getDateEmittedFrom() != null){
+				whereClause += " and mpi.dateemitted >='" + this.getDateEmittedFrom() + "'";
+			}
+			if (this.getDateEmittedTo() != null){
+				whereClause += " and mpi.dateemitted <='" + this.getDateEmittedTo() + "'";
+			}
+			if (this.getDueDateFrom() != null){
+				whereClause += " and mpi.duedate >='" + this.getDueDateFrom() + "'";
+			}
+			if (this.getDueDateTo() != null){
+				whereClause += " and mpi.duedate <='" + this.getDueDateTo() + "'";
+			}
+
+		    sql = " select mpi.z_mediopagoitem_id " +
+					" from z_mediopagoitem mpi " +
+					" where mpi.c_currency_id =" + this.getC_Currency_ID() +
+					" and mpi.emitido ='Y' and mpi.anulado ='N' and mpi.entregado ='N' " + whereClause;
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				// Instancio modelo de item de medio de pago
+				MZMedioPagoItem medioPagoItem = new MZMedioPagoItem(getCtx(), rs.getInt("z_mediopagoitem_id"), get_TrxName());
+
+				// Nueva linea para este proceso con datos del item
+				MZMedioPagoReplaceLin replaceLin = new MZMedioPagoReplaceLin(getCtx(), 0, get_TrxName());
+				replaceLin.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+				replaceLin.setZ_MedioPagoReplace_ID(this.get_ID());
+				replaceLin.setZ_MedioPago_ID(medioPagoItem.getZ_MedioPago_ID());
+
+				if (medioPagoItem.getZ_MedioPagoFolio_ID() > 0){
+					replaceLin.setZ_MedioPagoFolio_ID(medioPagoItem.getZ_MedioPagoFolio_ID());
+				}
+
+				if (medioPagoItem.getZ_OrdenPago_ID() > 0){
+					replaceLin.setZ_OrdenPago_ID(medioPagoItem.getZ_OrdenPago_ID());
+				}
+
+				replaceLin.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
+				replaceLin.setC_BPartner_ID(medioPagoItem.getC_BPartner_ID());
+				replaceLin.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
+				replaceLin.setDateEmitted(medioPagoItem.getDateEmitted());
+				replaceLin.setDueDate(medioPagoItem.getDueDate());
+				replaceLin.setIsSelected(false);
+				replaceLin.setNroMedioPago(medioPagoItem.getNroMedioPago());
+				replaceLin.setTotalAmt(medioPagoItem.getTotalAmt());
+				replaceLin.saveEx();
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
 }

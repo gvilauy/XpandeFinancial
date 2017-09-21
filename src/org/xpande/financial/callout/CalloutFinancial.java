@@ -2,6 +2,8 @@ package org.xpande.financial.callout;
 
 import org.compiere.model.*;
 import org.xpande.financial.model.MZFinancialConfig;
+import org.xpande.financial.model.MZMedioPagoMotivoRep;
+import org.xpande.financial.model.X_Z_MedioPagoMotivoRep;
 
 import java.util.Properties;
 
@@ -86,6 +88,31 @@ public class CalloutFinancial extends CalloutEngine {
         else{
             mTab.setValue("VencimientoManual", false);
         }
+
+        return "";
+    }
+
+
+    /***
+     * Dado un motivo de reemplazo de medio de pago, se setea campo de solicitar o no nuevas fechas de vencimiento.
+     * Xpande. Created by Gabriel Vila on 9/21/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String solicitarVencByMotivo(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            return "";
+        }
+
+        int zMedioPagoMotivoRepID = ((Integer) value).intValue();
+
+        MZMedioPagoMotivoRep motivoRep = new MZMedioPagoMotivoRep(ctx, zMedioPagoMotivoRepID, null);
+        mTab.setValue(X_Z_MedioPagoMotivoRep.COLUMNNAME_SolicitaFecVenc, motivoRep.isSolicitaFecVenc());
 
         return "";
     }
