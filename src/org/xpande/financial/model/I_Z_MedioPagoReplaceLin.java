@@ -150,6 +150,19 @@ public interface I_Z_MedioPagoReplaceLin
 	  */
 	public Timestamp getDueDate();
 
+    /** Column name DueDateTo */
+    public static final String COLUMNNAME_DueDateTo = "DueDateTo";
+
+	/** Set DueDateTo.
+	  * Hasta fecha de vencimiento
+	  */
+	public void setDueDateTo(Timestamp DueDateTo);
+
+	/** Get DueDateTo.
+	  * Hasta fecha de vencimiento
+	  */
+	public Timestamp getDueDateTo();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 

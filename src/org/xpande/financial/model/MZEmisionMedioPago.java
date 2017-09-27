@@ -29,6 +29,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Msg;
 
 /** Generated Model for Z_EmisionMedioPago
  *  @author Adempiere (generated) 
@@ -67,9 +68,10 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		}
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
-			options[newIndex++] = DocumentEngine.ACTION_None;
+			options[newIndex++] = DocumentEngine.ACTION_Void;
+			//options[newIndex++] = DocumentEngine.ACTION_None;
 			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
-			//options[newIndex++] = DocumentEngine.ACTION_Void;
+
 		}
 
 		return newIndex;
@@ -253,6 +255,9 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 			if (this.getZ_OrdenPago_ID() > 0){
 				medioPagoItem.setZ_OrdenPago_ID(this.getZ_OrdenPago_ID());
 			}
+			if (this.getZ_MedioPagoReplace_ID() > 0){
+				medioPagoItem.setZ_MedioPagoReplace_ID(this.getZ_MedioPagoReplace_ID());
+			}
 			medioPagoItem.saveEx();
 		}
 
@@ -329,8 +334,29 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 	 */
 	public boolean voidIt()
 	{
-		log.info("voidIt - " + toString());
-		return closeIt();
+		log.info(toString());
+
+		// Before Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		// Marco item de medio de pago como Anulado
+		MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
+		medioPagoItem.setAnulado(true);
+		medioPagoItem.saveEx();
+
+
+		// After Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		setProcessed(true);
+		setDocStatus(DOCSTATUS_Voided);
+		setDocAction(DOCACTION_None);
+		return true;
+
 	}	//	voidIt
 	
 	/**

@@ -63,6 +63,19 @@ public interface I_Z_MedioPagoItem
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name Anulado */
+    public static final String COLUMNNAME_Anulado = "Anulado";
+
+	/** Set Anulado.
+	  * Si esta anulado o no
+	  */
+	public void setAnulado(boolean Anulado);
+
+	/** Get Anulado.
+	  * Si esta anulado o no
+	  */
+	public boolean isAnulado();
+
     /** Column name C_BankAccount_ID */
     public static final String COLUMNNAME_C_BankAccount_ID = "C_BankAccount_ID";
 
@@ -107,6 +120,19 @@ public interface I_Z_MedioPagoItem
 	public int getC_Currency_ID();
 
 	public I_C_Currency getC_Currency() throws RuntimeException;
+
+    /** Column name Conciliado */
+    public static final String COLUMNNAME_Conciliado = "Conciliado";
+
+	/** Set Conciliado.
+	  * Conciliado si o no
+	  */
+	public void setConciliado(boolean Conciliado);
+
+	/** Get Conciliado.
+	  * Conciliado si o no
+	  */
+	public boolean isConciliado();
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -175,6 +201,19 @@ public interface I_Z_MedioPagoItem
 	  * Documento emitido
 	  */
 	public boolean isEmitido();
+
+    /** Column name Entregado */
+    public static final String COLUMNNAME_Entregado = "Entregado";
+
+	/** Set Entregado.
+	  * Si esta entregado o no
+	  */
+	public void setEntregado(boolean Entregado);
+
+	/** Get Entregado.
+	  * Si esta entregado o no
+	  */
+	public boolean isEntregado();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -254,6 +293,19 @@ public interface I_Z_MedioPagoItem
 	  */
 	public String getNroMedioPago();
 
+    /** Column name Reemplazado */
+    public static final String COLUMNNAME_Reemplazado = "Reemplazado";
+
+	/** Set Reemplazado.
+	  * Reemplazado si o no
+	  */
+	public void setReemplazado(boolean Reemplazado);
+
+	/** Get Reemplazado.
+	  * Reemplazado si o no
+	  */
+	public boolean isReemplazado();
+
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";
 
@@ -324,6 +376,32 @@ public interface I_Z_MedioPagoItem
 
 	/** Get Z_MedioPagoItem ID	  */
 	public int getZ_MedioPagoItem_ID();
+
+    /** Column name Z_MedioPagoItem_Rep_ID */
+    public static final String COLUMNNAME_Z_MedioPagoItem_Rep_ID = "Z_MedioPagoItem_Rep_ID";
+
+	/** Set Z_MedioPagoItem_Rep_ID.
+	  * Item de  Medio de Pago reemplazante
+	  */
+	public void setZ_MedioPagoItem_Rep_ID(int Z_MedioPagoItem_Rep_ID);
+
+	/** Get Z_MedioPagoItem_Rep_ID.
+	  * Item de  Medio de Pago reemplazante
+	  */
+	public int getZ_MedioPagoItem_Rep_ID();
+
+	public I_Z_MedioPagoItem getZ_MedioPagoItem_Rep() throws RuntimeException;
+
+    /** Column name Z_MedioPagoReplace_ID */
+    public static final String COLUMNNAME_Z_MedioPagoReplace_ID = "Z_MedioPagoReplace_ID";
+
+	/** Set Z_MedioPagoReplace ID	  */
+	public void setZ_MedioPagoReplace_ID(int Z_MedioPagoReplace_ID);
+
+	/** Get Z_MedioPagoReplace ID	  */
+	public int getZ_MedioPagoReplace_ID();
+
+	public I_Z_MedioPagoReplace getZ_MedioPagoReplace() throws RuntimeException;
 
     /** Column name Z_OrdenPago_ID */
     public static final String COLUMNNAME_Z_OrdenPago_ID = "Z_OrdenPago_ID";

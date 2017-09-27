@@ -33,7 +33,7 @@ public class X_Z_MedioPagoReplaceLin extends PO implements I_Z_MedioPagoReplaceL
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170921L;
+	private static final long serialVersionUID = 20170927L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoReplaceLin (Properties ctx, int Z_MedioPagoReplaceLin_ID, String trxName)
@@ -44,6 +44,7 @@ public class X_Z_MedioPagoReplaceLin extends PO implements I_Z_MedioPagoReplaceL
 			setC_BankAccount_ID (0);
 			setC_BPartner_ID (0);
 			setC_Currency_ID (0);
+			setDueDateTo (new Timestamp( System.currentTimeMillis() ));
 			setIsSelected (false);
 // N
 			setTotalAmt (Env.ZERO);
@@ -198,6 +199,23 @@ public class X_Z_MedioPagoReplaceLin extends PO implements I_Z_MedioPagoReplaceL
 	public Timestamp getDueDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DueDate);
+	}
+
+	/** Set DueDateTo.
+		@param DueDateTo 
+		Hasta fecha de vencimiento
+	  */
+	public void setDueDateTo (Timestamp DueDateTo)
+	{
+		set_Value (COLUMNNAME_DueDateTo, DueDateTo);
+	}
+
+	/** Get DueDateTo.
+		@return Hasta fecha de vencimiento
+	  */
+	public Timestamp getDueDateTo () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DueDateTo);
 	}
 
 	/** Set Selected.

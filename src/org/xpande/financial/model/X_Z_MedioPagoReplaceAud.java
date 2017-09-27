@@ -24,10 +24,10 @@ import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
 
-/** Generated Model for Z_MedioPagoItem
+/** Generated Model for Z_MedioPagoReplaceAud
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persistent 
+public class X_Z_MedioPagoReplaceAud extends PO implements I_Z_MedioPagoReplaceAud, I_Persistent 
 {
 
 	/**
@@ -36,35 +36,27 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	private static final long serialVersionUID = 20170927L;
 
     /** Standard Constructor */
-    public X_Z_MedioPagoItem (Properties ctx, int Z_MedioPagoItem_ID, String trxName)
+    public X_Z_MedioPagoReplaceAud (Properties ctx, int Z_MedioPagoReplaceAud_ID, String trxName)
     {
-      super (ctx, Z_MedioPagoItem_ID, trxName);
-      /** if (Z_MedioPagoItem_ID == 0)
+      super (ctx, Z_MedioPagoReplaceAud_ID, trxName);
+      /** if (Z_MedioPagoReplaceAud_ID == 0)
         {
-			setAnulado (false);
-// N
 			setC_BankAccount_ID (0);
+			setC_BPartner_ID (0);
 			setC_Currency_ID (0);
-			setConciliado (false);
-// N
-			setEmitido (false);
-// N
-			setEntregado (false);
-// N
 			setIsPrinted (false);
 // N
-			setIsReceipt (false);
-// N
-			setNroMedioPago (null);
-			setReemplazado (false);
-// N
+			setTotalAmt (Env.ZERO);
 			setZ_MedioPago_ID (0);
 			setZ_MedioPagoItem_ID (0);
+			setZ_MedioPagoItem_Old_ID (0);
+			setZ_MedioPagoReplaceAud_ID (0);
+			setZ_MedioPagoReplace_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_MedioPagoItem (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_MedioPagoReplaceAud (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -86,34 +78,10 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_MedioPagoItem[")
+      StringBuffer sb = new StringBuffer ("X_Z_MedioPagoReplaceAud[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
-
-	/** Set Anulado.
-		@param Anulado 
-		Si esta anulado o no
-	  */
-	public void setAnulado (boolean Anulado)
-	{
-		set_Value (COLUMNNAME_Anulado, Boolean.valueOf(Anulado));
-	}
-
-	/** Get Anulado.
-		@return Si esta anulado o no
-	  */
-	public boolean isAnulado () 
-	{
-		Object oo = get_Value(COLUMNNAME_Anulado);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
 
 	public I_C_BankAccount getC_BankAccount() throws RuntimeException
     {
@@ -199,30 +167,6 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 		return ii.intValue();
 	}
 
-	/** Set Conciliado.
-		@param Conciliado 
-		Conciliado si o no
-	  */
-	public void setConciliado (boolean Conciliado)
-	{
-		set_Value (COLUMNNAME_Conciliado, Boolean.valueOf(Conciliado));
-	}
-
-	/** Get Conciliado.
-		@return Conciliado si o no
-	  */
-	public boolean isConciliado () 
-	{
-		Object oo = get_Value(COLUMNNAME_Conciliado);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set DateEmitted.
 		@param DateEmitted 
 		Fecha emisión de un documento
@@ -240,23 +184,6 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 		return (Timestamp)get_Value(COLUMNNAME_DateEmitted);
 	}
 
-	/** Set DocumentSerie.
-		@param DocumentSerie 
-		Serie de un Documento
-	  */
-	public void setDocumentSerie (String DocumentSerie)
-	{
-		set_Value (COLUMNNAME_DocumentSerie, DocumentSerie);
-	}
-
-	/** Get DocumentSerie.
-		@return Serie de un Documento
-	  */
-	public String getDocumentSerie () 
-	{
-		return (String)get_Value(COLUMNNAME_DocumentSerie);
-	}
-
 	/** Set Due Date.
 		@param DueDate 
 		Date when the payment is due
@@ -272,54 +199,6 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	public Timestamp getDueDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DueDate);
-	}
-
-	/** Set Emitido.
-		@param Emitido 
-		Documento emitido
-	  */
-	public void setEmitido (boolean Emitido)
-	{
-		set_Value (COLUMNNAME_Emitido, Boolean.valueOf(Emitido));
-	}
-
-	/** Get Emitido.
-		@return Documento emitido
-	  */
-	public boolean isEmitido () 
-	{
-		Object oo = get_Value(COLUMNNAME_Emitido);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Entregado.
-		@param Entregado 
-		Si esta entregado o no
-	  */
-	public void setEntregado (boolean Entregado)
-	{
-		set_Value (COLUMNNAME_Entregado, Boolean.valueOf(Entregado));
-	}
-
-	/** Get Entregado.
-		@return Si esta entregado o no
-	  */
-	public boolean isEntregado () 
-	{
-		Object oo = get_Value(COLUMNNAME_Entregado);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	/** Set Printed.
@@ -346,64 +225,6 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 		return false;
 	}
 
-	/** Set Receipt.
-		@param IsReceipt 
-		This is a sales transaction (receipt)
-	  */
-	public void setIsReceipt (boolean IsReceipt)
-	{
-		set_Value (COLUMNNAME_IsReceipt, Boolean.valueOf(IsReceipt));
-	}
-
-	/** Get Receipt.
-		@return This is a sales transaction (receipt)
-	  */
-	public boolean isReceipt () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsReceipt);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set LeyendaImpresion1.
-		@param LeyendaImpresion1 
-		Leyenda de impresión
-	  */
-	public void setLeyendaImpresion1 (String LeyendaImpresion1)
-	{
-		set_Value (COLUMNNAME_LeyendaImpresion1, LeyendaImpresion1);
-	}
-
-	/** Get LeyendaImpresion1.
-		@return Leyenda de impresión
-	  */
-	public String getLeyendaImpresion1 () 
-	{
-		return (String)get_Value(COLUMNNAME_LeyendaImpresion1);
-	}
-
-	/** Set LeyendaImpresion2.
-		@param LeyendaImpresion2 
-		Leyenda de impresión
-	  */
-	public void setLeyendaImpresion2 (String LeyendaImpresion2)
-	{
-		set_Value (COLUMNNAME_LeyendaImpresion2, LeyendaImpresion2);
-	}
-
-	/** Get LeyendaImpresion2.
-		@return Leyenda de impresión
-	  */
-	public String getLeyendaImpresion2 () 
-	{
-		return (String)get_Value(COLUMNNAME_LeyendaImpresion2);
-	}
-
 	/** Set NroMedioPago.
 		@param NroMedioPago 
 		Numero de medio de pago
@@ -419,30 +240,6 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	public String getNroMedioPago () 
 	{
 		return (String)get_Value(COLUMNNAME_NroMedioPago);
-	}
-
-	/** Set Reemplazado.
-		@param Reemplazado 
-		Reemplazado si o no
-	  */
-	public void setReemplazado (boolean Reemplazado)
-	{
-		set_Value (COLUMNNAME_Reemplazado, Boolean.valueOf(Reemplazado));
-	}
-
-	/** Get Reemplazado.
-		@return Reemplazado si o no
-	  */
-	public boolean isReemplazado () 
-	{
-		Object oo = get_Value(COLUMNNAME_Reemplazado);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	/** Set Total Amount.
@@ -463,31 +260,6 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
-	}
-
-	public I_Z_EmisionMedioPago getZ_EmisionMedioPago() throws RuntimeException
-    {
-		return (I_Z_EmisionMedioPago)MTable.get(getCtx(), I_Z_EmisionMedioPago.Table_Name)
-			.getPO(getZ_EmisionMedioPago_ID(), get_TrxName());	}
-
-	/** Set Z_EmisionMedioPago ID.
-		@param Z_EmisionMedioPago_ID Z_EmisionMedioPago ID	  */
-	public void setZ_EmisionMedioPago_ID (int Z_EmisionMedioPago_ID)
-	{
-		if (Z_EmisionMedioPago_ID < 1) 
-			set_Value (COLUMNNAME_Z_EmisionMedioPago_ID, null);
-		else 
-			set_Value (COLUMNNAME_Z_EmisionMedioPago_ID, Integer.valueOf(Z_EmisionMedioPago_ID));
-	}
-
-	/** Get Z_EmisionMedioPago ID.
-		@return Z_EmisionMedioPago ID	  */
-	public int getZ_EmisionMedioPago_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_EmisionMedioPago_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	public I_Z_MedioPagoFolio getZ_MedioPagoFolio() throws RuntimeException
@@ -540,14 +312,19 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 		return ii.intValue();
 	}
 
+	public I_Z_MedioPagoItem getZ_MedioPagoItem() throws RuntimeException
+    {
+		return (I_Z_MedioPagoItem)MTable.get(getCtx(), I_Z_MedioPagoItem.Table_Name)
+			.getPO(getZ_MedioPagoItem_ID(), get_TrxName());	}
+
 	/** Set Z_MedioPagoItem ID.
 		@param Z_MedioPagoItem_ID Z_MedioPagoItem ID	  */
 	public void setZ_MedioPagoItem_ID (int Z_MedioPagoItem_ID)
 	{
 		if (Z_MedioPagoItem_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_MedioPagoItem_ID, null);
+			set_Value (COLUMNNAME_Z_MedioPagoItem_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Z_MedioPagoItem_ID, Integer.valueOf(Z_MedioPagoItem_ID));
+			set_Value (COLUMNNAME_Z_MedioPagoItem_ID, Integer.valueOf(Z_MedioPagoItem_ID));
 	}
 
 	/** Get Z_MedioPagoItem ID.
@@ -560,29 +337,49 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 		return ii.intValue();
 	}
 
-	public I_Z_MedioPagoItem getZ_MedioPagoItem_Rep() throws RuntimeException
+	public I_Z_MedioPagoItem getZ_MedioPagoItem_Old() throws RuntimeException
     {
 		return (I_Z_MedioPagoItem)MTable.get(getCtx(), I_Z_MedioPagoItem.Table_Name)
-			.getPO(getZ_MedioPagoItem_Rep_ID(), get_TrxName());	}
+			.getPO(getZ_MedioPagoItem_Old_ID(), get_TrxName());	}
 
-	/** Set Z_MedioPagoItem_Rep_ID.
-		@param Z_MedioPagoItem_Rep_ID 
-		Item de  Medio de Pago reemplazante
+	/** Set Z_MedioPagoItem_Old_ID.
+		@param Z_MedioPagoItem_Old_ID 
+		ID de un item de medio de pago anterior
 	  */
-	public void setZ_MedioPagoItem_Rep_ID (int Z_MedioPagoItem_Rep_ID)
+	public void setZ_MedioPagoItem_Old_ID (int Z_MedioPagoItem_Old_ID)
 	{
-		if (Z_MedioPagoItem_Rep_ID < 1) 
-			set_Value (COLUMNNAME_Z_MedioPagoItem_Rep_ID, null);
+		if (Z_MedioPagoItem_Old_ID < 1) 
+			set_Value (COLUMNNAME_Z_MedioPagoItem_Old_ID, null);
 		else 
-			set_Value (COLUMNNAME_Z_MedioPagoItem_Rep_ID, Integer.valueOf(Z_MedioPagoItem_Rep_ID));
+			set_Value (COLUMNNAME_Z_MedioPagoItem_Old_ID, Integer.valueOf(Z_MedioPagoItem_Old_ID));
 	}
 
-	/** Get Z_MedioPagoItem_Rep_ID.
-		@return Item de  Medio de Pago reemplazante
+	/** Get Z_MedioPagoItem_Old_ID.
+		@return ID de un item de medio de pago anterior
 	  */
-	public int getZ_MedioPagoItem_Rep_ID () 
+	public int getZ_MedioPagoItem_Old_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoItem_Rep_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoItem_Old_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_MedioPagoReplaceAud ID.
+		@param Z_MedioPagoReplaceAud_ID Z_MedioPagoReplaceAud ID	  */
+	public void setZ_MedioPagoReplaceAud_ID (int Z_MedioPagoReplaceAud_ID)
+	{
+		if (Z_MedioPagoReplaceAud_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_MedioPagoReplaceAud_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Z_MedioPagoReplaceAud_ID, Integer.valueOf(Z_MedioPagoReplaceAud_ID));
+	}
+
+	/** Get Z_MedioPagoReplaceAud ID.
+		@return Z_MedioPagoReplaceAud ID	  */
+	public int getZ_MedioPagoReplaceAud_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoReplaceAud_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

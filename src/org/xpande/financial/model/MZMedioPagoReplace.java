@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -30,6 +31,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 /** Generated Model for Z_MedioPagoReplace
  *  @author Adempiere (generated) 
@@ -170,12 +172,15 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 		
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
+		/*
 		//	Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateDoc(), dt.getDocBaseType(), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return DocAction.STATUS_Invalid;
 		}
+		*/
+
 		//	Add up Amounts
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
@@ -231,7 +236,107 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		// Obtengo lineas del documento
+		List<MZMedioPagoReplaceLin> lines = this.getLinesSelected();
+
+		// Valido condiciones para completar este documento
+		m_processMsg = this.validateDocument(lines);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
+		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+		this.setDateDoc(fechaHoy);
+
+		// Recorro lineas de medios de pago seleccionados para reemplazar
+		for (MZMedioPagoReplaceLin replaceLin: lines){
+
+			// Instancio modelo de medio de pago a reemplazar
+			MZMedioPagoItem OLD_medioPagoItem = (MZMedioPagoItem) replaceLin.getZ_MedioPagoItem();
+
+			// Emito nuevo medio de pago
+			MZMedioPagoItem NEW_medioPagoItem = ((MZMedioPagoFolio) this.getZ_MedioPagoFolio()).getCurrentNext();
+			if ((NEW_medioPagoItem == null) || (NEW_medioPagoItem.get_ID() <= 0)){
+				m_processMsg = "Libreta no tiene medios de pago disponibles para utilizar.";
+				return DocAction.STATUS_Invalid;
+			}
+
+			// Realizo emisión para este medio de pago a considerar
+			MDocType[] docsEmision = MDocType.getOfDocBaseType(getCtx(), "EMP");
+			MDocType docEmision = docsEmision[0];
+			MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
+			emisionMedioPago.setZ_MedioPago_ID(NEW_medioPagoItem.getZ_MedioPago_ID());
+			emisionMedioPago.setZ_MedioPagoFolio_ID(NEW_medioPagoItem.getZ_MedioPagoFolio_ID());
+			emisionMedioPago.setZ_MedioPagoItem_ID(NEW_medioPagoItem.get_ID());
+			emisionMedioPago.setZ_MedioPagoReplace_ID(this.get_ID());
+
+			if (OLD_medioPagoItem.getZ_OrdenPago_ID() > 0){
+				emisionMedioPago.setZ_OrdenPago_ID(OLD_medioPagoItem.getZ_OrdenPago_ID());
+			}
+
+			emisionMedioPago.setC_Currency_ID(NEW_medioPagoItem.getC_Currency_ID());
+			emisionMedioPago.setC_BPartner_ID(OLD_medioPagoItem.getC_BPartner_ID());
+			emisionMedioPago.setC_BankAccount_ID(NEW_medioPagoItem.getC_BankAccount_ID());
+			emisionMedioPago.setC_DocType_ID(docEmision.get_ID());
+			emisionMedioPago.setDateDoc(this.getDateDoc());
+			emisionMedioPago.setDateEmitted(OLD_medioPagoItem.getDateEmitted());
+
+			if (!replaceLin.getDueDateTo().before(fechaHoy)){
+				emisionMedioPago.setDueDate(replaceLin.getDueDateTo());
+			}
+			else{
+				emisionMedioPago.setDueDate(fechaHoy);
+			}
+
+			emisionMedioPago.setTotalAmt(OLD_medioPagoItem.getTotalAmt());
+			emisionMedioPago.saveEx();
+
+			// Completo documento de emisión de medio de pago
+			if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
+				m_processMsg = emisionMedioPago.getProcessMsg();
+				return DocAction.STATUS_Invalid;
+			}
+			emisionMedioPago.saveEx();
+			NEW_medioPagoItem.saveEx();
+
+			// Anulo medio de pago a reemplazar
+			OLD_medioPagoItem.setReemplazado(true);
+			OLD_medioPagoItem.setZ_MedioPagoItem_Rep_ID(NEW_medioPagoItem.get_ID());
+			MZEmisionMedioPago OLD_emisionMedioPago = (MZEmisionMedioPago) OLD_medioPagoItem.getZ_EmisionMedioPago();
+			OLD_emisionMedioPago.setDescription("Reemplazado por Medio de Pago : " + NEW_medioPagoItem.getNroMedioPago());
+			if (!OLD_emisionMedioPago.processIt(DocAction.ACTION_Void)){
+				if (OLD_emisionMedioPago.getProcessMsg() != null){
+					m_processMsg = OLD_emisionMedioPago.getProcessMsg();
+				}
+				else{
+					m_processMsg = "No se pudo Anular Medio de Pago : " + OLD_medioPagoItem.getNroMedioPago();
+				}
+				return DocAction.STATUS_Invalid;
+			}
+			OLD_emisionMedioPago.saveEx();
+
+			// Genero auditoría para este documento
+			MZMedioPagoReplaceAud replaceAud = new MZMedioPagoReplaceAud(getCtx(), 0, get_TrxName());
+			replaceAud.setZ_MedioPago_ID(NEW_medioPagoItem.getZ_MedioPago_ID());
+			replaceAud.setZ_MedioPagoFolio_ID(NEW_medioPagoItem.getZ_MedioPagoFolio_ID());
+			replaceAud.setZ_MedioPagoItem_ID(NEW_medioPagoItem.get_ID());
+			replaceAud.setZ_MedioPagoItem_Old_ID(OLD_medioPagoItem.get_ID());
+			replaceAud.setZ_MedioPagoReplace_ID(this.get_ID());
+			if (NEW_medioPagoItem.getZ_OrdenPago_ID() > 0){
+				replaceAud.setZ_OrdenPago_ID(NEW_medioPagoItem.getZ_OrdenPago_ID());
+			}
+			replaceAud.setC_BankAccount_ID(NEW_medioPagoItem.getC_BankAccount_ID());
+			replaceAud.setC_BPartner_ID(emisionMedioPago.getC_BPartner_ID());
+			replaceAud.setC_Currency_ID(NEW_medioPagoItem.getC_Currency_ID());
+			replaceAud.setDateEmitted(emisionMedioPago.getDateEmitted());
+			replaceAud.setDueDate(emisionMedioPago.getDueDate());
+			replaceAud.setNroMedioPago(NEW_medioPagoItem.getNroMedioPago());
+			replaceAud.setTotalAmt(emisionMedioPago.getTotalAmt());
+			replaceAud.saveEx();
+
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -246,7 +351,49 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-	
+
+
+	/***
+	 * Validaciones del documento al momento de completar.
+	 * Xpande. Created by Gabriel Vila on 9/27/17.
+	 * @param lines
+	 * @return
+	 */
+	private String validateDocument(List<MZMedioPagoReplaceLin> lines) {
+
+		String message = null;
+
+		if (lines.size() <= 0){
+			return "El documento no tiene medios de pago seleccionados para Reemplazar.";
+		}
+
+		if (this.getC_BankAccount_ID() <= 0){
+			return "Debe indicar Cuenta Bancaria correspondiente a los nuevos Medios de Pago";
+		}
+
+		if (this.getZ_MedioPagoFolio_ID() <= 0){
+			return "Debe indicar Libreta correspondiente a los nuevos Medios de Pago";
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Obtiene y retorna lineas seleccionadas de este proceso.
+	 * Xpande. Created by Gabriel Vila on 9/27/17.
+	 * @return
+	 */
+	private List<MZMedioPagoReplaceLin> getLinesSelected() {
+
+		String whereClause = X_Z_MedioPagoReplaceLin.COLUMNNAME_Z_MedioPagoReplace_ID + " =" + this.get_ID() +
+				" AND " + X_Z_MedioPagoReplaceLin.COLUMNNAME_IsSelected + " ='Y'";
+
+		List<MZMedioPagoReplaceLin> lines = new Query(getCtx(), I_Z_MedioPagoReplaceLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -407,6 +554,11 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 
 		try{
 
+			// Elimino lineas anteriores si las hay.
+			this.deleteData();
+
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
 			String whereClause = " and mpi.z_mediopago_id =" + this.getZ_MedioPago_ID();
 
 			if (this.getC_BPartner_ID() > 0){
@@ -463,6 +615,14 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 				replaceLin.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
 				replaceLin.setDateEmitted(medioPagoItem.getDateEmitted());
 				replaceLin.setDueDate(medioPagoItem.getDueDate());
+
+				if (!replaceLin.getDueDate().before(fechaHoy)){
+					replaceLin.setDueDateTo(replaceLin.getDueDate());
+				}
+				else{
+					replaceLin.setDueDateTo(fechaHoy);
+				}
+
 				replaceLin.setIsSelected(false);
 				replaceLin.setNroMedioPago(medioPagoItem.getNroMedioPago());
 				replaceLin.setTotalAmt(medioPagoItem.getTotalAmt());
@@ -478,5 +638,20 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 		}
 
 		return message;
+	}
+
+	/***
+	 * Elimino lineas anteriores.
+	 * Xpande. Created by Gabriel Vila on 9/27/17.
+	 */
+	private void deleteData() {
+
+		try{
+			String action = " delete from z_mediopagoreplacelin cascade where z_mediopagoreplace_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
 	}
 }
