@@ -365,6 +365,19 @@ public interface I_Z_ResguardoSocio
 	  */
 	public BigDecimal getTotalAmt();
 
+    /** Column name TotalAmtME */
+    public static final String COLUMNNAME_TotalAmtME = "TotalAmtME";
+
+	/** Set TotalAmtME.
+	  * Monto total en moneda extranjera
+	  */
+	public void setTotalAmtME(BigDecimal TotalAmtME);
+
+	/** Get TotalAmtME.
+	  * Monto total en moneda extranjera
+	  */
+	public BigDecimal getTotalAmtME();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 

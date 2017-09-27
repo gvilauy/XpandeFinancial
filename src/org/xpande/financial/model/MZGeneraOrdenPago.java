@@ -524,6 +524,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
 					" inner join c_doctype doc on hdr.c_doctype_id = doc.c_doctype_id " +
 					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
+					" and hdr.docstatus='CO' " +
 					" and hdr.z_resguardosocio_ref_id is null " +
 					" and doc.docbasetype='RGU' " +
 					" and hdr.z_resguardosocio_id not in (select z_resguardosocio_id from z_generaordenpagolin " +

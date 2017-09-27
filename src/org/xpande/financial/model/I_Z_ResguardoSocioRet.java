@@ -89,6 +89,19 @@ public interface I_Z_ResguardoSocioRet
 	  */
 	public BigDecimal getAmtRetencion();
 
+    /** Column name AmtRetencionME */
+    public static final String COLUMNNAME_AmtRetencionME = "AmtRetencionME";
+
+	/** Set AmtRetencionME.
+	  * Monto a retener en moneda extranjera
+	  */
+	public void setAmtRetencionME(BigDecimal AmtRetencionME);
+
+	/** Get AmtRetencionME.
+	  * Monto a retener en moneda extranjera
+	  */
+	public BigDecimal getAmtRetencionME();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -156,7 +169,7 @@ public interface I_Z_ResguardoSocioRet
 	/** Get Z_ResguardoSocio ID	  */
 	public int getZ_ResguardoSocio_ID();
 
-	public org.xpande.financial.model.I_Z_ResguardoSocio getZ_ResguardoSocio() throws RuntimeException;
+	public I_Z_ResguardoSocio getZ_ResguardoSocio() throws RuntimeException;
 
     /** Column name Z_ResguardoSocioRet_ID */
     public static final String COLUMNNAME_Z_ResguardoSocioRet_ID = "Z_ResguardoSocioRet_ID";

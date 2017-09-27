@@ -33,7 +33,7 @@ public class X_Z_ResguardoSocioDoc extends PO implements I_Z_ResguardoSocioDoc, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170802L;
+	private static final long serialVersionUID = 20170927L;
 
     /** Standard Constructor */
     public X_Z_ResguardoSocioDoc (Properties ctx, int Z_ResguardoSocioDoc_ID, String trxName)
@@ -103,6 +103,26 @@ public class X_Z_ResguardoSocioDoc extends PO implements I_Z_ResguardoSocioDoc, 
 	public BigDecimal getAmtRetencion () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtRetencion);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set AmtRetencionMO.
+		@param AmtRetencionMO 
+		Monto retención en Moneda Origen que es igual a la moneda del documento
+	  */
+	public void setAmtRetencionMO (BigDecimal AmtRetencionMO)
+	{
+		set_Value (COLUMNNAME_AmtRetencionMO, AmtRetencionMO);
+	}
+
+	/** Get AmtRetencionMO.
+		@return Monto retención en Moneda Origen que es igual a la moneda del documento
+	  */
+	public BigDecimal getAmtRetencionMO () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtRetencionMO);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
@@ -373,6 +393,16 @@ public class X_Z_ResguardoSocioDoc extends PO implements I_Z_ResguardoSocioDoc, 
 	public static final String DOCBASETYPE_RCPRetailComunicacionPOS = "RCP";
 	/** RGU Emision de Resguardos = RGU */
 	public static final String DOCBASETYPE_RGUEmisionDeResguardos = "RGU";
+	/** RGC Emision de Contra-Resguardos = RGC */
+	public static final String DOCBASETYPE_RGCEmisionDeContra_Resguardos = "RGC";
+	/** OPG Generacion de Ordenes de Pago = OPG */
+	public static final String DOCBASETYPE_OPGGeneracionDeOrdenesDePago = "OPG";
+	/** OOP Ordenes de Pago = OOP */
+	public static final String DOCBASETYPE_OOPOrdenesDePago = "OOP";
+	/** EMP Emision Medio Pago = EMP */
+	public static final String DOCBASETYPE_EMPEmisionMedioPago = "EMP";
+	/** RMP Reemplazo Medio de Pago = RMP */
+	public static final String DOCBASETYPE_RMPReemplazoMedioDePago = "RMP";
 	/** Set Document BaseType.
 		@param DocBaseType 
 		Logical type of document
@@ -472,9 +502,9 @@ public class X_Z_ResguardoSocioDoc extends PO implements I_Z_ResguardoSocioDoc, 
 		return ii.intValue();
 	}
 
-	public org.xpande.financial.model.I_Z_ResguardoSocio getZ_ResguardoSocio() throws RuntimeException
+	public I_Z_ResguardoSocio getZ_ResguardoSocio() throws RuntimeException
     {
-		return (org.xpande.financial.model.I_Z_ResguardoSocio)MTable.get(getCtx(), org.xpande.financial.model.I_Z_ResguardoSocio.Table_Name)
+		return (I_Z_ResguardoSocio)MTable.get(getCtx(), I_Z_ResguardoSocio.Table_Name)
 			.getPO(getZ_ResguardoSocio_ID(), get_TrxName());	}
 
 	/** Set Z_ResguardoSocio ID.

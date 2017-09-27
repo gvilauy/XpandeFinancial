@@ -564,12 +564,27 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 					// Aplico porcentaje de retencion a este comprobante
 					BigDecimal amtRetencionDoc = totalBaseDoc.multiply(retencionSocio.getPorcRetencion()).setScale(2, BigDecimal.ROUND_HALF_UP);
 
-					// Acumulo monto a retener en este comprobante
+					// Acumulo monto a retener en este comprobante en moneda del resguardo
 					resguardoSocioDoc.setAmtRetencion(resguardoSocioDoc.getAmtRetencion().add(amtRetencionDoc));
+
+					// Acumulo monto a retener este comprobante en moneda del comprobante
+					BigDecimal amtRetencionMODoc = amtRetencionDoc;
+					if (resguardoSocioDoc.getC_Currency_ID() != this.getC_Currency_ID()){
+						if ((resguardoSocioDoc.getCurrencyRate() != null) && (resguardoSocioDoc.getCurrencyRate().compareTo(Env.ZERO) > 0)){
+							amtRetencionMODoc = amtRetencionDoc.divide(resguardoSocioDoc.getCurrencyRate(), 2, BigDecimal.ROUND_HALF_UP);
+						}
+					}
+					resguardoSocioDoc.setAmtRetencionMO(resguardoSocioDoc.getAmtRetencionMO().add(amtRetencionMODoc));
+
 					resguardoSocioDoc.saveEx();
 
 					// Acumulo monto a retener en la retencion
 					resguardoSocioRet.setAmtRetencion(resguardoSocioRet.getAmtRetencion().add(amtRetencionDoc));
+
+					// Acumulo monto a retener en la retencion en moneda extranjera solo cuando el documento es en moneda extranjera
+					if (resguardoSocioDoc.getC_Currency_ID() != this.getC_Currency_ID()){
+						resguardoSocioRet.setAmtRetencionME(resguardoSocioRet.getAmtRetencionME().add(amtRetencionMODoc));
+					}
 
 					// Guardo detalle de monto retenido a comprobante y concepto de retencion.
 					MZResguardoSocioDocRet resguardoSocioDocRet = new MZResguardoSocioDocRet(getCtx(), 0, get_TrxName());
@@ -591,6 +606,10 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 					// Acumulo en total de esta emisión
 					this.setTotalAmt(this.getTotalAmt().add(amtRetencionDoc));
 
+					// Acumulo en total de esta emisión en moneda extranjera solo cuando el documento es en moneda extranjera
+					if (resguardoSocioDoc.getC_Currency_ID() != this.getC_Currency_ID()){
+						this.setTotalAmtME(this.getTotalAmtME().add(amtRetencionMODoc));
+					}
 				}
 				resguardoSocioRet.saveEx();
 			}

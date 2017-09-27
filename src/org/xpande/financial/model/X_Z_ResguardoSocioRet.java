@@ -32,7 +32,7 @@ public class X_Z_ResguardoSocioRet extends PO implements I_Z_ResguardoSocioRet, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170802L;
+	private static final long serialVersionUID = 20170927L;
 
     /** Standard Constructor */
     public X_Z_ResguardoSocioRet (Properties ctx, int Z_ResguardoSocioRet_ID, String trxName)
@@ -116,6 +116,26 @@ public class X_Z_ResguardoSocioRet extends PO implements I_Z_ResguardoSocioRet, 
 		return bd;
 	}
 
+	/** Set AmtRetencionME.
+		@param AmtRetencionME 
+		Monto a retener en moneda extranjera
+	  */
+	public void setAmtRetencionME (BigDecimal AmtRetencionME)
+	{
+		set_Value (COLUMNNAME_AmtRetencionME, AmtRetencionME);
+	}
+
+	/** Get AmtRetencionME.
+		@return Monto a retener en moneda extranjera
+	  */
+	public BigDecimal getAmtRetencionME () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtRetencionME);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set PorcRetencion.
 		@param PorcRetencion 
 		Porcentaje Retención 
@@ -135,9 +155,9 @@ public class X_Z_ResguardoSocioRet extends PO implements I_Z_ResguardoSocioRet, 
 		return bd;
 	}
 
-	public org.xpande.financial.model.I_Z_ResguardoSocio getZ_ResguardoSocio() throws RuntimeException
+	public I_Z_ResguardoSocio getZ_ResguardoSocio() throws RuntimeException
     {
-		return (org.xpande.financial.model.I_Z_ResguardoSocio)MTable.get(getCtx(), org.xpande.financial.model.I_Z_ResguardoSocio.Table_Name)
+		return (I_Z_ResguardoSocio)MTable.get(getCtx(), I_Z_ResguardoSocio.Table_Name)
 			.getPO(getZ_ResguardoSocio_ID(), get_TrxName());	}
 
 	/** Set Z_ResguardoSocio ID.

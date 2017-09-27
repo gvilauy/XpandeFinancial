@@ -33,7 +33,7 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170809L;
+	private static final long serialVersionUID = 20170927L;
 
     /** Standard Constructor */
     public X_Z_ResguardoSocio (Properties ctx, int Z_ResguardoSocio_ID, String trxName)
@@ -591,6 +591,26 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 	public BigDecimal getTotalAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set TotalAmtME.
+		@param TotalAmtME 
+		Monto total en moneda extranjera
+	  */
+	public void setTotalAmtME (BigDecimal TotalAmtME)
+	{
+		set_Value (COLUMNNAME_TotalAmtME, TotalAmtME);
+	}
+
+	/** Get TotalAmtME.
+		@return Monto total en moneda extranjera
+	  */
+	public BigDecimal getTotalAmtME () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmtME);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
