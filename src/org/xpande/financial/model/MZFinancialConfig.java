@@ -3,6 +3,7 @@ package org.xpande.financial.model;
 import org.compiere.model.Query;
 
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -34,5 +35,39 @@ public class MZFinancialConfig extends X_Z_FinancialConfig{
 
         return model;
     }
+
+
+    /***
+     * Obtiene y retorna modelo de configuracion para carga de tasa de cambio de una moneda recibida.
+     * Xpande. Created by Gabriel Vila on 10/3/17.
+     * @param cCurrencyID
+     * @return
+     */
+    public MZFinancialConfigTC getConfigTCByCurrency(int cCurrencyID){
+
+        String whereClause = X_Z_FinancialConfigTC.COLUMNNAME_Z_FinancialConfig_ID + " =" + this.get_ID() +
+                " AND " + X_Z_FinancialConfigTC.COLUMNNAME_C_Currency_ID + " =" + cCurrencyID;
+
+        MZFinancialConfigTC model = new Query(getCtx(), I_Z_FinancialConfigTC.Table_Name, whereClause, get_TrxName()).setOnlyActiveRecords(true).first();
+
+        return model;
+
+    }
+
+    /***
+     * Obtiene y retorna lista de configuraciones para carga de tasa de cambio en distintas monedas.
+     * Xpande. Created by Gabriel Vila on 10/3/17.
+     * @return
+     */
+    public List<MZFinancialConfigTC> getConfigTCs(){
+
+        String whereClause = X_Z_FinancialConfigTC.COLUMNNAME_Z_FinancialConfig_ID + " =" + this.get_ID();
+
+        List<MZFinancialConfigTC> lines = new Query(getCtx(), I_Z_FinancialConfigTC.Table_Name, whereClause, get_TrxName()).setOnlyActiveRecords(true).list();
+
+        return lines;
+
+    }
+
 
 }
