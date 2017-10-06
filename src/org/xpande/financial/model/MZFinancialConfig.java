@@ -55,6 +55,24 @@ public class MZFinancialConfig extends X_Z_FinancialConfig{
     }
 
     /***
+     * Obtiene y retorna modelo de configuracion para carga de tasa de cambio dado un codigo ISO de moneda recibido.
+     * Xpande. Created by Gabriel Vila on 10/3/17.
+     * @param currencyTCCode
+     * @return
+     */
+    public MZFinancialConfigTC getConfigTCByCurrencyTCCode(String currencyTCCode){
+
+        String whereClause = X_Z_FinancialConfigTC.COLUMNNAME_Z_FinancialConfig_ID + " =" + this.get_ID() +
+                " AND " + X_Z_FinancialConfigTC.COLUMNNAME_CodigoTC + " ='" + currencyTCCode + "'";
+
+        MZFinancialConfigTC model = new Query(getCtx(), I_Z_FinancialConfigTC.Table_Name, whereClause, get_TrxName()).setOnlyActiveRecords(true).first();
+
+        return model;
+
+    }
+
+
+    /***
      * Obtiene y retorna lista de configuraciones para carga de tasa de cambio en distintas monedas.
      * Xpande. Created by Gabriel Vila on 10/3/17.
      * @return
