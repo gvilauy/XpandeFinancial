@@ -17,4 +17,20 @@ public class MZOrdenPagoMedio extends X_Z_OrdenPagoMedio {
     public MZOrdenPagoMedio(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
     }
+
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        // Me aseguro de tener ID de generador cuando se ingresa un registro, de manera manual o por sistema.
+        if (newRecord){
+            if (this.getZ_GeneraOrdenPago_ID() <= 0){
+                this.setZ_GeneraOrdenPago_ID(((MZOrdenPago) this.getZ_OrdenPago()).getZ_GeneraOrdenPago_ID());
+            }
+            if (this.getC_BPartner_ID() <= 0){
+                this.setC_BPartner_ID(((MZOrdenPago) this.getZ_OrdenPago()).getC_BPartner_ID());
+            }
+        }
+
+        return true;
+    }
 }

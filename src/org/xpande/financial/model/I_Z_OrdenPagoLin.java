@@ -76,6 +76,19 @@ public interface I_Z_OrdenPagoLin
 	  */
 	public BigDecimal getAmtAllocation();
 
+    /** Column name AmtAllocationMT */
+    public static final String COLUMNNAME_AmtAllocationMT = "AmtAllocationMT";
+
+	/** Set AmtAllocationMT.
+	  * Monto afectación en moneda de la transacción
+	  */
+	public void setAmtAllocationMT(BigDecimal AmtAllocationMT);
+
+	/** Get AmtAllocationMT.
+	  * Monto afectación en moneda de la transacción
+	  */
+	public BigDecimal getAmtAllocationMT();
+
     /** Column name AmtDocument */
     public static final String COLUMNNAME_AmtDocument = "AmtDocument";
 
@@ -215,6 +228,19 @@ public interface I_Z_OrdenPagoLin
 	  */
 	public boolean isActive();
 
+    /** Column name MultiplyRate */
+    public static final String COLUMNNAME_MultiplyRate = "MultiplyRate";
+
+	/** Set Multiply Rate.
+	  * Rate to multiple the source by to calculate the target.
+	  */
+	public void setMultiplyRate(BigDecimal MultiplyRate);
+
+	/** Get Multiply Rate.
+	  * Rate to multiple the source by to calculate the target.
+	  */
+	public BigDecimal getMultiplyRate();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -240,7 +266,7 @@ public interface I_Z_OrdenPagoLin
 	/** Get Z_OrdenPago ID	  */
 	public int getZ_OrdenPago_ID();
 
-	public org.xpande.financial.model.I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException;
+	public I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException;
 
     /** Column name Z_OrdenPagoLin_ID */
     public static final String COLUMNNAME_Z_OrdenPagoLin_ID = "Z_OrdenPagoLin_ID";

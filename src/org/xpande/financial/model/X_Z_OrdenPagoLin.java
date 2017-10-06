@@ -33,7 +33,7 @@ public class X_Z_OrdenPagoLin extends PO implements I_Z_OrdenPagoLin, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170816L;
+	private static final long serialVersionUID = 20171006L;
 
     /** Standard Constructor */
     public X_Z_OrdenPagoLin (Properties ctx, int Z_OrdenPagoLin_ID, String trxName)
@@ -89,6 +89,26 @@ public class X_Z_OrdenPagoLin extends PO implements I_Z_OrdenPagoLin, I_Persiste
 	public BigDecimal getAmtAllocation () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAllocation);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set AmtAllocationMT.
+		@param AmtAllocationMT 
+		Monto afectación en moneda de la transacción
+	  */
+	public void setAmtAllocationMT (BigDecimal AmtAllocationMT)
+	{
+		set_Value (COLUMNNAME_AmtAllocationMT, AmtAllocationMT);
+	}
+
+	/** Get AmtAllocationMT.
+		@return Monto afectación en moneda de la transacción
+	  */
+	public BigDecimal getAmtAllocationMT () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAllocationMT);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
@@ -269,9 +289,29 @@ public class X_Z_OrdenPagoLin extends PO implements I_Z_OrdenPagoLin, I_Persiste
 		return (Timestamp)get_Value(COLUMNNAME_DueDateDoc);
 	}
 
-	public org.xpande.financial.model.I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException
+	/** Set Multiply Rate.
+		@param MultiplyRate 
+		Rate to multiple the source by to calculate the target.
+	  */
+	public void setMultiplyRate (BigDecimal MultiplyRate)
+	{
+		set_Value (COLUMNNAME_MultiplyRate, MultiplyRate);
+	}
+
+	/** Get Multiply Rate.
+		@return Rate to multiple the source by to calculate the target.
+	  */
+	public BigDecimal getMultiplyRate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MultiplyRate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	public I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException
     {
-		return (org.xpande.financial.model.I_Z_OrdenPago)MTable.get(getCtx(), org.xpande.financial.model.I_Z_OrdenPago.Table_Name)
+		return (I_Z_OrdenPago)MTable.get(getCtx(), I_Z_OrdenPago.Table_Name)
 			.getPO(getZ_OrdenPago_ID(), get_TrxName());	}
 
 	/** Set Z_OrdenPago ID.

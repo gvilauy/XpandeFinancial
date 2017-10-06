@@ -33,6 +33,7 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.core.utils.CurrencyUtils;
 
 /** Generated Model for Z_GeneraOrdenPago
  *  @author Adempiere (generated) 
@@ -567,6 +568,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				ordenPagoLin.setZ_GeneraOrdenPago_ID(this.get_ID());
 				ordenPagoLin.setZ_GeneraOrdenPagoSocio_ID(ordenPagoSocio.get_ID());
 				ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
+				ordenPagoLin.setZ_ResguardoSocio_ID(rs.getInt("z_resguardosocio_id"));
 				ordenPagoLin.setAmtAllocation(amtDocument);
 				ordenPagoLin.setAmtDocument(amtDocument);
 				ordenPagoLin.setAmtOpen(amtDocument);
@@ -872,6 +874,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 		try{
 
 			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+			MClient client = new MClient(getCtx(), this.getAD_Client_ID(), null);
 
 			// Medio de pago por defecto por ahora CHEQUE
 			MZMedioPago medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
@@ -955,9 +958,34 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					if (generaLin.getZ_ResguardoSocio_ID() > 0){
 						ordenPagoLin.setZ_ResguardoSocio_ID(generaLin.getZ_ResguardoSocio_ID());
 					}
+
+					// Pagos multimoneda.
+					// Si este documento tiene moneda distinta a la moneda de la Orden de Pago,
+					// dabo traducir monto a pagar desde moneda documento a moneda orden de pago.
+					// La tasa de cambio a considerar es la correspondiente a la fecha de emisión de la orden de pago.
+					if (generaLin.getC_Currency_ID() != ordenPago.getC_Currency_ID()){
+						// Obtengo tasa de cambio
+						BigDecimal multiplyRate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), ordenPago.getAD_Client_ID(), 0,
+								generaLin.getC_Currency_ID(), ordenPago.getC_Currency_ID(), 114, ordenPago.getDateDoc(), null);
+						if (multiplyRate == null){
+							return "No se pudo obtener Tasa de Cambio para Moneda : " + generaLin.getC_Currency_ID() + ", Fecha : " + ordenPago.getDateDoc().toString();
+						}
+						ordenPagoLin.setMultiplyRate(multiplyRate);
+						if (ordenPago.getC_Currency_ID() == client.getC_Currency_ID()){
+							ordenPagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocation().multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP));
+						}
+						else{
+							ordenPagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocation().divide(multiplyRate, 2, BigDecimal.ROUND_HALF_UP));
+						}
+					}
+					else{
+						ordenPagoLin.setMultiplyRate(Env.ONE);
+						ordenPagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocation());
+					}
+
 					ordenPagoLin.saveEx();
 
-					totalPago = totalPago.add(ordenPagoLin.getAmtAllocation());
+					totalPago = totalPago.add(ordenPagoLin.getAmtAllocationMT());
 
 					if (generaLin.getDueDateMedioPago() != null){
 						if (generaLin.getDueDateMedioPago().after(fechaHoy)){
@@ -980,6 +1008,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				ordenPagoMedio.setTotalAmt(ordenPago.getTotalAmt());
 				ordenPagoMedio.setZ_MedioPago_ID(medioPago.get_ID());
 				ordenPagoMedio.setZ_MedioPagoFolio_ID(this.getZ_MedioPagoFolio_ID());
+				ordenPagoMedio.setC_BPartner_ID(ordenPago.getC_BPartner_ID());
 				ordenPagoMedio.saveEx();
 
 			}
