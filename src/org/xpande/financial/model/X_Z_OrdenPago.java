@@ -33,7 +33,7 @@ public class X_Z_OrdenPago extends PO implements I_Z_OrdenPago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170816L;
+	private static final long serialVersionUID = 20171009L;
 
     /** Standard Constructor */
     public X_Z_OrdenPago (Properties ctx, int Z_OrdenPago_ID, String trxName)
@@ -89,6 +89,26 @@ public class X_Z_OrdenPago extends PO implements I_Z_OrdenPago, I_Persistent
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set AmtPaymentRule.
+		@param AmtPaymentRule 
+		Monto medios de pago
+	  */
+	public void setAmtPaymentRule (BigDecimal AmtPaymentRule)
+	{
+		set_Value (COLUMNNAME_AmtPaymentRule, AmtPaymentRule);
+	}
+
+	/** Get AmtPaymentRule.
+		@return Monto medios de pago
+	  */
+	public BigDecimal getAmtPaymentRule () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtPaymentRule);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
 
 	public I_C_BPartner getC_BPartner() throws RuntimeException
     {

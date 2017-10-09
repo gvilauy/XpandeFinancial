@@ -63,6 +63,19 @@ public interface I_Z_OrdenPago
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AmtPaymentRule */
+    public static final String COLUMNNAME_AmtPaymentRule = "AmtPaymentRule";
+
+	/** Set AmtPaymentRule.
+	  * Monto medios de pago
+	  */
+	public void setAmtPaymentRule(BigDecimal AmtPaymentRule);
+
+	/** Get AmtPaymentRule.
+	  * Monto medios de pago
+	  */
+	public BigDecimal getAmtPaymentRule();
+
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 

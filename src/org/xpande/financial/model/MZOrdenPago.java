@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
@@ -234,6 +236,11 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		log.info(toString());
 		//
 
+		// Valido condiciones para completar este documento
+		m_processMsg = this.validateDocument();
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
 
 		// Genera medios de pago necesarios
 		List<MZOrdenPagoMedio> mediosPago = this.getMediosPago();
@@ -310,6 +317,30 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
+
+
+	/***
+	 * Valida documento
+	 * Xpande. Created by Gabriel Vila on 10/9/17.
+ 	 * @return
+	 */
+	private String validateDocument() {
+
+		String message = null;
+
+		try{
+
+			if ((this.getAmtPaymentRule() == null) || (this.getAmtPaymentRule().compareTo(this.getTotalAmt()) != 0)){
+				return "El importe Total de Medios de Pago debe ser igual al importe Total de Documentos";
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
 
 
 	/***
