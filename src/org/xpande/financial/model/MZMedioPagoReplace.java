@@ -568,7 +568,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 				whereClause += " and cast(mpi.nromediopago as numeric(10,0)) >=" + this.getNumeroDesde();
 			}
 			if (this.getNumeroHasta() > 0){
-				whereClause += " and cast(mpi.nromediopago as numeric(10,0)) <=" + this.getNumeroDesde();
+				whereClause += " and cast(mpi.nromediopago as numeric(10,0)) <=" + this.getNumeroHasta();
 			}
 			if (this.getDateEmittedFrom() != null){
 				whereClause += " and mpi.dateemitted >='" + this.getDateEmittedFrom() + "'";

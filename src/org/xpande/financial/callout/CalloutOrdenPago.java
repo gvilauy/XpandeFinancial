@@ -31,7 +31,7 @@ public class CalloutOrdenPago extends CalloutEngine {
      * @param value
      * @return
      */
-    public String docType(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+    public String setOrdenPagoMedioMonto(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
 
         if (value == null) return "";
 
