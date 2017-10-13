@@ -61,7 +61,6 @@ public class CalloutFinancial extends CalloutEngine {
         return "";
     }
 
-
     /***
      * Setea vencimiento manual en un documento, cuando el termino de pago recibido esta marcado como manual en la configuracion financiera.
      * Xpande. Created by Gabriel Vila on 8/25/17.
