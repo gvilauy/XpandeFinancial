@@ -1,6 +1,8 @@
 package org.xpande.financial.model;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
+import org.compiere.util.DB;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -37,5 +39,38 @@ public class MZGeneraOrdenPagoSocio extends X_Z_GeneraOrdenPagoSocio {
         return lines;
     }
 
+
+    /***
+     * Marca / desmarca todos los documentos de este socio de negocio segun parametro de acción recibido, en el proceso de generación
+     * de ordenes de pago.
+     * Xpande. Created by Gabriel Vila on 10/13/17.
+     * @param marcarRegistros
+     * @return
+     */
+    public String marcarDocumentos(boolean marcarRegistros) {
+
+        String message = null;
+
+        try{
+
+            String isSelected = "Y";
+
+            if (!marcarRegistros){
+                isSelected = "N";
+            }
+
+            String action = " update " + I_Z_GeneraOrdenPagoLin.Table_Name +
+                            " set " + I_Z_GeneraOrdenPagoLin.COLUMNNAME_IsSelected  + " ='" + isSelected + "' " +
+                            " where " + I_Z_GeneraOrdenPagoLin.COLUMNNAME_Z_GeneraOrdenPagoSocio_ID + " =" + this.get_ID();
+
+            DB.executeUpdateEx(action, get_TrxName());
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return message;
+    }
 
 }
