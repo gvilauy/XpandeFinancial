@@ -682,7 +682,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 			// Query
 		    sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (hdr.documentserie || hdr.documentno) as documentno, " +
 						" hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal,  " +
-						" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, " +
+						" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, coalesce(hdr.TieneDtosNC,'N') as TieneDtosNC, " +
 					" coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
 					" from c_invoice hdr " +
 					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
@@ -757,6 +757,9 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				ordenPagoLin.setDueDateMedioPago(ordenPagoLin.getDueDateDoc());
 				ordenPagoLin.setEstadoAprobacion("APROBADO");
 				ordenPagoLin.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+
+				boolean tieneDtosNC = (rs.getString("TieneDtosNC").equalsIgnoreCase("Y")) ? true : false;
+				ordenPagoLin.setTieneDtosNC(tieneDtosNC);
 
 				ordenPagoLin.setResguardoEmitido(MZResguardoSocio.invoiceTieneResguardo(getCtx(), ordenPagoLin.getC_Invoice_ID(), get_TrxName()));
 

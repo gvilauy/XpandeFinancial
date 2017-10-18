@@ -26,6 +26,7 @@ import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.financial.model.MZResguardoSocio;
 import org.xpande.financial.model.MZResguardoSocioDoc;
 import org.xpande.financial.model.MZResguardoSocioDocTax;
+import org.zkoss.zhtml.Big;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -54,7 +55,7 @@ public class SeleccionResguardoDocs extends SeleccionResguardoDocsAbstract
 
 			List<Integer> recordIds =  getSelectionKeys();
 
-			recordIds.stream().forEach( key -> {
+			for (Integer key: recordIds){
 
 				MInvoice invoice = new MInvoice(getCtx(), key.intValue(), get_TrxName());
 				MDocType doc = (MDocType) invoice.getC_DocTypeTarget();
@@ -94,9 +95,18 @@ public class SeleccionResguardoDocs extends SeleccionResguardoDocsAbstract
 
 				// Montos convertidos a moneda de la emisión del resguardo, según tasa de cambio a fecha del comprobante
 				resguardoSocioDoc.setC_Currency_ID(invoice.getC_Currency_ID());
-				resguardoSocioDoc.setAmtSubtotal(((BigDecimal) invoice.get_Value("AmtSubtotal")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP));
+
+				BigDecimal amtSubtotal = (BigDecimal) invoice.get_Value("AmtSubtotal");
+				if (amtSubtotal == null){
+					amtSubtotal = invoice.getTotalLines();
+				}
+				resguardoSocioDoc.setAmtSubtotal(amtSubtotal.multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP));
+
 				resguardoSocioDoc.setTaxAmt(taxAmt.multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP));
-				resguardoSocioDoc.setAmtRounding(((BigDecimal) invoice.get_Value("AmtRounding")).multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP));
+
+				BigDecimal amtRounding = (BigDecimal) invoice.get_Value("AmtRounding");
+				if (amtRounding == null) amtRounding = Env.ZERO;
+				resguardoSocioDoc.setAmtRounding(amtRounding.multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP));
 				resguardoSocioDoc.setAmtTotal(invoice.getGrandTotal().multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP));
 
 				// Para documentos del tipo base APC (notas de crédito, etc.), se debe dar vuelta el signo de los importes
@@ -132,7 +142,7 @@ public class SeleccionResguardoDocs extends SeleccionResguardoDocsAbstract
 					resguardoSocioDocTax.saveEx();
 				}
 
-			});
+			}
 
 			this.resguardoSocio.calcularRetenciones();
 

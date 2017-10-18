@@ -33,7 +33,7 @@ public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170816L;
+	private static final long serialVersionUID = 20171018L;
 
     /** Standard Constructor */
     public X_Z_GeneraOrdenPagoLin (Properties ctx, int Z_GeneraOrdenPagoLin_ID, String trxName)
@@ -46,6 +46,8 @@ public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin
 			setIsSelected (false);
 // N
 			setResguardoEmitido (false);
+// N
+			setTieneDtosNC (false);
 // N
 			setZ_GeneraOrdenPago_ID (0);
 			setZ_GeneraOrdenPagoLin_ID (0);
@@ -377,6 +379,30 @@ public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin
 	public boolean isResguardoEmitido () 
 	{
 		Object oo = get_Value(COLUMNNAME_ResguardoEmitido);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneDtosNC.
+		@param TieneDtosNC 
+		Si un comprobante de compra tiene descuentos en Notas de Cŕedito
+	  */
+	public void setTieneDtosNC (boolean TieneDtosNC)
+	{
+		set_Value (COLUMNNAME_TieneDtosNC, Boolean.valueOf(TieneDtosNC));
+	}
+
+	/** Get TieneDtosNC.
+		@return Si un comprobante de compra tiene descuentos en Notas de Cŕedito
+	  */
+	public boolean isTieneDtosNC () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneDtosNC);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

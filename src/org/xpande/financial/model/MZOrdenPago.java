@@ -329,11 +329,9 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		String message = null;
 
 		try{
-
 			if ((this.getAmtPaymentRule() == null) || (this.getAmtPaymentRule().compareTo(this.getTotalAmt()) != 0)){
 				return "El importe Total de Medios de Pago debe ser igual al importe Total de Documentos";
 			}
-
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);

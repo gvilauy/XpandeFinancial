@@ -276,6 +276,19 @@ public interface I_Z_GeneraOrdenPagoLin
 	  */
 	public boolean isResguardoEmitido();
 
+    /** Column name TieneDtosNC */
+    public static final String COLUMNNAME_TieneDtosNC = "TieneDtosNC";
+
+	/** Set TieneDtosNC.
+	  * Si un comprobante de compra tiene descuentos en Notas de Cŕedito
+	  */
+	public void setTieneDtosNC(boolean TieneDtosNC);
+
+	/** Get TieneDtosNC.
+	  * Si un comprobante de compra tiene descuentos en Notas de Cŕedito
+	  */
+	public boolean isTieneDtosNC();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
