@@ -7,6 +7,7 @@ import org.xpande.financial.model.MZGeneraOrdenPago;
 import java.math.BigDecimal;
 
 /**
+ * Proceso para obtener documentos a considerar en el proceso de generación de ordenes de pago.
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
  * Xpande. Created by Gabriel Vila on 8/16/17.
  */
@@ -34,7 +35,6 @@ public class ObtenerDocsGenPago extends SvrProcess {
                 }
             }
         }
-
 
         this.generaOrdenPago = new MZGeneraOrdenPago(getCtx(), this.getRecord_ID(), get_TrxName());
 

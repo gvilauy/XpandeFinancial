@@ -252,14 +252,6 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 			ordenPago.saveEx();
 		}
 
-		// Genera medios de pago necesarios
-		//m_processMsg = this.generateMediosPago();
-		if (m_processMsg != null)
-			return DocAction.STATUS_Invalid;
-
-
-
-
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -531,6 +523,9 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					" and hdr.z_resguardosocio_id not in (select z_resguardosocio_id from z_generaordenpagolin " +
 					" where z_resguardosocio_id is not null " +
 					" and z_generaordenpago_id =" + this.get_ID() + ") "  +
+					" and hdr.z_resguardosocio_id not in (select z_resguardosocio_id from z_ordenpagolin a " +
+					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
+					" where z_resguardosocio_id is not null and b.docstatus='CO') " +
 					whereClause +
 					" order by hdr.c_bpartner_id ";
 
@@ -690,9 +685,13 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					" left outer join c_invoicepayschedule ips on hdr.c_invoice_id = ips.c_invoice_id " +
 					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
 					" and hdr.issotrx='N' " +
+					" and hdr.docstatus='CO' " +
 					" and hdr.c_invoice_id not in (select c_invoice_id from z_generaordenpagolin " +
 					" where c_invoice_id is not null " +
 					" and z_generaordenpago_id =" + this.get_ID() + ") " +
+					" and hdr.c_invoice_id not in (select c_invoice_id from z_ordenpagolin a " +
+					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
+					" where c_invoice_id is not null and b.docstatus='CO') " +
 					whereClause +
 					" order by hdr.c_bpartner_id ";
 
