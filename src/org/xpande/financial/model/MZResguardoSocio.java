@@ -530,7 +530,15 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 				if (retencionSocio.isConsideraUnidadIndexada()){
 
 					// Convierto dicho monto a Unidades Indexadas según tasa de cambio a la fecha de este documento
-					BigDecimal multiplyRate = CurrencyUtils.getMultiplyRateToUnidadIndexada(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), 0, this.getDateDoc(), null);
+					//BigDecimal multiplyRate = CurrencyUtils.getMultiplyRateToUnidadIndexada(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), 0, this.getDateDoc(), null);
+					MCurrency currencyUNI = MCurrency.get(getCtx(), "UNI");
+					if ((currencyUNI == null) || (currencyUNI.get_ID() <= 0)){
+						throw new AdempiereException("No se encuentra definida la moneda: Unidad Indexada");
+					}
+
+					BigDecimal multiplyRate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), currencyUNI.get_ID(),0, this.getDateDoc(), null);
+
+
 					if ((multiplyRate == null) || (multiplyRate.compareTo(Env.ZERO) == 0)){
 						throw new AdempiereException("No hay tasa de conversión para Unidades Indexadas en la fecha y moneda de este documeto.");
 					}
