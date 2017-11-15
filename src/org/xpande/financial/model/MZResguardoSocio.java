@@ -44,6 +44,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.eevolution.model.X_C_TaxGroup;
 import org.xpande.cfe.model.MZCFERespuestaProvider;
 import org.xpande.core.utils.CurrencyUtils;
 
@@ -1018,6 +1019,14 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		//  Area: Receptor
 
 		int tipoDocRecep = 2;
+
+		X_C_TaxGroup taxGroup = (X_C_TaxGroup) partner.getC_TaxGroup();
+		if (taxGroup.getValue() != null){
+			if (taxGroup.getValue().equalsIgnoreCase("CI")){
+				tipoDocRecep = 3;
+			}
+		}
+
 		String docRecep = partner.getTaxID();
 
 		/* 60  */ receptor.setTipoDocRecep(tipoDocRecep);
