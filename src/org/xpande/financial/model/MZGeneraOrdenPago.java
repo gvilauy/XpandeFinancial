@@ -966,18 +966,37 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					// dabo traducir monto a pagar desde moneda documento a moneda orden de pago.
 					// La tasa de cambio a considerar es la correspondiente a la fecha de emisión de la orden de pago.
 					if (generaLin.getC_Currency_ID() != ordenPago.getC_Currency_ID()){
-						// Obtengo tasa de cambio
-						BigDecimal multiplyRate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), ordenPago.getAD_Client_ID(), 0,
-								generaLin.getC_Currency_ID(), ordenPago.getC_Currency_ID(), 114, ordenPago.getDateDoc(), null);
-						if (multiplyRate == null){
-							return "No se pudo obtener Tasa de Cambio para Moneda : " + generaLin.getC_Currency_ID() + ", Fecha : " + ordenPago.getDateDoc().toString();
+
+						boolean amtMTCalculated = false;
+
+						// Para el caso de resguardos que tienen monto en moneda extranjera, no debo recalcular dicho monto a una tasa de cambio,
+						// cuando la orden de pago también es en moneda extranjera.
+						// Simplemente traigo el monto en moneda extranjera del resguardo al momento de su emisión
+						if (ordenPago.getC_Currency_ID() != client.getC_Currency_ID()){
+							if (generaLin.getZ_ResguardoSocio_ID() > 0){
+								MZResguardoSocio resguardoSocio = (MZResguardoSocio) generaLin.getZ_ResguardoSocio();
+								if ((resguardoSocio.getTotalAmtME() != null) && (resguardoSocio.getTotalAmtME().compareTo(Env.ZERO) > 0)){
+									amtMTCalculated = true;
+									ordenPagoLin.setMultiplyRate(null);
+									ordenPagoLin.setAmtAllocationMT(resguardoSocio.getTotalAmtME());
+								}
+							}
 						}
-						ordenPagoLin.setMultiplyRate(multiplyRate);
-						if (ordenPago.getC_Currency_ID() == client.getC_Currency_ID()){
-							ordenPagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocation().multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP));
-						}
-						else{
-							ordenPagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocation().divide(multiplyRate, 2, BigDecimal.ROUND_HALF_UP));
+
+						if (!amtMTCalculated){
+							// Obtengo tasa de cambio
+							BigDecimal multiplyRate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), ordenPago.getAD_Client_ID(), 0,
+									generaLin.getC_Currency_ID(), ordenPago.getC_Currency_ID(), 114, ordenPago.getDateDoc(), null);
+							if (multiplyRate == null){
+								return "No se pudo obtener Tasa de Cambio para Moneda : " + generaLin.getC_Currency_ID() + ", Fecha : " + ordenPago.getDateDoc().toString();
+							}
+							ordenPagoLin.setMultiplyRate(multiplyRate);
+							if (ordenPago.getC_Currency_ID() == client.getC_Currency_ID()){
+								ordenPagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocation().multiply(multiplyRate).setScale(2, BigDecimal.ROUND_HALF_UP));
+							}
+							else{
+								ordenPagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocation().divide(multiplyRate, 2, BigDecimal.ROUND_HALF_UP));
+							}
 						}
 					}
 					else{
@@ -1033,7 +1052,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
 		String whereClause = X_Z_GeneraOrdenPagoSocio.COLUMNNAME_Z_GeneraOrdenPago_ID + " =" + this.get_ID();
 
-		List<MZGeneraOrdenPagoSocio> lines = new Query(getCtx(), I_Z_GeneraOrdenPagoSocio.Table_Name, whereClause, get_TrxName()).list();
+		List<MZGeneraOrdenPagoSocio> lines = new Query(getCtx(), I_Z_GeneraOrdenPagoSocio.Table_Name, whereClause, get_TrxName()).setOrderBy(" created ").list();
 
 		return lines;
 
