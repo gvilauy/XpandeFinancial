@@ -932,12 +932,16 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 							// Si es factura (no es nota de credito)
 							MDocType docType = (MDocType) generaLin.getC_DocType();
 							if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
-								// No tiene resguardo emitido, verifico si para esta invoice se deben aplicar retenciones
-								boolean aplicaReteneciones = MZRetencionSocio.invoiceAplicanRetenciones(getCtx(), generaLin.getC_Invoice_ID(), get_TrxName());
-								if (aplicaReteneciones) {
-									MBPartner partner = (MBPartner) ordenPago.getC_BPartner();
-									return " No es posible generar orden de pago para el Socio de Negocio : " + partner.getName() + "\n" +
-											" El mismo tiene un comprobante que requiere la emisión de resguardo : " + generaLin.getDocumentNoRef();
+
+								// Si el total de la factura no es CERO, sigo verificando
+								if (generaLin.getAmtDocument().compareTo(Env.ZERO) > 0){
+									// No tiene resguardo emitido, verifico si para esta invoice se deben aplicar retenciones
+									boolean aplicaReteneciones = MZRetencionSocio.invoiceAplicanRetenciones(getCtx(), generaLin.getC_Invoice_ID(), get_TrxName());
+									if (aplicaReteneciones) {
+										MBPartner partner = (MBPartner) ordenPago.getC_BPartner();
+										return " No es posible generar orden de pago para el Socio de Negocio : " + partner.getName() + "\n" +
+												" El mismo tiene un comprobante que requiere la emisión de resguardo : " + generaLin.getDocumentNoRef();
+									}
 								}
 							}
 						}

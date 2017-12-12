@@ -68,9 +68,9 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		}
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
-			options[newIndex++] = DocumentEngine.ACTION_None;
+			//options[newIndex++] = DocumentEngine.ACTION_None;
 			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
-			//options[newIndex++] = DocumentEngine.ACTION_Void;
+			options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
 		return newIndex;
@@ -384,7 +384,12 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 	public boolean voidIt()
 	{
 		log.info("voidIt - " + toString());
-		return closeIt();
+
+
+		this.setDocStatus(DOCSTATUS_Voided);
+		this.setDocAction(DOCACTION_None);
+
+		return true;
 	}	//	voidIt
 	
 	/**
