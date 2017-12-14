@@ -982,7 +982,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 								if ((resguardoSocio.getTotalAmtME() != null) && (resguardoSocio.getTotalAmtME().compareTo(Env.ZERO) > 0)){
 									amtMTCalculated = true;
 									ordenPagoLin.setMultiplyRate(null);
-									ordenPagoLin.setAmtAllocationMT(resguardoSocio.getTotalAmtME());
+									ordenPagoLin.setAmtAllocationMT(resguardoSocio.getTotalAmtME().negate());
 								}
 							}
 						}
