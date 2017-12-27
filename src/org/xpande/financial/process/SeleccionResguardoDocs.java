@@ -26,7 +26,6 @@ import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.financial.model.MZResguardoSocio;
 import org.xpande.financial.model.MZResguardoSocioDoc;
 import org.xpande.financial.model.MZResguardoSocioDocTax;
-import org.zkoss.zhtml.Big;
 
 import java.math.BigDecimal;
 import java.util.List;
