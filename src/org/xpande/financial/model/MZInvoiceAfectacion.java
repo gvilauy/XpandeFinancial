@@ -17,5 +17,5 @@ public class MZInvoiceAfectacion extends X_Z_InvoiceAfectacion {
     public MZInvoiceAfectacion(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
     }
-    
+
 }

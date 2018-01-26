@@ -262,6 +262,17 @@ public interface I_Z_InvoiceAfectacion
 	/** Get Z_InvoiceAfectacion ID	  */
 	public int getZ_InvoiceAfectacion_ID();
 
+    /** Column name Z_OrdenPago_ID */
+    public static final String COLUMNNAME_Z_OrdenPago_ID = "Z_OrdenPago_ID";
+
+	/** Set Z_OrdenPago ID	  */
+	public void setZ_OrdenPago_ID(int Z_OrdenPago_ID);
+
+	/** Get Z_OrdenPago ID	  */
+	public int getZ_OrdenPago_ID();
+
+	public I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException;
+
     /** Column name Z_Pago_ID */
     public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
 

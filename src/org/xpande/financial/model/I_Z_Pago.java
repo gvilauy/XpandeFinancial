@@ -430,6 +430,19 @@ public interface I_Z_Pago
 	  */
 	public boolean isTieneRecibo();
 
+    /** Column name TotalMediosPago */
+    public static final String COLUMNNAME_TotalMediosPago = "TotalMediosPago";
+
+	/** Set TotalMediosPago.
+	  * Monto total de medios de pago considerados en un documento
+	  */
+	public void setTotalMediosPago(BigDecimal TotalMediosPago);
+
+	/** Get TotalMediosPago.
+	  * Monto total de medios de pago considerados en un documento
+	  */
+	public BigDecimal getTotalMediosPago();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 

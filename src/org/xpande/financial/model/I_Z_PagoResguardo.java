@@ -63,6 +63,32 @@ public interface I_Z_PagoResguardo
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AmtAllocation */
+    public static final String COLUMNNAME_AmtAllocation = "AmtAllocation";
+
+	/** Set AmtAllocation.
+	  * Monto afectación
+	  */
+	public void setAmtAllocation(BigDecimal AmtAllocation);
+
+	/** Get AmtAllocation.
+	  * Monto afectación
+	  */
+	public BigDecimal getAmtAllocation();
+
+    /** Column name AmtAllocationMT */
+    public static final String COLUMNNAME_AmtAllocationMT = "AmtAllocationMT";
+
+	/** Set AmtAllocationMT.
+	  * Monto afectación en moneda de la transacción
+	  */
+	public void setAmtAllocationMT(BigDecimal AmtAllocationMT);
+
+	/** Get AmtAllocationMT.
+	  * Monto afectación en moneda de la transacción
+	  */
+	public BigDecimal getAmtAllocationMT();
+
     /** Column name AmtDocument */
     public static final String COLUMNNAME_AmtDocument = "AmtDocument";
 
@@ -91,6 +117,21 @@ public interface I_Z_PagoResguardo
 
 	public I_C_Currency getC_Currency() throws RuntimeException;
 
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/** Set Document Type.
+	  * Document type or rules
+	  */
+	public void setC_DocType_ID(int C_DocType_ID);
+
+	/** Get Document Type.
+	  * Document type or rules
+	  */
+	public int getC_DocType_ID();
+
+	public I_C_DocType getC_DocType() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -106,6 +147,32 @@ public interface I_Z_PagoResguardo
 	  * User who created this records
 	  */
 	public int getCreatedBy();
+
+    /** Column name DateTrx */
+    public static final String COLUMNNAME_DateTrx = "DateTrx";
+
+	/** Set Transaction Date.
+	  * Transaction Date
+	  */
+	public void setDateTrx(Timestamp DateTrx);
+
+	/** Get Transaction Date.
+	  * Transaction Date
+	  */
+	public Timestamp getDateTrx();
+
+    /** Column name DocumentNoRef */
+    public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
+
+	/** Set DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public void setDocumentNoRef(String DocumentNoRef);
+
+	/** Get DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public String getDocumentNoRef();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -128,6 +195,19 @@ public interface I_Z_PagoResguardo
 
 	/** Get Selected	  */
 	public boolean isSelected();
+
+    /** Column name MultiplyRate */
+    public static final String COLUMNNAME_MultiplyRate = "MultiplyRate";
+
+	/** Set Multiply Rate.
+	  * Rate to multiple the source by to calculate the target.
+	  */
+	public void setMultiplyRate(BigDecimal MultiplyRate);
+
+	/** Get Multiply Rate.
+	  * Rate to multiple the source by to calculate the target.
+	  */
+	public BigDecimal getMultiplyRate();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -154,7 +234,7 @@ public interface I_Z_PagoResguardo
 	/** Get Z_Pago ID	  */
 	public int getZ_Pago_ID();
 
-	public org.xpande.financial.model.I_Z_Pago getZ_Pago() throws RuntimeException;
+	public I_Z_Pago getZ_Pago() throws RuntimeException;
 
     /** Column name Z_PagoResguardo_ID */
     public static final String COLUMNNAME_Z_PagoResguardo_ID = "Z_PagoResguardo_ID";

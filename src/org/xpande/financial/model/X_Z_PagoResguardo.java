@@ -19,6 +19,7 @@ package org.xpande.financial.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
@@ -32,7 +33,7 @@ public class X_Z_PagoResguardo extends PO implements I_Z_PagoResguardo, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180124L;
+	private static final long serialVersionUID = 20180126L;
 
     /** Standard Constructor */
     public X_Z_PagoResguardo (Properties ctx, int Z_PagoResguardo_ID, String trxName)
@@ -40,10 +41,14 @@ public class X_Z_PagoResguardo extends PO implements I_Z_PagoResguardo, I_Persis
       super (ctx, Z_PagoResguardo_ID, trxName);
       /** if (Z_PagoResguardo_ID == 0)
         {
+			setAmtAllocation (Env.ZERO);
 			setAmtDocument (Env.ZERO);
 			setC_Currency_ID (0);
-			setIsSelected (false);
-// N
+			setC_DocType_ID (0);
+			setDateTrx (new Timestamp( System.currentTimeMillis() ));
+			setDocumentNoRef (null);
+			setIsSelected (true);
+// Y
 			setZ_Pago_ID (0);
 			setZ_PagoResguardo_ID (0);
 			setZ_ResguardoSocio_ID (0);
@@ -77,6 +82,46 @@ public class X_Z_PagoResguardo extends PO implements I_Z_PagoResguardo, I_Persis
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set AmtAllocation.
+		@param AmtAllocation 
+		Monto afectación
+	  */
+	public void setAmtAllocation (BigDecimal AmtAllocation)
+	{
+		set_Value (COLUMNNAME_AmtAllocation, AmtAllocation);
+	}
+
+	/** Get AmtAllocation.
+		@return Monto afectación
+	  */
+	public BigDecimal getAmtAllocation () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAllocation);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set AmtAllocationMT.
+		@param AmtAllocationMT 
+		Monto afectación en moneda de la transacción
+	  */
+	public void setAmtAllocationMT (BigDecimal AmtAllocationMT)
+	{
+		set_Value (COLUMNNAME_AmtAllocationMT, AmtAllocationMT);
+	}
+
+	/** Get AmtAllocationMT.
+		@return Monto afectación en moneda de la transacción
+	  */
+	public BigDecimal getAmtAllocationMT () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAllocationMT);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
 
 	/** Set AmtDocument.
 		@param AmtDocument 
@@ -126,6 +171,68 @@ public class X_Z_PagoResguardo extends PO implements I_Z_PagoResguardo, I_Persis
 		return ii.intValue();
 	}
 
+	public I_C_DocType getC_DocType() throws RuntimeException
+    {
+		return (I_C_DocType)MTable.get(getCtx(), I_C_DocType.Table_Name)
+			.getPO(getC_DocType_ID(), get_TrxName());	}
+
+	/** Set Document Type.
+		@param C_DocType_ID 
+		Document type or rules
+	  */
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Document Type.
+		@return Document type or rules
+	  */
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Transaction Date.
+		@param DateTrx 
+		Transaction Date
+	  */
+	public void setDateTrx (Timestamp DateTrx)
+	{
+		set_Value (COLUMNNAME_DateTrx, DateTrx);
+	}
+
+	/** Get Transaction Date.
+		@return Transaction Date
+	  */
+	public Timestamp getDateTrx () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateTrx);
+	}
+
+	/** Set DocumentNoRef.
+		@param DocumentNoRef 
+		Numero de documento referenciado
+	  */
+	public void setDocumentNoRef (String DocumentNoRef)
+	{
+		set_Value (COLUMNNAME_DocumentNoRef, DocumentNoRef);
+	}
+
+	/** Get DocumentNoRef.
+		@return Numero de documento referenciado
+	  */
+	public String getDocumentNoRef () 
+	{
+		return (String)get_Value(COLUMNNAME_DocumentNoRef);
+	}
+
 	/** Set Selected.
 		@param IsSelected Selected	  */
 	public void setIsSelected (boolean IsSelected)
@@ -147,9 +254,29 @@ public class X_Z_PagoResguardo extends PO implements I_Z_PagoResguardo, I_Persis
 		return false;
 	}
 
-	public org.xpande.financial.model.I_Z_Pago getZ_Pago() throws RuntimeException
+	/** Set Multiply Rate.
+		@param MultiplyRate 
+		Rate to multiple the source by to calculate the target.
+	  */
+	public void setMultiplyRate (BigDecimal MultiplyRate)
+	{
+		set_Value (COLUMNNAME_MultiplyRate, MultiplyRate);
+	}
+
+	/** Get Multiply Rate.
+		@return Rate to multiple the source by to calculate the target.
+	  */
+	public BigDecimal getMultiplyRate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MultiplyRate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	public I_Z_Pago getZ_Pago() throws RuntimeException
     {
-		return (org.xpande.financial.model.I_Z_Pago)MTable.get(getCtx(), org.xpande.financial.model.I_Z_Pago.Table_Name)
+		return (I_Z_Pago)MTable.get(getCtx(), I_Z_Pago.Table_Name)
 			.getPO(getZ_Pago_ID(), get_TrxName());	}
 
 	/** Set Z_Pago ID.

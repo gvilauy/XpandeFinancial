@@ -18,9 +18,12 @@ package org.xpande.financial.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -31,6 +34,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 /** Generated Model for Z_Pago
  *  @author Adempiere (generated) 
@@ -232,7 +236,19 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		// Obtengo lineas a procesar
+		List<MZPagoLin> pagoLinList = this.getSelectedLines();
+
+		// Obtengo medios de pago a procesar
+		List<MZPagoMedioPago> medioPagoList = this.getMediosPago();
+
+		// Validaciones del documento
+		m_processMsg = this.validateDocument(pagoLinList, medioPagoList);
+		if (m_processMsg != null)
+			return DocAction.STATUS_Invalid;
+
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -415,17 +431,35 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				this.deleteDocuments();
 			}
 
+			HashMap<Integer, Integer> hashCurrency = new HashMap<Integer, Integer>();
+
 			// Obtengo invoices a considerar y genero lineas
-			message = this.getInvoices();
+			message = this.getInvoices(hashCurrency);
 			if (message != null){
 				return message;
 			}
 
-			// Obtengo resguardos a considerar y genero lineas
-			//message = this.getResguardos();
-			if (message != null){
-				return message;
+			// En caso de documentos de PAGO, obtengo resguardos a considerar y genero lineas
+			if (!this.isSOTrx()){
+				message = this.getResguardos(hashCurrency);
+				if (message != null){
+					return message;
+				}
 			}
+
+			// Si tengo monedas, actualizo tabla de monedas de este pago/cobro
+			if (hashCurrency.size() > 0){
+
+				// Cargo monedas con tasa de cambio a la fecha de este documento
+				message = MZPagoMoneda.setMonedas(getCtx(), this.get_ID(), hashCurrency, get_TrxName());
+				if (message != null){
+					return message;
+				}
+
+				// Actualizo tasa de cambio y monto en moneda transacción, en lineas y resguardos asociados a este documento.
+				this.updateRates();
+			}
+
 
 		}
 		catch (Exception e){
@@ -454,6 +488,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			action = " delete from z_pagoresguardo where z_pago_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
+			action = " update z_pago set payamt=0, totalmediospago = 0 where z_pago_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
@@ -465,7 +502,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 * Xpande. Created by Gabriel Vila on 8/16/17.
 	 * @return
 	 */
-	private String getInvoices(){
+	private String getInvoices(HashMap<Integer, Integer> hashCurrency){
 
 		String message = null;
 		String sql = "";
@@ -474,8 +511,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		try{
 
-			// Medio de pago por defecto en caso que el socio no tengo medio de pago predeterminado (por defecto CHEQUE)
-			MZMedioPago medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
+
 
 			String whereClause = "";
 
@@ -502,7 +538,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			// Query
 			sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (hdr.documentserie || hdr.documentno) as documentno, " +
-					" hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal,  " +
+					" hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal, ips.c_invoicepayschedule_id, " +
 					" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, coalesce(hdr.TieneDtosNC,'N') as TieneDtosNC, " +
 					" coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
 					" from c_invoice hdr " +
@@ -510,16 +546,15 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" inner join c_doctype doc on hdr.c_doctypetarget_id = doc.c_doctype_id " +
 					" left outer join c_invoicepayschedule ips on hdr.c_invoice_id = ips.c_invoice_id " +
 					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
-					" and hdr.issotrx='N' " +
+					" and hdr.ad_org_id =" + this.getAD_Org_ID() +
+					" and hdr.c_bpartner_id =" + this.getC_BPartner_ID() +
+					" and hdr.issotrx='" + ((this.isSOTrx()) ? "Y":"N") + "' " +
 					" and hdr.docstatus='CO' " +
-					" and hdr.c_invoice_id not in (select c_invoice_id from z_generaordenpagolin " +
+					" and hdr.c_invoice_id not in (select c_invoice_id from z_pagolin " +
 					" where c_invoice_id is not null " +
-					" and z_generaordenpago_id =" + this.get_ID() + ") " +
-					" and hdr.c_invoice_id not in (select c_invoice_id from z_ordenpagolin a " +
-					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
-					" where c_invoice_id is not null and b.docstatus='CO') " +
+					" and z_pago_id =" + this.get_ID() + ") " +
 					whereClause +
-					" order by hdr.c_bpartner_id ";
+					" order by hdr.dateinvoiced ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -536,29 +571,32 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					amtDocument = amtDocument.negate();
 				}
 
-				MZGeneraOrdenPagoLin ordenPagoLin = new MZGeneraOrdenPagoLin(getCtx(), 0, get_TrxName());
-				ordenPagoLin.setZ_GeneraOrdenPago_ID(this.get_ID());
-				//ordenPagoLin.setZ_GeneraOrdenPagoSocio_ID(ordenPagoSocio.get_ID());
-				ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
-				ordenPagoLin.setAmtAllocation(amtDocument);
-				ordenPagoLin.setAmtDocument(amtDocument);
-				ordenPagoLin.setAmtOpen(amtDocument);
-				ordenPagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
-				ordenPagoLin.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
-				ordenPagoLin.setDateDoc(rs.getTimestamp("dateinvoiced"));
-				ordenPagoLin.setDueDateDoc(rs.getTimestamp("duedate"));
-				ordenPagoLin.setDocumentNoRef(rs.getString("documentno"));
-				ordenPagoLin.setDueDateMedioPago(ordenPagoLin.getDueDateDoc());
-				ordenPagoLin.setEstadoAprobacion("APROBADO");
-				ordenPagoLin.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+				MZPagoLin pagoLin = new MZPagoLin(getCtx(), 0, get_TrxName());
+				pagoLin.setZ_Pago_ID(this.get_ID());
+				pagoLin.setAmtAllocation(amtDocument);
+				pagoLin.setAmtDocument(amtDocument);
+				pagoLin.setAmtOpen(amtDocument);
+				pagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
+				pagoLin.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
+				pagoLin.setDateDoc(rs.getTimestamp("dateinvoiced"));
+				pagoLin.setDueDateDoc(rs.getTimestamp("duedate"));
+				pagoLin.setDocumentNoRef(rs.getString("documentno"));
+				pagoLin.setEstadoAprobacion("APROBADO");
+				pagoLin.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+				if (rs.getInt("c_invoicepayschedule_id") > 0){
+					pagoLin.setC_InvoicePaySchedule_ID(rs.getInt("c_invoicepayschedule_id"));
+				}
+				pagoLin.setResguardoEmitido(MZResguardoSocio.invoiceTieneResguardo(getCtx(), pagoLin.getC_Invoice_ID(), get_TrxName()));
 
-				boolean tieneDtosNC = (rs.getString("TieneDtosNC").equalsIgnoreCase("Y")) ? true : false;
-				ordenPagoLin.setTieneDtosNC(tieneDtosNC);
+				pagoLin.saveEx();
 
-				ordenPagoLin.setResguardoEmitido(MZResguardoSocio.invoiceTieneResguardo(getCtx(), ordenPagoLin.getC_Invoice_ID(), get_TrxName()));
+				// Guardo moneda en hash si aún no la tengo
+				if (!hashCurrency.containsKey(pagoLin.getC_Currency_ID())){
+					hashCurrency.put(pagoLin.getC_Currency_ID(), pagoLin.getC_Currency_ID());
+				}
 
-				ordenPagoLin.saveEx();
 			}
+
 
 		}
 		catch (Exception e){
@@ -572,5 +610,293 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		return message;
 	}
 
+
+	/***
+	 * Obtiene y retorna lineas seleccionadas a considerarse en este modelo.
+	 * Xpande. Created by Gabriel Vila on 1/24/18.
+	 * @return
+	 */
+	public List<MZPagoLin> getSelectedLines(){
+
+		String whereClause = X_Z_PagoLin.COLUMNNAME_Z_Pago_ID + " =" + this.get_ID() +
+				" AND " + X_Z_PagoLin.COLUMNNAME_IsSelected + " ='Y'";
+
+		List<MZPagoLin> lines = new Query(getCtx(), I_Z_PagoLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
+	/***
+	 * Obtiene y retorna lineas asociadas a este modelo.
+	 * Xpande. Created by Gabriel Vila on 1/24/18.
+	 * @return
+	 */
+	public List<MZPagoLin> getLines(){
+
+		String whereClause = X_Z_PagoLin.COLUMNNAME_Z_Pago_ID + " =" + this.get_ID();
+
+		List<MZPagoLin> lines = new Query(getCtx(), I_Z_PagoLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+	/***
+	 * Obtiene y retorna resguardos asociados a este modelo.
+	 * Xpande. Created by Gabriel Vila on 1/24/18.
+	 * @return
+	 */
+	public List<MZPagoResguardo> getResguardos(){
+
+		String whereClause = X_Z_PagoResguardo.COLUMNNAME_Z_Pago_ID + " =" + this.get_ID();
+
+		List<MZPagoResguardo> lines = new Query(getCtx(), I_Z_PagoResguardo.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
+	/***
+	 * Obtiene y retorna medios de pago asociados a este modelo.
+	 * Xpande. Created by Gabriel Vila on 1/24/18.
+	 * @return
+	 */
+	public List<MZPagoMedioPago> getMediosPago(){
+
+		String whereClause = X_Z_PagoMedioPago.COLUMNNAME_Z_Pago_ID + " =" + this.get_ID();
+
+		List<MZPagoMedioPago> lines = new Query(getCtx(), I_Z_PagoMedioPago.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+	/***
+	 * Validaciones del documento al momento de completar.
+	 * Xpande. Created by Gabriel Vila on 1/10/18.
+	 * @param pagoLinList
+	 * @param medioPagoList
+	 * @return
+	 */
+	private String validateDocument(List<MZPagoLin> pagoLinList, List<MZPagoMedioPago> medioPagoList) {
+
+		String message = null;
+
+		try{
+
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+			// Si el documento esta marcado con recibo, verifico que se haya ingresado el numero del recibo
+			if (this.isTieneRecibo()){
+				if ((this.getNroRecibo() == null) || (this.getNroRecibo().trim().equalsIgnoreCase(""))){
+					return "Debe indicar Número de Recibo";
+				}
+			}
+
+			// Verifico que la diferencia entre total del documento y medios a pagar este dentro de la tolerancia permitida
+			BigDecimal diferencia = this.getPayAmt().subtract(this.getTotalMediosPago());
+			if (diferencia.compareTo(Env.ZERO) != 0){
+				return "Hay diferencias entre el Total del Documento y el Total de Medios de Pago.";
+			}
+
+			// Verifico que tenga lineas seleccionadas
+			if (pagoLinList.size() <= 0){
+				return "No hay Documentos seleccionados para afectar.";
+			}
+
+			// Verifico que tenga medios de pago
+			if (medioPagoList.size() <= 0){
+				return "Debe indicar al menos un medio de pago.";
+			}
+
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return message;
+
+	}
+
+	/***
+	 * Obtiene resguardos a considerar y genera lineas por cada uno de ellos.
+	 * Xpande. Created by Gabriel Vila on 1/26/18.
+	 * @return
+	 */
+	private String getResguardos(HashMap<Integer, Integer> hashCurrency) {
+
+		String message = null;
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			String whereClause = "";
+
+			// Filtros de fechas
+			if (this.getDateEmittedFrom() != null){
+				whereClause = " AND hdr.DateDoc >='" + this.getDateEmittedFrom() + "' ";
+			}
+			if (this.getDateEmittedTo() != null){
+				whereClause = " AND hdr.DateDoc <='" + this.getDateEmittedTo() + "' ";
+			}
+
+			// Filtros de monedas
+			String filtroMonedas = "";
+			if (this.getC_Currency_ID_To() > 0){
+				filtroMonedas = " AND hdr.c_currency_id =" + this.getC_Currency_ID_To();
+			}
+			whereClause += filtroMonedas;
+
+			// Query
+			sql = " select hdr.c_bpartner_id, hdr.z_resguardosocio_id, hdr.c_doctype_id, hdr.documentno, " +
+					" hdr.datedoc, hdr.c_currency_id, hdr.totalamt, doc.docbasetype " +
+					" from z_resguardosocio hdr " +
+					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
+					" inner join c_doctype doc on hdr.c_doctype_id = doc.c_doctype_id " +
+					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
+					" and hdr.ad_org_id =" + this.getAD_Org_ID() +
+					" and hdr.c_bpartner_id =" + this.getC_BPartner_ID() +
+					" and hdr.docstatus='CO' " +
+					" and hdr.z_resguardosocio_ref_id is null " +
+					" and doc.docbasetype='RGU' " +
+					" and hdr.z_resguardosocio_id not in (select z_resguardosocio_id from z_pagoresguardo " +
+					" where z_resguardosocio_id is not null " +
+					" and z_pago_id =" + this.get_ID() + ") "  +
+					whereClause +
+					" order by hdr.datedoc ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				BigDecimal amtDocument = rs.getBigDecimal("totalamt");
+				//amtDocument = amtDocument.negate();
+
+				MZPagoResguardo pagoResguardo = new MZPagoResguardo(getCtx(), 0, get_TrxName());
+				pagoResguardo.setZ_Pago_ID(this.get_ID());
+				pagoResguardo.setZ_ResguardoSocio_ID(rs.getInt("z_resguardosocio_id"));
+				pagoResguardo.setAmtAllocation(amtDocument);
+				pagoResguardo.setAmtDocument(amtDocument);
+				pagoResguardo.setC_Currency_ID(rs.getInt("c_currency_id"));
+				pagoResguardo.setC_DocType_ID(rs.getInt("c_doctype_id"));
+				pagoResguardo.setDateTrx(rs.getTimestamp("datedoc"));
+				pagoResguardo.setDocumentNoRef(rs.getString("documentno"));
+				pagoResguardo.saveEx();
+
+				// Guardo moneda en hash si aún no la tengo
+				if (!hashCurrency.containsKey(pagoResguardo.getC_Currency_ID())){
+					hashCurrency.put(pagoResguardo.getC_Currency_ID(), pagoResguardo.getC_Currency_ID());
+				}
+			}
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+
+	}
+
+
+	/***
+	 * Actualiza tasa de cambio y como consecuencia monto a pagar en moneda de transacción, en lineas y resguardos asociados
+	 * a este documento de pago/cobro.
+	 * Xpande. Created by Gabriel Vila on 1/26/18.
+	 */
+	private void updateRates() {
+
+		try{
+
+			HashMap<Integer, MZPagoMoneda> hashCurrency = new HashMap<Integer, MZPagoMoneda>();
+
+			// Lineas
+			List<MZPagoLin> pagoLinList = this.getLines();
+			for (MZPagoLin pagoLin: pagoLinList){
+
+				MZPagoMoneda pagoMoneda = null;
+				if (hashCurrency.containsKey(pagoLin.getC_Currency_ID())){
+					pagoMoneda = hashCurrency.get(pagoLin.getC_Currency_ID());
+				}
+				else{
+					pagoMoneda = MZPagoMoneda.getByCurrency(getCtx(), this.get_ID(), pagoLin.getC_Currency_ID(), get_TrxName());
+				}
+				if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+					pagoLin.setMultiplyRate(pagoMoneda.getMultiplyRate());
+					pagoLin.saveEx();
+				}
+			}
+
+			// Resguardos
+			List<MZPagoResguardo> resguardoList = this.getResguardos();
+			for (MZPagoResguardo pagoResguardo: resguardoList){
+
+				MZPagoMoneda pagoMoneda = null;
+				if (hashCurrency.containsKey(pagoResguardo.getC_Currency_ID())){
+					pagoMoneda = hashCurrency.get(pagoResguardo.getC_Currency_ID());
+				}
+				else{
+					pagoMoneda = MZPagoMoneda.getByCurrency(getCtx(), this.get_ID(), pagoResguardo.getC_Currency_ID(), get_TrxName());
+				}
+				if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+					pagoResguardo.setMultiplyRate(pagoMoneda.getMultiplyRate());
+					pagoResguardo.saveEx();
+				}
+			}
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+	}
+
+
+	/***
+	 * Actualiza totales de este documento, segun montos de lineas, resguardos y medios de pago.
+	 * Xpande. Created by Gabriel Vila on 1/26/18.
+	 */
+	public void updateTotals(){
+
+		String action = "", sql = "";
+
+		try{
+			// Obtengo suma de montos a pagar de documentos
+			sql = " select sum(coalesce(amtallocationmt,0)) as total from z_pagolin " +
+					" where z_pago_id =" + this.get_ID() +
+					" and isselected ='Y'";
+			BigDecimal sumLines = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (sumLines == null) sumLines = Env.ZERO;
+
+			// Obtengo suma de montos de resguardos
+			sql = " select sum(coalesce(amtallocationmt,0)) as total from z_pagoresguardo " +
+					" where z_pago_id =" + this.get_ID() +
+					" and isselected ='Y'";
+			BigDecimal sumResguardos = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (sumResguardos == null) sumResguardos = Env.ZERO;
+
+			// Obtengo suma de montos de medios de pago
+			sql = " select sum(coalesce(totalamt,0)) as total from z_pagomediopago " +
+					" where z_pago_id =" + this.get_ID();
+			BigDecimal sumMedios = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (sumMedios == null) sumMedios = Env.ZERO;
+
+			action = " update z_pago set payamt =" + sumLines + ", " +
+					" totalmediospago =" + sumMedios.add(sumResguardos) +
+					" where z_pago_id =" + this.get_ID();
+
+			DB.executeUpdateEx(action, get_TrxName());
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
 
 }

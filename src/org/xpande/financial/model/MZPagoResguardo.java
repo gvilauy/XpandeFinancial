@@ -1,5 +1,10 @@
 package org.xpande.financial.model;
 
+import org.compiere.model.MAcctSchema;
+import org.compiere.model.MClient;
+import org.compiere.util.Env;
+
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -17,4 +22,48 @@ public class MZPagoResguardo extends X_Z_PagoResguardo {
     public MZPagoResguardo(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
     }
+
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        if (!newRecord){
+
+            // Si se modifica el monto a pagar o la tasa de cambio, debo recalcular el monto a pagar en moneda de la transacción.
+            if ((is_ValueChanged(X_Z_PagoResguardo.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoResguardo.COLUMNNAME_AmtAllocation))){
+                if (this.getMultiplyRate().compareTo(Env.ONE) == 0){
+                    this.setAmtAllocationMT(this.getAmtAllocation());
+                }
+                else{
+
+                    MAcctSchema schema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
+                    if (this.getC_Currency_ID() != schema.getC_Currency_ID()){
+                        this.setAmtAllocationMT(this.getAmtAllocation().multiply(this.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
+                    }
+                    else{
+                        this.setAmtAllocationMT(this.getAmtAllocation().divide(this.getMultiplyRate(), 2, RoundingMode.HALF_UP));
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    protected boolean afterSave(boolean newRecord, boolean success) {
+
+        if (!success) return success;
+
+        if ((is_ValueChanged(X_Z_PagoResguardo.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoResguardo.COLUMNNAME_AmtAllocation))
+                || (is_ValueChanged(X_Z_PagoResguardo.COLUMNNAME_IsSelected))){
+
+            // Actualizo totales del documento
+            MZPago pago = (MZPago) this.getZ_Pago();
+            pago.updateTotals();
+
+        }
+
+        return true;
+    }
+
 }

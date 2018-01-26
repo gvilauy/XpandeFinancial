@@ -242,6 +242,34 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 		return ii.intValue();
 	}
 
+	public I_C_InvoicePaySchedule getC_InvoicePaySchedule() throws RuntimeException
+    {
+		return (I_C_InvoicePaySchedule)MTable.get(getCtx(), I_C_InvoicePaySchedule.Table_Name)
+			.getPO(getC_InvoicePaySchedule_ID(), get_TrxName());	}
+
+	/** Set Invoice Payment Schedule.
+		@param C_InvoicePaySchedule_ID 
+		Invoice Payment Schedule
+	  */
+	public void setC_InvoicePaySchedule_ID (int C_InvoicePaySchedule_ID)
+	{
+		if (C_InvoicePaySchedule_ID < 1) 
+			set_Value (COLUMNNAME_C_InvoicePaySchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_InvoicePaySchedule_ID, Integer.valueOf(C_InvoicePaySchedule_ID));
+	}
+
+	/** Get Invoice Payment Schedule.
+		@return Invoice Payment Schedule
+	  */
+	public int getC_InvoicePaySchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoicePaySchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Document Date.
 		@param DateDoc 
 		Date of the Document
@@ -407,9 +435,9 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 		return ii.intValue();
 	}
 
-	public org.xpande.financial.model.I_Z_Pago getZ_Pago() throws RuntimeException
+	public I_Z_Pago getZ_Pago() throws RuntimeException
     {
-		return (org.xpande.financial.model.I_Z_Pago)MTable.get(getCtx(), org.xpande.financial.model.I_Z_Pago.Table_Name)
+		return (I_Z_Pago)MTable.get(getCtx(), I_Z_Pago.Table_Name)
 			.getPO(getZ_Pago_ID(), get_TrxName());	}
 
 	/** Set Z_Pago ID.

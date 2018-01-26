@@ -160,6 +160,21 @@ public interface I_Z_PagoLin
 
 	public I_C_Invoice getC_Invoice() throws RuntimeException;
 
+    /** Column name C_InvoicePaySchedule_ID */
+    public static final String COLUMNNAME_C_InvoicePaySchedule_ID = "C_InvoicePaySchedule_ID";
+
+	/** Set Invoice Payment Schedule.
+	  * Invoice Payment Schedule
+	  */
+	public void setC_InvoicePaySchedule_ID(int C_InvoicePaySchedule_ID);
+
+	/** Get Invoice Payment Schedule.
+	  * Invoice Payment Schedule
+	  */
+	public int getC_InvoicePaySchedule_ID();
+
+	public I_C_InvoicePaySchedule getC_InvoicePaySchedule() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -312,7 +327,7 @@ public interface I_Z_PagoLin
 	/** Get Z_Pago ID	  */
 	public int getZ_Pago_ID();
 
-	public org.xpande.financial.model.I_Z_Pago getZ_Pago() throws RuntimeException;
+	public I_Z_Pago getZ_Pago() throws RuntimeException;
 
     /** Column name Z_PagoLin_ID */
     public static final String COLUMNNAME_Z_PagoLin_ID = "Z_PagoLin_ID";

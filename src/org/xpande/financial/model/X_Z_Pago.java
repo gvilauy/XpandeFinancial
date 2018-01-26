@@ -33,7 +33,7 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180124L;
+	private static final long serialVersionUID = 20180126L;
 
     /** Standard Constructor */
     public X_Z_Pago (Properties ctx, int Z_Pago_ID, String trxName)
@@ -66,6 +66,7 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 // N
 			setTieneRecibo (true);
 // Y
+			setTotalMediosPago (Env.ZERO);
 			setZ_Pago_ID (0);
         } */
     }
@@ -134,9 +135,9 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
 	/** Get Business Partner .
@@ -162,9 +163,9 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
-			set_Value (COLUMNNAME_C_Currency_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
 	/** Get Currency.
@@ -686,6 +687,26 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set TotalMediosPago.
+		@param TotalMediosPago 
+		Monto total de medios de pago considerados en un documento
+	  */
+	public void setTotalMediosPago (BigDecimal TotalMediosPago)
+	{
+		set_Value (COLUMNNAME_TotalMediosPago, TotalMediosPago);
+	}
+
+	/** Get TotalMediosPago.
+		@return Monto total de medios de pago considerados en un documento
+	  */
+	public BigDecimal getTotalMediosPago () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalMediosPago);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Z_Pago ID.
