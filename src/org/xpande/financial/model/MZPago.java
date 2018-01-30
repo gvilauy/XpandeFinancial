@@ -882,7 +882,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			if (sumResguardos == null) sumResguardos = Env.ZERO;
 
 			// Obtengo suma de montos de medios de pago
-			sql = " select sum(coalesce(totalamt,0)) as total from z_pagomediopago " +
+			sql = " select sum(coalesce(totalamtmt,0)) as total from z_pagomediopago " +
 					" where z_pago_id =" + this.get_ID();
 			BigDecimal sumMedios = DB.getSQLValueBDEx(get_TrxName(), sql);
 			if (sumMedios == null) sumMedios = Env.ZERO;

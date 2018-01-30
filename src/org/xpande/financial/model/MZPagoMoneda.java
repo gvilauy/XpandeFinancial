@@ -71,6 +71,47 @@ public class MZPagoMoneda extends X_Z_PagoMoneda {
 
 
     /***
+     * Setea y retorna modelo para id de pago y moneda recibido.
+     * Xpande. Created by Gabriel Vila on 1/29/18.
+     * @param ctx
+     * @param zPagoID
+     * @param cCurrencyID
+     * @param trxName
+     * @return
+     */
+    public static MZPagoMoneda setByCurrency(Properties ctx, int zPagoID, int cCurrencyID, String trxName){
+
+        MZPagoMoneda pagoMoneda = null;
+
+        try{
+            pagoMoneda = MZPagoMoneda.getByCurrency(ctx, zPagoID, cCurrencyID, trxName);
+            if (pagoMoneda == null){
+
+                // Tasa de Cambio para moneda recibida en moneda del documento de pago/cobro.
+                MZPago pago = new MZPago(ctx, zPagoID, trxName);
+                BigDecimal multiplyRate = CurrencyUtils.getCurrencyRate(ctx, pago.getAD_Client_ID(), pago.getAD_Org_ID(),
+                        cCurrencyID, pago.getC_Currency_ID(), 114, pago.getDateDoc(), null);
+
+                if (multiplyRate == null){
+                    throw new AdempiereException("No se pudo obtener Tasa de Cambio para Moneda : " + cCurrencyID + ", Fecha : " + pago.getDateDoc().toString());
+                }
+                pagoMoneda = new MZPagoMoneda(ctx, 0, trxName);
+                pagoMoneda.setZ_Pago_ID(zPagoID);
+                pagoMoneda.setC_Currency_ID(cCurrencyID);
+                pagoMoneda.setMultiplyRate(multiplyRate);
+                pagoMoneda.saveEx();
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return pagoMoneda;
+    }
+
+
+    /***
      * Obtiene y retorna modelo según pago/cobro y moneda recibida.
      * @param ctx
      * @param zPagoID

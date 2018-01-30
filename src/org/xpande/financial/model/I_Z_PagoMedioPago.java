@@ -161,6 +161,19 @@ public interface I_Z_PagoMedioPago
 	  */
 	public boolean isActive();
 
+    /** Column name MultiplyRate */
+    public static final String COLUMNNAME_MultiplyRate = "MultiplyRate";
+
+	/** Set Multiply Rate.
+	  * Rate to multiple the source by to calculate the target.
+	  */
+	public void setMultiplyRate(BigDecimal MultiplyRate);
+
+	/** Get Multiply Rate.
+	  * Rate to multiple the source by to calculate the target.
+	  */
+	public BigDecimal getMultiplyRate();
+
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";
 
@@ -173,6 +186,19 @@ public interface I_Z_PagoMedioPago
 	  * Total Amount
 	  */
 	public BigDecimal getTotalAmt();
+
+    /** Column name TotalAmtMT */
+    public static final String COLUMNNAME_TotalAmtMT = "TotalAmtMT";
+
+	/** Set TotalAmtMT.
+	  * Monto total en moneda de la transacción
+	  */
+	public void setTotalAmtMT(BigDecimal TotalAmtMT);
+
+	/** Get TotalAmtMT.
+	  * Monto total en moneda de la transacción
+	  */
+	public BigDecimal getTotalAmtMT();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -232,7 +258,7 @@ public interface I_Z_PagoMedioPago
 	/** Get Z_Pago ID	  */
 	public int getZ_Pago_ID();
 
-	public org.xpande.financial.model.I_Z_Pago getZ_Pago() throws RuntimeException;
+	public I_Z_Pago getZ_Pago() throws RuntimeException;
 
     /** Column name Z_PagoMedioPago_ID */
     public static final String COLUMNNAME_Z_PagoMedioPago_ID = "Z_PagoMedioPago_ID";

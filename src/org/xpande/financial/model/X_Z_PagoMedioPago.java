@@ -33,7 +33,7 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180124L;
+	private static final long serialVersionUID = 20180129L;
 
     /** Standard Constructor */
     public X_Z_PagoMedioPago (Properties ctx, int Z_PagoMedioPago_ID, String trxName)
@@ -43,7 +43,9 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
         {
 			setC_BankAccount_ID (0);
 			setC_Currency_ID (0);
+			setMultiplyRate (Env.ZERO);
 			setTotalAmt (Env.ZERO);
+			setTotalAmtMT (Env.ZERO);
 			setZ_MedioPago_ID (0);
 			setZ_Pago_ID (0);
 			setZ_PagoMedioPago_ID (0);
@@ -185,6 +187,26 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 		return (Timestamp)get_Value(COLUMNNAME_DueDate);
 	}
 
+	/** Set Multiply Rate.
+		@param MultiplyRate 
+		Rate to multiple the source by to calculate the target.
+	  */
+	public void setMultiplyRate (BigDecimal MultiplyRate)
+	{
+		set_Value (COLUMNNAME_MultiplyRate, MultiplyRate);
+	}
+
+	/** Get Multiply Rate.
+		@return Rate to multiple the source by to calculate the target.
+	  */
+	public BigDecimal getMultiplyRate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MultiplyRate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Total Amount.
 		@param TotalAmt 
 		Total Amount
@@ -200,6 +222,26 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 	public BigDecimal getTotalAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set TotalAmtMT.
+		@param TotalAmtMT 
+		Monto total en moneda de la transacción
+	  */
+	public void setTotalAmtMT (BigDecimal TotalAmtMT)
+	{
+		set_Value (COLUMNNAME_TotalAmtMT, TotalAmtMT);
+	}
+
+	/** Get TotalAmtMT.
+		@return Monto total en moneda de la transacción
+	  */
+	public BigDecimal getTotalAmtMT () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmtMT);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
@@ -280,9 +322,9 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 		return ii.intValue();
 	}
 
-	public org.xpande.financial.model.I_Z_Pago getZ_Pago() throws RuntimeException
+	public I_Z_Pago getZ_Pago() throws RuntimeException
     {
-		return (org.xpande.financial.model.I_Z_Pago)MTable.get(getCtx(), org.xpande.financial.model.I_Z_Pago.Table_Name)
+		return (I_Z_Pago)MTable.get(getCtx(), I_Z_Pago.Table_Name)
 			.getPO(getZ_Pago_ID(), get_TrxName());	}
 
 	/** Set Z_Pago ID.
