@@ -30,7 +30,7 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170816L;
+	private static final long serialVersionUID = 20180201L;
 
     /** Standard Constructor */
     public X_Z_MedioPago (Properties ctx, int Z_MedioPago_ID, String trxName)
@@ -38,7 +38,21 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
       super (ctx, Z_MedioPago_ID, trxName);
       /** if (Z_MedioPago_ID == 0)
         {
+			setAplicaEnCobro (true);
+// Y
+			setAplicaEnPago (true);
+// Y
 			setName (null);
+			setTieneCaja (false);
+// N
+			setTieneCtaBco (true);
+// Y
+			setTieneFecEmi (false);
+// N
+			setTieneFecVenc (false);
+// N
+			setTieneFolio (false);
+// N
 			setValue (null);
 			setZ_MedioPago_ID (0);
         } */
@@ -72,6 +86,54 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
       return sb.toString();
     }
 
+	/** Set AplicaEnCobro.
+		@param AplicaEnCobro 
+		Si aplica o no a un Cobro
+	  */
+	public void setAplicaEnCobro (boolean AplicaEnCobro)
+	{
+		set_Value (COLUMNNAME_AplicaEnCobro, Boolean.valueOf(AplicaEnCobro));
+	}
+
+	/** Get AplicaEnCobro.
+		@return Si aplica o no a un Cobro
+	  */
+	public boolean isAplicaEnCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_AplicaEnCobro);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set AplicaEnPago.
+		@param AplicaEnPago 
+		Si se aplica o no en un Pago
+	  */
+	public void setAplicaEnPago (boolean AplicaEnPago)
+	{
+		set_Value (COLUMNNAME_AplicaEnPago, Boolean.valueOf(AplicaEnPago));
+	}
+
+	/** Get AplicaEnPago.
+		@return Si se aplica o no en un Pago
+	  */
+	public boolean isAplicaEnPago () 
+	{
+		Object oo = get_Value(COLUMNNAME_AplicaEnPago);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Description.
 		@param Description 
 		Optional short description of the record
@@ -104,6 +166,126 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	public String getName () 
 	{
 		return (String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set TieneCaja.
+		@param TieneCaja 
+		Si requiere o no una caja asociada
+	  */
+	public void setTieneCaja (boolean TieneCaja)
+	{
+		set_Value (COLUMNNAME_TieneCaja, Boolean.valueOf(TieneCaja));
+	}
+
+	/** Get TieneCaja.
+		@return Si requiere o no una caja asociada
+	  */
+	public boolean isTieneCaja () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneCaja);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneCtaBco.
+		@param TieneCtaBco 
+		Si requiere o no una cuenta bancaria asociada
+	  */
+	public void setTieneCtaBco (boolean TieneCtaBco)
+	{
+		set_Value (COLUMNNAME_TieneCtaBco, Boolean.valueOf(TieneCtaBco));
+	}
+
+	/** Get TieneCtaBco.
+		@return Si requiere o no una cuenta bancaria asociada
+	  */
+	public boolean isTieneCtaBco () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneCtaBco);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneFecEmi.
+		@param TieneFecEmi 
+		Si lleva o no Fecha de Emisión
+	  */
+	public void setTieneFecEmi (boolean TieneFecEmi)
+	{
+		set_Value (COLUMNNAME_TieneFecEmi, Boolean.valueOf(TieneFecEmi));
+	}
+
+	/** Get TieneFecEmi.
+		@return Si lleva o no Fecha de Emisión
+	  */
+	public boolean isTieneFecEmi () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneFecEmi);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneFecVenc.
+		@param TieneFecVenc 
+		Si lleva o no Fecha de Vencimiento
+	  */
+	public void setTieneFecVenc (boolean TieneFecVenc)
+	{
+		set_Value (COLUMNNAME_TieneFecVenc, Boolean.valueOf(TieneFecVenc));
+	}
+
+	/** Get TieneFecVenc.
+		@return Si lleva o no Fecha de Vencimiento
+	  */
+	public boolean isTieneFecVenc () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneFecVenc);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneFolio.
+		@param TieneFolio 
+		Si requiere o no un folio asociado de medios de pago
+	  */
+	public void setTieneFolio (boolean TieneFolio)
+	{
+		set_Value (COLUMNNAME_TieneFolio, Boolean.valueOf(TieneFolio));
+	}
+
+	/** Get TieneFolio.
+		@return Si requiere o no un folio asociado de medios de pago
+	  */
+	public boolean isTieneFolio () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneFolio);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Search Key.

@@ -63,6 +63,32 @@ public interface I_Z_MedioPago
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AplicaEnCobro */
+    public static final String COLUMNNAME_AplicaEnCobro = "AplicaEnCobro";
+
+	/** Set AplicaEnCobro.
+	  * Si aplica o no a un Cobro
+	  */
+	public void setAplicaEnCobro(boolean AplicaEnCobro);
+
+	/** Get AplicaEnCobro.
+	  * Si aplica o no a un Cobro
+	  */
+	public boolean isAplicaEnCobro();
+
+    /** Column name AplicaEnPago */
+    public static final String COLUMNNAME_AplicaEnPago = "AplicaEnPago";
+
+	/** Set AplicaEnPago.
+	  * Si se aplica o no en un Pago
+	  */
+	public void setAplicaEnPago(boolean AplicaEnPago);
+
+	/** Get AplicaEnPago.
+	  * Si se aplica o no en un Pago
+	  */
+	public boolean isAplicaEnPago();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -117,6 +143,71 @@ public interface I_Z_MedioPago
 	  * Alphanumeric identifier of the entity
 	  */
 	public String getName();
+
+    /** Column name TieneCaja */
+    public static final String COLUMNNAME_TieneCaja = "TieneCaja";
+
+	/** Set TieneCaja.
+	  * Si requiere o no una caja asociada
+	  */
+	public void setTieneCaja(boolean TieneCaja);
+
+	/** Get TieneCaja.
+	  * Si requiere o no una caja asociada
+	  */
+	public boolean isTieneCaja();
+
+    /** Column name TieneCtaBco */
+    public static final String COLUMNNAME_TieneCtaBco = "TieneCtaBco";
+
+	/** Set TieneCtaBco.
+	  * Si requiere o no una cuenta bancaria asociada
+	  */
+	public void setTieneCtaBco(boolean TieneCtaBco);
+
+	/** Get TieneCtaBco.
+	  * Si requiere o no una cuenta bancaria asociada
+	  */
+	public boolean isTieneCtaBco();
+
+    /** Column name TieneFecEmi */
+    public static final String COLUMNNAME_TieneFecEmi = "TieneFecEmi";
+
+	/** Set TieneFecEmi.
+	  * Si lleva o no Fecha de Emisión
+	  */
+	public void setTieneFecEmi(boolean TieneFecEmi);
+
+	/** Get TieneFecEmi.
+	  * Si lleva o no Fecha de Emisión
+	  */
+	public boolean isTieneFecEmi();
+
+    /** Column name TieneFecVenc */
+    public static final String COLUMNNAME_TieneFecVenc = "TieneFecVenc";
+
+	/** Set TieneFecVenc.
+	  * Si lleva o no Fecha de Vencimiento
+	  */
+	public void setTieneFecVenc(boolean TieneFecVenc);
+
+	/** Get TieneFecVenc.
+	  * Si lleva o no Fecha de Vencimiento
+	  */
+	public boolean isTieneFecVenc();
+
+    /** Column name TieneFolio */
+    public static final String COLUMNNAME_TieneFolio = "TieneFolio";
+
+	/** Set TieneFolio.
+	  * Si requiere o no un folio asociado de medios de pago
+	  */
+	public void setTieneFolio(boolean TieneFolio);
+
+	/** Get TieneFolio.
+	  * Si requiere o no un folio asociado de medios de pago
+	  */
+	public boolean isTieneFolio();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";

@@ -4,9 +4,7 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.util.Env;
-import org.xpande.financial.model.MZPago;
-import org.xpande.financial.model.X_Z_OrdenPagoMedio;
-import org.xpande.financial.model.X_Z_PagoMedioPago;
+import org.xpande.financial.model.*;
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -34,11 +32,11 @@ public class CalloutPago extends CalloutEngine {
         if (value == null) return "";
 
         BigDecimal amtMedioPago = (BigDecimal) mTab.getValue(X_Z_PagoMedioPago.COLUMNNAME_TotalAmtMT);
-        if ((amtMedioPago == null) || (amtMedioPago.compareTo(Env.ZERO) <= 0)){
+        if ((amtMedioPago == null) || (amtMedioPago.compareTo(Env.ZERO) <= 0)) {
             int zPagoID = Env.getContextAsInt(ctx, WindowNo, "Z_Pago_ID");
 
             MZPago pago = new MZPago(ctx, zPagoID, null);
-            if ((pago != null) && (pago.get_ID() > 0)){
+            if ((pago != null) && (pago.get_ID() > 0)) {
 
                 BigDecimal totalMedioPago = pago.getTotalMediosPago();
                 BigDecimal totalDocs = pago.getPayAmt();
@@ -52,6 +50,63 @@ public class CalloutPago extends CalloutEngine {
                 mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TotalAmtMT, amtMedioPago);
             }
         }
+
+        return "";
+    }
+
+
+    /***
+     * Setea atributos asociados al medio de pago seleccionado.
+     * Xpande. Created by Gabriel Vila on 1/31/18.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setMedioPagoInfo(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        int zMedioPagoID = (Integer) value;
+
+        if (zMedioPagoID <= 0) return "";
+
+        MZMedioPago medioPago = new MZMedioPago(ctx, zMedioPagoID, null);
+
+        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmi());
+        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecVenc, medioPago.isTieneFecVenc());
+        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCtaBco, medioPago.isTieneCtaBco());
+        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCaja, medioPago.isTieneCaja());
+        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFolio, medioPago.isTieneFolio());
+
+
+        return "";
+    }
+
+
+    /***
+     * Setea atributos asociados al folio de medios de pago
+     * Xpande. Created by Gabriel Vila on 1/31/18.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setFolioInfo(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        int zMedioPagoFolioID = (Integer) value;
+
+        if (zMedioPagoFolioID <= 0) return "";
+
+        MZMedioPagoFolio medioPagoFolio = new MZMedioPagoFolio(ctx, zMedioPagoFolioID, null);
+
+        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_EmisionManual, medioPagoFolio.isEmisionManual());
 
         return "";
     }
