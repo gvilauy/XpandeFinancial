@@ -2,6 +2,7 @@ package org.xpande.financial.model;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import java.sql.ResultSet;
@@ -72,6 +73,36 @@ public class MZMedioPagoFolio extends X_Z_MedioPagoFolio {
         MZMedioPagoItem model = new Query(getCtx(), I_Z_MedioPagoItem.Table_Name, whereClause, get_TrxName()).setOrderBy(" NroMedioPago ").first();
 
         return model;
+
+    }
+
+    /***
+     * Actualiza estado de disponibilidad segun haya algun item de este folio como no emitido.
+     * Xpande. Created by Gabriel Vila on 2/1/18.
+     */
+    public void updateDisponibilidad(){
+
+        String sql = "";
+
+        try{
+
+            // Consulto si tengo algun item de este folio que no este emitido
+            sql = " select count(*) as contador " +
+                    " from z_mediopagoitem " +
+                    " where z_mediopagofolio_id =" + this.get_ID() +
+                    " and emitido ='N'";
+
+            int contador = DB.getSQLValueEx(get_TrxName(), sql);
+
+            // Si todos estan emitidos, este folio no esta mas disponible.
+            if (contador <= 0){
+                this.setDisponible(false);
+                this.saveEx();
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
 
     }
 

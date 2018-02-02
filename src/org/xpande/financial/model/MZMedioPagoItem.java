@@ -67,6 +67,22 @@ public class MZMedioPagoItem extends X_Z_MedioPagoItem {
     }
 
 
+    @Override
+    protected boolean afterSave(boolean newRecord, boolean success) {
+
+        if (!success) return success;
+
+        // Si este item esta asociado a un folio, y este item ademas esta emitido, refresco disponibilidad del folio si es necesario.
+        if (this.getZ_MedioPagoFolio_ID() > 0){
+            if (this.isEmitido()){
+                MZMedioPagoFolio medioPagoFolio = (MZMedioPagoFolio) this.getZ_MedioPagoFolio();
+                medioPagoFolio.updateDisponibilidad();
+            }
+        }
+
+        return true;
+    }
+
     /***
      * Imprime medio de pago.
      * Xpande. Created by Gabriel Vila on 8/16/17.

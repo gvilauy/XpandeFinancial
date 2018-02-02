@@ -163,6 +163,19 @@ public interface I_Z_MedioPagoItem
 	  */
 	public Timestamp getDateEmitted();
 
+    /** Column name Depositado */
+    public static final String COLUMNNAME_Depositado = "Depositado";
+
+	/** Set Depositado.
+	  * Si esta o no depositado
+	  */
+	public void setDepositado(boolean Depositado);
+
+	/** Get Depositado.
+	  * Si esta o no depositado
+	  */
+	public boolean isDepositado();
+
     /** Column name DocumentSerie */
     public static final String COLUMNNAME_DocumentSerie = "DocumentSerie";
 

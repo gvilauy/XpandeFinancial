@@ -33,7 +33,7 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170927L;
+	private static final long serialVersionUID = 20180201L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoItem (Properties ctx, int Z_MedioPagoItem_ID, String trxName)
@@ -46,6 +46,8 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 			setC_BankAccount_ID (0);
 			setC_Currency_ID (0);
 			setConciliado (false);
+// N
+			setDepositado (false);
 // N
 			setEmitido (false);
 // N
@@ -238,6 +240,30 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	public Timestamp getDateEmitted () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateEmitted);
+	}
+
+	/** Set Depositado.
+		@param Depositado 
+		Si esta o no depositado
+	  */
+	public void setDepositado (boolean Depositado)
+	{
+		set_Value (COLUMNNAME_Depositado, Boolean.valueOf(Depositado));
+	}
+
+	/** Get Depositado.
+		@return Si esta o no depositado
+	  */
+	public boolean isDepositado () 
+	{
+		Object oo = get_Value(COLUMNNAME_Depositado);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set DocumentSerie.
