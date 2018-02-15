@@ -927,6 +927,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 						// Refreso dato para esta invoice con respecto a si tiene o no un resguardo
 						generaLin.setResguardoEmitido(MZResguardoSocio.invoiceTieneResguardo(getCtx(), generaLin.getC_Invoice_ID(), get_TrxName()));
 						generaLin.saveEx();
+
 						if (!generaLin.isResguardoEmitido()){
 
 							// Si es factura (no es nota de credito)
