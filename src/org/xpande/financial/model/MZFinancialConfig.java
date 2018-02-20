@@ -36,7 +36,6 @@ public class MZFinancialConfig extends X_Z_FinancialConfig{
         return model;
     }
 
-
     /***
      * Obtiene y retorna modelo de configuracion para carga de tasa de cambio de una moneda recibida.
      * Xpande. Created by Gabriel Vila on 10/3/17.
