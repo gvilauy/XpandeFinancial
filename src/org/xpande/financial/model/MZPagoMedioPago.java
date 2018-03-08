@@ -1,11 +1,14 @@
 package org.xpande.financial.model;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MClient;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import java.math.RoundingMode;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 /**
@@ -26,6 +29,12 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
 
     @Override
     protected boolean beforeSave(boolean newRecord) {
+
+        String message = this.validacionesCampos();
+        if (message != null){
+            log.saveError("ATENCIÓN", message);
+            return false;
+        }
 
         MAcctSchema schema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
 
@@ -101,4 +110,66 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
 
         return true;
     }
+
+    /***
+     * Valida campos de este modelo.
+     * Xpande. Created by Gabriel Vila on 3/8/18.
+     * @return
+     */
+    private String validacionesCampos(){
+
+        String message = null;
+
+        try{
+
+            Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+            // Validaciones de campos obligatorios segun atributos obtenidos del medio de pago
+            if (this.isTieneCtaBco()){
+                if (this.getC_BankAccount_ID() <= 0){
+                    return "Debe indicar Cuenta Bancaria del Medio de Pago";
+                }
+            }
+
+            if (this.isTieneFecEmi()){
+                if (this.getDateEmitted() == null){
+                    return "Debe indicar Fecha de Emisión del Medio de Pago";
+                }
+                if (this.getDateEmitted().before(fechaHoy)){
+                    return "La Fecha de Emisión del Medio de Pago no puede ser menor a la fecha actual";
+                }
+            }
+
+            if (this.isTieneFecVenc()){
+                if (this.getDueDate() == null){
+                    return "Debe indicar Fecha de Vencimiento del Medio de Pago";
+                }
+                if (this.getDateEmitted().before(fechaHoy)){
+                    return "La Fecha de Vencimiento del Medio de Pago no puede ser menor a la fecha actual";
+                }
+                if (this.getDateEmitted() != null){
+                    if (this.getDueDate().before(this.getDateEmitted())){
+                        return "La Fecha de Vencimiento del Medio de Pago no puede ser menor a la Fecha de Emisión del mismo";
+                    }
+                }
+            }
+
+            if (this.isTieneFolio()){
+                if (this.getZ_MedioPagoFolio_ID() <= 0){
+                    return "Debe indicar Libreta de Medios de Pago";
+                }
+                if (this.isEmisionManual()){
+                    if (this.getZ_MedioPagoItem_ID() <= 0){
+                        return "Debe indicar Número de Medio de Pago";
+                    }
+                }
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return message;
+    }
+
 }

@@ -237,6 +237,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		log.info(toString());
 		//
 
+		// Me aseguro fecha de documento igual a hoy
+		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+		if ((this.getDateDoc().before(fechaHoy)) || (this.getDateDoc().after(fechaHoy))){
+			this.setDateDoc(fechaHoy);
+		}
+
 		// Obtengo lineas a procesar
 		List<MZPagoLin> pagoLinList = this.getSelectedLines();
 
@@ -245,9 +251,31 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		// Validaciones del documento
 		m_processMsg = this.validateDocument(pagoLinList, medioPagoList);
-		if (m_processMsg != null)
+		if (m_processMsg != null){
 			return DocAction.STATUS_Invalid;
+		}
 
+		// Emite medios de pago cuando es un Pago
+		if (!this.isSOTrx()){
+			//m_processMsg = this.emitirMediosPago(medioPagoList);
+			if (m_processMsg != null){
+				return DocAction.STATUS_Invalid;
+			}
+		}
+
+		// Afecta invoices asociadas a este pago/cobro.
+		m_processMsg = this.afectarInvoices(pagoLinList);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
+		// Afecta resguardos asociados a este pago
+		if (!this.isSOTrx()){
+			m_processMsg = this.afectarResguardos();
+			if (m_processMsg != null){
+				return DocAction.STATUS_Invalid;
+			}
+		}
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -263,7 +291,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-	
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -897,6 +925,159 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		catch (Exception e){
 		    throw new AdempiereException(e);
 		}
+	}
+
+
+	/***
+	 * Proceso que emite los medios de pago para un documento de pago.
+	 * Xpande. Created by Gabriel Vila on 3/8/18.
+	 * @param medioPagoList
+	 * @return
+	 */
+	private String emitirMediosPago(List<MZPagoMedioPago> medioPagoList) {
+
+		String message = null;
+
+		try{
+			// No procede si es un cobro
+			if (this.isSOTrx()){
+				return null;
+			}
+
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+			// Recorre lista de medios de pago a emitir para este documento de pago
+			for (MZPagoMedioPago pagoMedioPago: medioPagoList){
+
+				// Si este medio de pago no requiere folio no hago nada
+				if (!pagoMedioPago.isTieneFolio()){
+					continue;
+				}
+
+				MZMedioPagoFolio folio = (MZMedioPagoFolio) pagoMedioPago.getZ_MedioPagoFolio();
+				MZMedioPagoItem medioPagoItem = null;
+
+				// Si no tengo item de medio de pago, obtengo el siguiente disponible del folio
+				if (pagoMedioPago.getZ_MedioPagoItem_ID() <= 0){
+					medioPagoItem = folio.getCurrentNext();
+					if ((medioPagoItem == null) || (medioPagoItem.get_ID() <= 0)){
+						return  "Libreta no tiene medios de pago disponibles para utilizar : " + folio.getName();
+					}
+					pagoMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+					pagoMedioPago.saveEx();
+				}
+				else{
+					medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+				}
+
+				if (!medioPagoItem.isEmitido()){
+
+					// Realizo emisión para este medio de pago a considerar
+					MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
+					emisionMedioPago.setZ_MedioPago_ID(medioPagoItem.getZ_MedioPago_ID());
+					emisionMedioPago.setZ_MedioPagoFolio_ID(medioPagoItem.getZ_MedioPagoFolio_ID());
+					emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+					emisionMedioPago.setZ_Pago_ID(this.get_ID());
+					emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
+					emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
+					emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
+					emisionMedioPago.setDateDoc(fechaHoy);
+					emisionMedioPago.setDateEmitted(pagoMedioPago.getDateEmitted());
+					emisionMedioPago.setDueDate(pagoMedioPago.getDueDate());
+					emisionMedioPago.setTotalAmt(pagoMedioPago.getTotalAmt());
+					emisionMedioPago.saveEx();
+
+					// Completo documento de emisión de medio de pago
+					if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
+						message = emisionMedioPago.getProcessMsg();
+						if (message == null){
+							message = "No se pudo completar la Emisión del Medio de Pago : " + medioPagoItem.getNroMedioPago();
+							return message;
+						}
+					}
+					emisionMedioPago.saveEx();
+				}
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+	/***
+	 * Afecta invoices asociadas a este documento de pago/cobro.
+	 * Xpande. Created by Gabriel Vila on 3/8/18.
+	 * @param pagoLinList
+	 * @return
+	 */
+	private String afectarInvoices(List<MZPagoLin> pagoLinList) {
+
+		String message = null;
+
+		try{
+
+			// Recorro comprobantes
+			for (MZPagoLin pagoLin: pagoLinList){
+
+				// Afecta cada comprobante por el monto de afectación
+				MZInvoiceAfectacion invoiceAfecta = new MZInvoiceAfectacion(getCtx(), 0, get_TrxName());
+				invoiceAfecta.setZ_Pago_ID(this.get_ID());
+				invoiceAfecta.setAD_Table_ID(this.get_Table_ID());
+				invoiceAfecta.setAmtAllocation(pagoLin.getAmtAllocation());
+				invoiceAfecta.setC_DocType_ID(this.getC_DocType_ID());
+				invoiceAfecta.setC_Invoice_ID(pagoLin.getC_Invoice_ID());
+
+				if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+					invoiceAfecta.setC_InvoicePaySchedule_ID(pagoLin.getC_InvoicePaySchedule_ID());
+				}
+
+				invoiceAfecta.setDateDoc(this.getDateDoc());
+				invoiceAfecta.setDocumentNoRef(this.getDocumentNo());
+				invoiceAfecta.setDueDate(pagoLin.getDueDateDoc());
+				invoiceAfecta.setRecord_ID(this.get_ID());
+				invoiceAfecta.setC_Currency_ID(pagoLin.getC_Currency_ID());
+				invoiceAfecta.setAD_Org_ID(this.getAD_Org_ID());
+				invoiceAfecta.saveEx();
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+	/***
+	 * Afecta resguardos utilizados en este pago
+	 * @return
+	 */
+	private String afectarResguardos() {
+
+		String message = null;
+
+		try{
+
+			// No aplica para cobros.
+			if (this.isSOTrx()){
+				return null;
+			}
+
+			List<MZPagoResguardo> pagoResguardoList = this.getResguardos();
+			for (MZPagoResguardo pagoResguardo: pagoResguardoList){
+				MZResguardoSocio resguardoSocio = (MZResguardoSocio) pagoResguardo.getZ_ResguardoSocio();
+				resguardoSocio.setZ_Pago_ID(this.get_ID());
+				resguardoSocio.saveEx();
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
 	}
 
 }

@@ -33,7 +33,7 @@ public class X_Z_InvoiceAfectacion extends PO implements I_Z_InvoiceAfectacion, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180124L;
+	private static final long serialVersionUID = 20180308L;
 
     /** Standard Constructor */
     public X_Z_InvoiceAfectacion (Properties ctx, int Z_InvoiceAfectacion_ID, String trxName)
@@ -43,6 +43,7 @@ public class X_Z_InvoiceAfectacion extends PO implements I_Z_InvoiceAfectacion, 
         {
 			setAD_Table_ID (0);
 			setAmtAllocation (Env.ZERO);
+			setC_Currency_ID (0);
 			setC_DocType_ID (0);
 			setC_Invoice_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
@@ -126,6 +127,34 @@ public class X_Z_InvoiceAfectacion extends PO implements I_Z_InvoiceAfectacion, 
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
+
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Currency.
+		@return The Currency for this record
+	  */
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_C_DocType getC_DocType() throws RuntimeException

@@ -474,6 +474,14 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 	@Override
 	protected boolean beforeSave(boolean newRecord) {
 
+		if (newRecord){
+			if (this.getC_DocType_ID() <= 0){
+				MDocType[] docsEmision = MDocType.getOfDocBaseType(getCtx(), "EMP");
+				MDocType docEmision = docsEmision[0];
+				this.setC_DocType_ID(docEmision.get_ID());
+			}
+		}
+
 		// Seteo PaymentRule para el medio de pago asociado a esta emisión
 		if ((newRecord) || (is_ValueChanged(X_Z_EmisionMedioPago.COLUMNNAME_Z_MedioPago_ID))){
 			if (this.getZ_MedioPago_ID() > 0){

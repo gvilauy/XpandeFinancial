@@ -262,8 +262,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 				ordenMedioPago.saveEx();
 
 				// Realizo emisión para este medio de pago a considerar
-				MDocType[] docsEmision = MDocType.getOfDocBaseType(getCtx(), "EMP");
-				MDocType docEmision = docsEmision[0];
 				MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
 				emisionMedioPago.setZ_MedioPago_ID(ordenMedioPago.getZ_MedioPago_ID());
 				emisionMedioPago.setZ_MedioPagoFolio_ID(ordenMedioPago.getZ_MedioPagoFolio_ID());
@@ -272,7 +270,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 				emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
 				emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
 				emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
-				emisionMedioPago.setC_DocType_ID(docEmision.get_ID());
 				emisionMedioPago.setDateDoc(this.getDateDoc());
 				emisionMedioPago.setDateEmitted(this.getDateDoc());
 				emisionMedioPago.setDueDate(ordenMedioPago.getDueDate());

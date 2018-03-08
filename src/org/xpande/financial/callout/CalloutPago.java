@@ -108,6 +108,10 @@ public class CalloutPago extends CalloutEngine {
 
         mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_EmisionManual, medioPagoFolio.isEmisionManual());
 
+        if (medioPagoFolio.isEmisionManual()){
+            mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_Z_MedioPagoItem_ID, null);
+        }
+
         return "";
     }
 
