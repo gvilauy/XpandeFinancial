@@ -33,7 +33,7 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180308L;
+	private static final long serialVersionUID = 20180312L;
 
     /** Standard Constructor */
     public X_Z_ResguardoSocio (Properties ctx, int Z_ResguardoSocio_ID, String trxName)
@@ -54,6 +54,8 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 			setEsContraResguardo (false);
 // N
 			setIsApproved (false);
+// N
+			setIsPaid (false);
 // N
 			setPeriodoControlado (false);
 // N
@@ -389,6 +391,30 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Paid.
+		@param IsPaid 
+		The document is paid
+	  */
+	public void setIsPaid (boolean IsPaid)
+	{
+		set_Value (COLUMNNAME_IsPaid, Boolean.valueOf(IsPaid));
+	}
+
+	/** Get Paid.
+		@return The document is paid
+	  */
+	public boolean isPaid () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPaid);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

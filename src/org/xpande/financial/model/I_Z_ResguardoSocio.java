@@ -243,6 +243,19 @@ public interface I_Z_ResguardoSocio
 	  */
 	public boolean isApproved();
 
+    /** Column name IsPaid */
+    public static final String COLUMNNAME_IsPaid = "IsPaid";
+
+	/** Set Paid.
+	  * The document is paid
+	  */
+	public void setIsPaid(boolean IsPaid);
+
+	/** Get Paid.
+	  * The document is paid
+	  */
+	public boolean isPaid();
+
     /** Column name PeriodoControlado */
     public static final String COLUMNNAME_PeriodoControlado = "PeriodoControlado";
 

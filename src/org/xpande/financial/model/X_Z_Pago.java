@@ -33,7 +33,7 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180126L;
+	private static final long serialVersionUID = 20180312L;
 
     /** Standard Constructor */
     public X_Z_Pago (Properties ctx, int Z_Pago_ID, String trxName)
@@ -64,6 +64,8 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 // N
 			setProcessing (false);
 // N
+			setTieneOrdenPago (true);
+// Y
 			setTieneRecibo (true);
 // Y
 			setTotalMediosPago (Env.ZERO);
@@ -298,6 +300,25 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	public String getDescription () 
 	{
 		return (String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Difference.
+		@param DifferenceAmt 
+		Difference Amount
+	  */
+	public void setDifferenceAmt (BigDecimal DifferenceAmt)
+	{
+		throw new IllegalArgumentException ("DifferenceAmt is virtual column");	}
+
+	/** Get Difference.
+		@return Difference Amount
+	  */
+	public BigDecimal getDifferenceAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DifferenceAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** DocAction AD_Reference_ID=135 */
@@ -583,6 +604,23 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 		return (String)get_Value(COLUMNNAME_ProcessButton2);
 	}
 
+	/** Set ProcessButton3.
+		@param ProcessButton3 
+		Botón para proceso
+	  */
+	public void setProcessButton3 (String ProcessButton3)
+	{
+		set_Value (COLUMNNAME_ProcessButton3, ProcessButton3);
+	}
+
+	/** Get ProcessButton3.
+		@return Botón para proceso
+	  */
+	public String getProcessButton3 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton3);
+	}
+
 	/** Set Processed.
 		@param Processed 
 		The document has been processed
@@ -663,6 +701,30 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	public String getReference () 
 	{
 		return (String)get_Value(COLUMNNAME_Reference);
+	}
+
+	/** Set TieneOrdenPago.
+		@param TieneOrdenPago 
+		Si tiene o no ordenes de pago asociadas
+	  */
+	public void setTieneOrdenPago (boolean TieneOrdenPago)
+	{
+		set_Value (COLUMNNAME_TieneOrdenPago, Boolean.valueOf(TieneOrdenPago));
+	}
+
+	/** Get TieneOrdenPago.
+		@return Si tiene o no ordenes de pago asociadas
+	  */
+	public boolean isTieneOrdenPago () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneOrdenPago);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set TieneRecibo.

@@ -122,6 +122,11 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
 
         try{
 
+            // Si este medio de pago viene de una orden de pago, no necesito validaciones.
+            if (this.getZ_OrdenPago_ID() > 0){
+                return null;
+            }
+
             Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
             // Validaciones de campos obligatorios segun atributos obtenidos del medio de pago

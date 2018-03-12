@@ -517,6 +517,8 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
 					" inner join c_doctype doc on hdr.c_doctype_id = doc.c_doctype_id " +
 					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
+					" and hdr.ad_org_id =" + this.getAD_Org_ID() +
+					" and hdr.ispaid ='N' " +
 					" and hdr.docstatus='CO' " +
 					" and hdr.z_resguardosocio_ref_id is null " +
 					" and doc.docbasetype='RGU' " +
@@ -676,16 +678,19 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
 			// Query
 		    sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (hdr.documentserie || hdr.documentno) as documentno, " +
-						" hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal,  " +
+						" hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal, ips.c_invoicepayschedule_id, " +
+						" iop.amtopen, " +
 						" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, coalesce(hdr.TieneDtosNC,'N') as TieneDtosNC, " +
 					" coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
 					" from c_invoice hdr " +
 					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
 					" inner join c_doctype doc on hdr.c_doctypetarget_id = doc.c_doctype_id " +
+					" inner join zv_financial_invopen iop on hdr.c_invoice_id = iop.c_invoice_id " +
 					" left outer join c_invoicepayschedule ips on hdr.c_invoice_id = ips.c_invoice_id " +
 					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
 					" and hdr.issotrx='N' " +
 					" and hdr.docstatus='CO' " +
+					" and iop.amtopen > 0 " +
 					" and hdr.c_invoice_id not in (select c_invoice_id from z_generaordenpagolin " +
 					" where c_invoice_id is not null " +
 					" and z_generaordenpago_id =" + this.get_ID() + ") " +
@@ -731,23 +736,37 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					}
 				}
 
+				boolean vencimientoOK = true;
+				int cInvoicePayScheduleID = rs.getInt("c_invoicepayschedule_id");
+				if (cInvoicePayScheduleID > 0){
+					// Debo verificar que tenga saldo abierta en la vista de saldos abiertos por vencimiento
+
+				}
+
+				// Si es un vencimiento de factura y no tiene saldo abierto, no proceso esta linea.
+				if (!vencimientoOK){
+					continue;
+				}
+
 				boolean esFactura = true;
 				if (rs.getString("docbasetype").equalsIgnoreCase(Doc.DOCTYPE_APCredit)){
 					esFactura = false;
 				}
 
 				BigDecimal amtDocument = rs.getBigDecimal("grandtotal");
+				BigDecimal amtOpen = rs.getBigDecimal("amtopen");
 				if (!esFactura){
 					amtDocument = amtDocument.negate();
+					amtOpen = amtOpen.negate();
 				}
 
 				MZGeneraOrdenPagoLin ordenPagoLin = new MZGeneraOrdenPagoLin(getCtx(), 0, get_TrxName());
 				ordenPagoLin.setZ_GeneraOrdenPago_ID(this.get_ID());
 				ordenPagoLin.setZ_GeneraOrdenPagoSocio_ID(ordenPagoSocio.get_ID());
 				ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
-				ordenPagoLin.setAmtAllocation(amtDocument);
 				ordenPagoLin.setAmtDocument(amtDocument);
-				ordenPagoLin.setAmtOpen(amtDocument);
+				ordenPagoLin.setAmtOpen(amtOpen);
+				ordenPagoLin.setAmtAllocation(amtOpen);
 				ordenPagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
 				ordenPagoLin.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
 				ordenPagoLin.setDateDoc(rs.getTimestamp("dateinvoiced"));
@@ -756,6 +775,10 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				ordenPagoLin.setDueDateMedioPago(ordenPagoLin.getDueDateDoc());
 				ordenPagoLin.setEstadoAprobacion("APROBADO");
 				ordenPagoLin.setC_Invoice_ID(rs.getInt("c_invoice_id"));
+
+				if (cInvoicePayScheduleID > 0){
+					ordenPagoLin.setC_InvoicePaySchedule_ID(cInvoicePayScheduleID);
+				}
 
 				boolean tieneDtosNC = (rs.getString("TieneDtosNC").equalsIgnoreCase("Y")) ? true : false;
 				ordenPagoLin.setTieneDtosNC(tieneDtosNC);
@@ -913,6 +936,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				ordenPago.setDateDoc(this.getDateDoc());
 				ordenPago.setTotalAmt(Env.ZERO);
 				ordenPago.setDescription("Número de Generación : " + this.getDocumentNo());
+				ordenPago.setIsPaid(false);
 				ordenPago.saveEx();
 
 				// Obtengo y recorro lineas con documentos a considerar para este socio de negocio en la generacion de la orden de pago
@@ -959,6 +983,9 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					ordenPagoLin.setDateDoc(generaLin.getDateDoc());
 					ordenPagoLin.setDueDateDoc(generaLin.getDueDateDoc());
 					ordenPagoLin.setDocumentNoRef(generaLin.getDocumentNoRef());
+					if (generaLin.getC_InvoicePaySchedule_ID() > 0){
+						ordenPagoLin.setC_InvoicePaySchedule_ID(generaLin.getC_InvoicePaySchedule_ID());
+					}
 					if (generaLin.getC_Invoice_ID() > 0){
 						ordenPagoLin.setC_Invoice_ID(generaLin.getC_Invoice_ID());
 					}

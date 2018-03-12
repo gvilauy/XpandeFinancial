@@ -46,7 +46,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private static final long serialVersionUID = 20180124L;
 
-    /** Standard Constructor */
+	/** Standard Constructor */
     public MZPago (Properties ctx, int Z_Pago_ID, String trxName)
     {
       super (ctx, Z_Pago_ID, trxName);
@@ -539,8 +539,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		try{
 
-
-
 			String whereClause = "";
 
 			// Filtros de fechas
@@ -567,17 +565,20 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			// Query
 			sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (hdr.documentserie || hdr.documentno) as documentno, " +
 					" hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal, ips.c_invoicepayschedule_id, " +
+					" iop.amtopen, " +
 					" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, coalesce(hdr.TieneDtosNC,'N') as TieneDtosNC, " +
 					" coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
 					" from c_invoice hdr " +
 					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
 					" inner join c_doctype doc on hdr.c_doctypetarget_id = doc.c_doctype_id " +
+					" inner join zv_financial_invopen iop on hdr.c_invoice_id = iop.c_invoice_id " +
 					" left outer join c_invoicepayschedule ips on hdr.c_invoice_id = ips.c_invoice_id " +
 					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
 					" and hdr.ad_org_id =" + this.getAD_Org_ID() +
 					" and hdr.c_bpartner_id =" + this.getC_BPartner_ID() +
 					" and hdr.issotrx='" + ((this.isSOTrx()) ? "Y":"N") + "' " +
 					" and hdr.docstatus='CO' " +
+					" and iop.amtopen > 0 " +
 					" and hdr.c_invoice_id not in (select c_invoice_id from z_pagolin " +
 					" where c_invoice_id is not null " +
 					" and z_pago_id =" + this.get_ID() + ") " +
@@ -589,21 +590,35 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			while(rs.next()){
 
+				boolean vencimientoOK = true;
+				int cInvoicePayScheduleID = rs.getInt("c_invoicepayschedule_id");
+				if (cInvoicePayScheduleID > 0){
+					// Debo verificar que tenga saldo abierta en la vista de saldos abiertos por vencimiento
+
+				}
+
+				// Si es un vencimiento de factura y no tiene saldo abierto, no proceso esta linea.
+				if (!vencimientoOK){
+					continue;
+				}
+
 				boolean esFactura = true;
 				if (rs.getString("docbasetype").equalsIgnoreCase(Doc.DOCTYPE_APCredit)){
 					esFactura = false;
 				}
 
 				BigDecimal amtDocument = rs.getBigDecimal("grandtotal");
+				BigDecimal amtOpen = rs.getBigDecimal("amtopen");
 				if (!esFactura){
 					amtDocument = amtDocument.negate();
+					amtOpen = amtOpen.negate();
 				}
 
 				MZPagoLin pagoLin = new MZPagoLin(getCtx(), 0, get_TrxName());
 				pagoLin.setZ_Pago_ID(this.get_ID());
-				pagoLin.setAmtAllocation(amtDocument);
 				pagoLin.setAmtDocument(amtDocument);
-				pagoLin.setAmtOpen(amtDocument);
+				pagoLin.setAmtOpen(amtOpen);
+				pagoLin.setAmtAllocation(amtOpen);
 				pagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
 				pagoLin.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
 				pagoLin.setDateDoc(rs.getTimestamp("dateinvoiced"));
@@ -611,8 +626,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				pagoLin.setDocumentNoRef(rs.getString("documentno"));
 				pagoLin.setEstadoAprobacion("APROBADO");
 				pagoLin.setC_Invoice_ID(rs.getInt("c_invoice_id"));
-				if (rs.getInt("c_invoicepayschedule_id") > 0){
-					pagoLin.setC_InvoicePaySchedule_ID(rs.getInt("c_invoicepayschedule_id"));
+				if (cInvoicePayScheduleID > 0){
+					pagoLin.setC_InvoicePaySchedule_ID(cInvoicePayScheduleID);
 				}
 				pagoLin.setResguardoEmitido(MZResguardoSocio.invoiceTieneResguardo(getCtx(), pagoLin.getC_Invoice_ID(), get_TrxName()));
 
@@ -785,6 +800,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" inner join c_doctype doc on hdr.c_doctype_id = doc.c_doctype_id " +
 					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
 					" and hdr.ad_org_id =" + this.getAD_Org_ID() +
+					" and hdr.ispaid ='N' " +
 					" and hdr.c_bpartner_id =" + this.getC_BPartner_ID() +
 					" and hdr.docstatus='CO' " +
 					" and hdr.z_resguardosocio_ref_id is null " +
@@ -820,6 +836,133 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				}
 			}
 
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+
+	}
+
+	/***
+	 * Obtiene y carga ordenes de pago pendientes de
+	 * @return
+	 */
+	public String getOrdenesPago() {
+
+		String message = null;
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			// Query
+			sql = " select z_ordenpago_id, datedoc, totalamt " +
+					" from z_ordenpago " +
+					" where ad_client_id =" + this.getAD_Client_ID() +
+					" and ad_org_id =" + this.getAD_Org_ID() +
+					" and c_bpartner_id =" + this.getC_BPartner_ID() +
+					" and c_currency_id =" + this.getC_Currency_ID() +
+					" and docstatus='CO' " +
+					" and ispaid='N' " +
+					" order by datedoc ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				MZPagoOrdenPago pagoOrdenPago = new MZPagoOrdenPago(getCtx(), 0, get_TrxName());
+				pagoOrdenPago.setZ_Pago_ID(this.get_ID());
+				pagoOrdenPago.setZ_OrdenPago_ID(rs.getInt("z_ordenpago_id"));
+				pagoOrdenPago.setC_Currency_ID(this.getC_Currency_ID());
+				pagoOrdenPago.setDateTrx(rs.getTimestamp("datedoc"));
+				pagoOrdenPago.setTotalAmt(rs.getBigDecimal("totalamt"));
+				pagoOrdenPago.saveEx();
+
+				// Instancio modelo de orden de pago y cargo documentos afectados, medios de pago y resguardos contenidos en esta orden
+				MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
+
+				// Cargo documentos afectados por la orden
+				List<MZOrdenPagoLin> invList = ordenPago.getInvoices();
+				for (MZOrdenPagoLin ordenPagoLin: invList){
+					MZPagoLin pagoLin = new MZPagoLin(getCtx(), 0, get_TrxName());
+					pagoLin.setZ_Pago_ID(this.get_ID());
+					pagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocationMT());
+					pagoLin.setAmtAllocation(ordenPagoLin.getAmtAllocation());
+					pagoLin.setMultiplyRate(ordenPagoLin.getMultiplyRate());
+					pagoLin.setAmtDocument(ordenPagoLin.getAmtDocument());
+					pagoLin.setAmtOpen(ordenPagoLin.getAmtOpen());
+					pagoLin.setC_Currency_ID(ordenPagoLin.getC_Currency_ID());
+					pagoLin.setC_DocType_ID(ordenPagoLin.getC_DocType_ID());
+					pagoLin.setC_Invoice_ID(ordenPagoLin.getC_Invoice_ID());
+					pagoLin.setDateDoc(ordenPagoLin.getDateDoc());
+					pagoLin.setDocumentNoRef(ordenPagoLin.getDocumentNoRef());
+					pagoLin.setDueDateDoc(ordenPagoLin.getDueDateDoc());
+					pagoLin.setEstadoAprobacion(X_Z_PagoLin.ESTADOAPROBACION_APROBADO);
+					pagoLin.setIsSelected(true);
+					pagoLin.setZ_OrdenPago_ID(ordenPago.get_ID());
+					if (ordenPagoLin.getC_InvoicePaySchedule_ID() > 0){
+						pagoLin.setC_InvoicePaySchedule_ID(ordenPagoLin.getC_InvoicePaySchedule_ID());
+					}
+					pagoLin.saveEx();
+				}
+
+				// Cargo medios de pago afectados por la orden y ya emitidos
+				List<MZOrdenPagoMedio> medioList = ordenPago.getMediosPago();
+				for (MZOrdenPagoMedio ordenPagoMedio: medioList){
+					MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), 0, get_TrxName());
+					pagoMedioPago.setZ_Pago_ID(this.get_ID());
+					pagoMedioPago.setZ_OrdenPago_ID(ordenPago.get_ID());
+					pagoMedioPago.setZ_MedioPago_ID(ordenPagoMedio.getZ_MedioPago_ID());
+					if (ordenPagoMedio.getZ_MedioPagoFolio_ID() > 0){
+						pagoMedioPago.setZ_MedioPagoFolio_ID(ordenPagoMedio.getZ_MedioPagoFolio_ID());
+					}
+					if (ordenPagoMedio.getZ_MedioPagoItem_ID() > 0){
+						pagoMedioPago.setZ_MedioPagoItem_ID(ordenPagoMedio.getZ_MedioPagoItem_ID());
+					}
+					pagoMedioPago.setTotalAmtMT(ordenPagoMedio.getTotalAmt());
+					pagoMedioPago.setTotalAmt(ordenPagoMedio.getTotalAmt());
+					pagoMedioPago.setC_BankAccount_ID(ordenPagoMedio.getC_BankAccount_ID());
+					pagoMedioPago.setC_Currency_ID(ordenPagoMedio.getC_Currency_ID());
+					pagoMedioPago.setDateEmitted(ordenPagoMedio.getDateEmitted());
+					pagoMedioPago.setDocumentNoRef(ordenPagoMedio.getDocumentNoRef());
+					pagoMedioPago.setDueDate(ordenPagoMedio.getDueDate());
+					pagoMedioPago.setEmisionManual(false);
+					pagoMedioPago.setMultiplyRate(Env.ONE);
+					pagoMedioPago.setTieneCaja(false);
+					pagoMedioPago.setTieneCtaBco(true);
+					pagoMedioPago.setTieneFecEmi(true);
+					pagoMedioPago.setTieneFecVenc(true);
+					pagoMedioPago.setTieneFolio(true);
+					pagoMedioPago.saveEx();
+				}
+
+				// Cargo resguardos afectados por la orden
+				List<MZOrdenPagoLin> resgList = ordenPago.getResguardos();
+				for (MZOrdenPagoLin ordenPagoLin: resgList){
+					MZPagoResguardo pagoResguardo = new MZPagoResguardo(getCtx(), 0, get_TrxName());
+					pagoResguardo.setZ_Pago_ID(this.get_ID());
+					pagoResguardo.setZ_OrdenPago_ID(ordenPago.get_ID());
+					pagoResguardo.setZ_ResguardoSocio_ID(ordenPagoLin.getZ_ResguardoSocio_ID());
+					pagoResguardo.setDateTrx(ordenPagoLin.getDateDoc());
+					pagoResguardo.setC_DocType_ID(ordenPagoLin.getC_DocType_ID());
+					pagoResguardo.setAmtAllocation(ordenPagoLin.getAmtAllocation());
+					pagoResguardo.setAmtAllocationMT(ordenPagoLin.getAmtAllocationMT());
+					pagoResguardo.setAmtDocument(ordenPagoLin.getAmtDocument());
+					pagoResguardo.setC_Currency_ID(ordenPagoLin.getC_Currency_ID());
+					pagoResguardo.setDocumentNoRef(ordenPagoLin.getDocumentNoRef());
+					pagoResguardo.setIsSelected(true);
+					pagoResguardo.setMultiplyRate(ordenPagoLin.getMultiplyRate());
+					pagoResguardo.saveEx();
+				}
+			}
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
@@ -1052,6 +1195,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 	/***
 	 * Afecta resguardos utilizados en este pago
+	 * Xpande. Created by Gabriel Vila on 3/12/18.
 	 * @return
 	 */
 	private String afectarResguardos() {
@@ -1067,9 +1211,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			List<MZPagoResguardo> pagoResguardoList = this.getResguardos();
 			for (MZPagoResguardo pagoResguardo: pagoResguardoList){
-				MZResguardoSocio resguardoSocio = (MZResguardoSocio) pagoResguardo.getZ_ResguardoSocio();
-				resguardoSocio.setZ_Pago_ID(this.get_ID());
-				resguardoSocio.saveEx();
+				if (pagoResguardo.isSelected()){
+					MZResguardoSocio resguardoSocio = (MZResguardoSocio) pagoResguardo.getZ_ResguardoSocio();
+					resguardoSocio.setZ_Pago_ID(this.get_ID());
+					resguardoSocio.setIsPaid(true);
+					resguardoSocio.saveEx();
+				}
 			}
 
 		}

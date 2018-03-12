@@ -33,7 +33,7 @@ public class X_Z_PagoResguardo extends PO implements I_Z_PagoResguardo, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180126L;
+	private static final long serialVersionUID = 20180312L;
 
     /** Standard Constructor */
     public X_Z_PagoResguardo (Properties ctx, int Z_PagoResguardo_ID, String trxName)
@@ -272,6 +272,31 @@ public class X_Z_PagoResguardo extends PO implements I_Z_PagoResguardo, I_Persis
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	public I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException
+    {
+		return (I_Z_OrdenPago)MTable.get(getCtx(), I_Z_OrdenPago.Table_Name)
+			.getPO(getZ_OrdenPago_ID(), get_TrxName());	}
+
+	/** Set Z_OrdenPago ID.
+		@param Z_OrdenPago_ID Z_OrdenPago ID	  */
+	public void setZ_OrdenPago_ID (int Z_OrdenPago_ID)
+	{
+		if (Z_OrdenPago_ID < 1) 
+			set_Value (COLUMNNAME_Z_OrdenPago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_OrdenPago_ID, Integer.valueOf(Z_OrdenPago_ID));
+	}
+
+	/** Get Z_OrdenPago ID.
+		@return Z_OrdenPago ID	  */
+	public int getZ_OrdenPago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_OrdenPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_Pago getZ_Pago() throws RuntimeException

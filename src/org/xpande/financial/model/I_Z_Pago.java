@@ -204,6 +204,19 @@ public interface I_Z_Pago
 	  */
 	public String getDescription();
 
+    /** Column name DifferenceAmt */
+    public static final String COLUMNNAME_DifferenceAmt = "DifferenceAmt";
+
+	/** Set Difference.
+	  * Difference Amount
+	  */
+	public void setDifferenceAmt(BigDecimal DifferenceAmt);
+
+	/** Get Difference.
+	  * Difference Amount
+	  */
+	public BigDecimal getDifferenceAmt();
+
     /** Column name DocAction */
     public static final String COLUMNNAME_DocAction = "DocAction";
 
@@ -369,6 +382,19 @@ public interface I_Z_Pago
 	  */
 	public String getProcessButton2();
 
+    /** Column name ProcessButton3 */
+    public static final String COLUMNNAME_ProcessButton3 = "ProcessButton3";
+
+	/** Set ProcessButton3.
+	  * Botón para proceso
+	  */
+	public void setProcessButton3(String ProcessButton3);
+
+	/** Get ProcessButton3.
+	  * Botón para proceso
+	  */
+	public String getProcessButton3();
+
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -416,6 +442,19 @@ public interface I_Z_Pago
 	  * Reference for this record
 	  */
 	public String getReference();
+
+    /** Column name TieneOrdenPago */
+    public static final String COLUMNNAME_TieneOrdenPago = "TieneOrdenPago";
+
+	/** Set TieneOrdenPago.
+	  * Si tiene o no ordenes de pago asociadas
+	  */
+	public void setTieneOrdenPago(boolean TieneOrdenPago);
+
+	/** Get TieneOrdenPago.
+	  * Si tiene o no ordenes de pago asociadas
+	  */
+	public boolean isTieneOrdenPago();
 
     /** Column name TieneRecibo */
     public static final String COLUMNNAME_TieneRecibo = "TieneRecibo";

@@ -33,7 +33,7 @@ public class X_Z_OrdenPago extends PO implements I_Z_OrdenPago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171009L;
+	private static final long serialVersionUID = 20180312L;
 
     /** Standard Constructor */
     public X_Z_OrdenPago (Properties ctx, int Z_OrdenPago_ID, String trxName)
@@ -52,6 +52,8 @@ public class X_Z_OrdenPago extends PO implements I_Z_OrdenPago, I_Persistent
 // DR
 			setDocumentNo (null);
 			setIsApproved (false);
+// N
+			setIsPaid (false);
 // N
 			setProcessed (false);
 // N
@@ -361,6 +363,30 @@ public class X_Z_OrdenPago extends PO implements I_Z_OrdenPago, I_Persistent
 		return false;
 	}
 
+	/** Set Paid.
+		@param IsPaid 
+		The document is paid
+	  */
+	public void setIsPaid (boolean IsPaid)
+	{
+		set_Value (COLUMNNAME_IsPaid, Boolean.valueOf(IsPaid));
+	}
+
+	/** Get Paid.
+		@return The document is paid
+	  */
+	public boolean isPaid () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPaid);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Processed.
 		@param Processed 
 		The document has been processed
@@ -466,6 +492,31 @@ public class X_Z_OrdenPago extends PO implements I_Z_OrdenPago, I_Persistent
 	public int getZ_OrdenPago_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_OrdenPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_Pago getZ_Pago() throws RuntimeException
+    {
+		return (I_Z_Pago)MTable.get(getCtx(), I_Z_Pago.Table_Name)
+			.getPO(getZ_Pago_ID(), get_TrxName());	}
+
+	/** Set Z_Pago ID.
+		@param Z_Pago_ID Z_Pago ID	  */
+	public void setZ_Pago_ID (int Z_Pago_ID)
+	{
+		if (Z_Pago_ID < 1) 
+			set_Value (COLUMNNAME_Z_Pago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_Pago_ID, Integer.valueOf(Z_Pago_ID));
+	}
+
+	/** Get Z_Pago ID.
+		@return Z_Pago ID	  */
+	public int getZ_Pago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_Pago_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

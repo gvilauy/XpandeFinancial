@@ -242,62 +242,25 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			return DocAction.STATUS_Invalid;
 		}
 
-		// Genera medios de pago necesarios
+		// Emite medios de pago necesarios
 		List<MZOrdenPagoMedio> mediosPago = this.getMediosPago();
-		for (MZOrdenPagoMedio ordenMedioPago: mediosPago){
+		m_processMsg = this.emitirMediosPago(mediosPago);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
 
-			// Si no tengo item de medio de pago, obtengo el siguiente disponible del folio
-			MZMedioPagoItem medioPagoItem = null;
-			if (ordenMedioPago.getZ_MedioPagoItem_ID() <= 0){
-				if (ordenMedioPago.getZ_MedioPagoFolio_ID() <= 0){
-					m_processMsg = "Medio de pago no tiene Libreta asociada.";
-					return DocAction.STATUS_Invalid;
-				}
-				medioPagoItem = ((MZMedioPagoFolio) ordenMedioPago.getZ_MedioPagoFolio()).getCurrentNext();
-				if ((medioPagoItem == null) || (medioPagoItem.get_ID() <= 0)){
-					m_processMsg = "Libreta no tiene medios de pago disponibles para utilizar.";
-					return DocAction.STATUS_Invalid;
-				}
-				ordenMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
-				ordenMedioPago.saveEx();
+		// Afecta invoices asociadas a esta orden de pago
+		List<MZOrdenPagoLin> pagoLinInvList = this.getInvoices();
+		m_processMsg = this.afectarInvoices(pagoLinInvList);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
 
-				// Realizo emisión para este medio de pago a considerar
-				MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
-				emisionMedioPago.setZ_MedioPago_ID(ordenMedioPago.getZ_MedioPago_ID());
-				emisionMedioPago.setZ_MedioPagoFolio_ID(ordenMedioPago.getZ_MedioPagoFolio_ID());
-				emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
-				emisionMedioPago.setZ_OrdenPago_ID(this.get_ID());
-				emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
-				emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
-				emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
-				emisionMedioPago.setDateDoc(this.getDateDoc());
-				emisionMedioPago.setDateEmitted(this.getDateDoc());
-				emisionMedioPago.setDueDate(ordenMedioPago.getDueDate());
-				emisionMedioPago.setTotalAmt(ordenMedioPago.getTotalAmt());
-				emisionMedioPago.saveEx();
-
-				// Completo documento de emisión de medio de pago
-				if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
-					m_processMsg = emisionMedioPago.getProcessMsg();
-					return DocAction.STATUS_Invalid;
-				}
-				emisionMedioPago.saveEx();
-
-			}
-
-			/*
-			else{
-				medioPagoItem = (MZMedioPagoItem) ordenMedioPago.getZ_MedioPagoItem();
-			}
-
-			medioPagoItem.setTotalAmt(ordenMedioPago.getTotalAmt());
-			medioPagoItem.setEmitido(true);
-			medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
-			medioPagoItem.setDateEmitted(this.getDateDoc());
-			medioPagoItem.setDueDate(ordenMedioPago.getDueDate());
-			medioPagoItem.setLeyendasImpresion();
-			medioPagoItem.saveEx();
-			*/
+		// Afecta resguardos asociados
+		List<MZOrdenPagoLin> pagoLinResgList = this.getResguardos();
+		m_processMsg = this.afectarResguardos(pagoLinResgList);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
 		}
 
 		//	User Validation
@@ -314,6 +277,152 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
+
+
+	/***
+	 * Afecta resguardos utilizados en esta orden de pago
+	 * Xpande. Created by Gabriel Vila on 3/12/18.
+	 * @return
+	 */
+	private String afectarResguardos(List<MZOrdenPagoLin> pagoLinList) {
+
+		String message = null;
+
+		try{
+			for (MZOrdenPagoLin pagoLin: pagoLinList){
+				if (pagoLin.getZ_ResguardoSocio_ID() > 0){
+					MZResguardoSocio resguardoSocio = (MZResguardoSocio) pagoLin.getZ_ResguardoSocio();
+					resguardoSocio.setZ_OrdenPago_ID(this.get_ID());
+					resguardoSocio.setIsPaid(true);
+					resguardoSocio.saveEx();
+				}
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+	/***
+	 * Afecta invoices afectadas en esta orden de pago
+	 * Xpande. Created by Gabriel Vila on 3/12/18.
+	 * @return
+	 */
+	private String afectarInvoices(List<MZOrdenPagoLin> pagoLinList) {
+
+		String message = null;
+
+		try{
+			for (MZOrdenPagoLin pagoLin: pagoLinList){
+				if (pagoLin.getC_Invoice_ID() > 0){
+
+					// Afecta cada comprobante por el monto de afectación
+					MZInvoiceAfectacion invoiceAfecta = new MZInvoiceAfectacion(getCtx(), 0, get_TrxName());
+					invoiceAfecta.setZ_OrdenPago_ID(this.get_ID());
+					invoiceAfecta.setAD_Table_ID(this.get_Table_ID());
+					invoiceAfecta.setAmtAllocation(pagoLin.getAmtAllocation());
+					invoiceAfecta.setC_DocType_ID(this.getC_DocType_ID());
+					invoiceAfecta.setC_Invoice_ID(pagoLin.getC_Invoice_ID());
+
+					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+						invoiceAfecta.setC_InvoicePaySchedule_ID(pagoLin.getC_InvoicePaySchedule_ID());
+					}
+
+					invoiceAfecta.setDateDoc(this.getDateDoc());
+					invoiceAfecta.setDocumentNoRef(this.getDocumentNo());
+					invoiceAfecta.setDueDate(pagoLin.getDueDateDoc());
+					invoiceAfecta.setRecord_ID(this.get_ID());
+					invoiceAfecta.setC_Currency_ID(pagoLin.getC_Currency_ID());
+					invoiceAfecta.setAD_Org_ID(this.getAD_Org_ID());
+					invoiceAfecta.saveEx();
+
+				}
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Emite medios de pago asociados a esta orden de pago.
+	 * Xpande. Created by Gabriel Vila on 3/12/18.
+	 * @param mediosPago
+	 * @return
+	 */
+	private String emitirMediosPago(List<MZOrdenPagoMedio> mediosPago) {
+
+		String message = null;
+
+		try{
+
+			for (MZOrdenPagoMedio ordenMedioPago: mediosPago){
+
+				// Si no tengo item de medio de pago, obtengo el siguiente disponible del folio
+				MZMedioPagoItem medioPagoItem = null;
+				if (ordenMedioPago.getZ_MedioPagoItem_ID() <= 0){
+					if (ordenMedioPago.getZ_MedioPagoFolio_ID() <= 0){
+						return "Medio de pago no tiene Libreta asociada.";
+					}
+					medioPagoItem = ((MZMedioPagoFolio) ordenMedioPago.getZ_MedioPagoFolio()).getCurrentNext();
+					if ((medioPagoItem == null) || (medioPagoItem.get_ID() <= 0)){
+						return "Libreta no tiene medios de pago disponibles para utilizar.";
+					}
+					ordenMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+					ordenMedioPago.setDateEmitted(this.getDateDoc());
+					ordenMedioPago.saveEx();
+
+					// Realizo emisión para este medio de pago a considerar
+					MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
+					emisionMedioPago.setZ_MedioPago_ID(ordenMedioPago.getZ_MedioPago_ID());
+					emisionMedioPago.setZ_MedioPagoFolio_ID(ordenMedioPago.getZ_MedioPagoFolio_ID());
+					emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+					emisionMedioPago.setZ_OrdenPago_ID(this.get_ID());
+					emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
+					emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
+					emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
+					emisionMedioPago.setDateDoc(this.getDateDoc());
+					emisionMedioPago.setDateEmitted(this.getDateDoc());
+					emisionMedioPago.setDueDate(ordenMedioPago.getDueDate());
+					emisionMedioPago.setTotalAmt(ordenMedioPago.getTotalAmt());
+					emisionMedioPago.saveEx();
+
+					// Completo documento de emisión de medio de pago
+					if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
+						m_processMsg = emisionMedioPago.getProcessMsg();
+						return DocAction.STATUS_Invalid;
+					}
+					emisionMedioPago.saveEx();
+
+				}
+			/*
+			else{
+				medioPagoItem = (MZMedioPagoItem) ordenMedioPago.getZ_MedioPagoItem();
+			}
+
+			medioPagoItem.setTotalAmt(ordenMedioPago.getTotalAmt());
+			medioPagoItem.setEmitido(true);
+			medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
+			medioPagoItem.setDateEmitted(this.getDateDoc());
+			medioPagoItem.setDueDate(ordenMedioPago.getDueDate());
+			medioPagoItem.setLeyendasImpresion();
+			medioPagoItem.saveEx();
+			*/
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+
+	}
 
 
 	/***
@@ -343,7 +452,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 	 * Xpande. Created by Gabriel Vila on 8/16/17.
 	 * @return
 	 */
-	private List<MZOrdenPagoMedio> getMediosPago() {
+	public List<MZOrdenPagoMedio> getMediosPago() {
 
 		String whereClause = X_Z_OrdenPagoMedio.COLUMNNAME_Z_OrdenPago_ID + " =" + this.get_ID();
 
@@ -351,6 +460,38 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 		return lines;
 	}
+
+	/***
+	 * Obtiene y retorna lineas de orden de pago que se corresponden a resguardos.
+	 * Xpande. Created by Gabriel Vila on 3/12/18.
+	 * @return
+	 */
+	public List<MZOrdenPagoLin> getResguardos(){
+
+		String whereClause = X_Z_OrdenPagoLin.COLUMNNAME_Z_OrdenPago_ID + " =" + this.get_ID() +
+				" AND " + X_Z_OrdenPagoLin.COLUMNNAME_Z_ResguardoSocio_ID + " is not null ";
+
+		List<MZOrdenPagoLin> lines = new Query(getCtx(), I_Z_OrdenPagoLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
+	/***
+	 * Obtiene y retorna lineas de orden de pago que se corresponden a invoices.
+	 * Xpande. Created by Gabriel Vila on 3/12/18.
+	 * @return
+	 */
+	public List<MZOrdenPagoLin> getInvoices(){
+
+		String whereClause = X_Z_OrdenPagoLin.COLUMNNAME_Z_OrdenPago_ID + " =" + this.get_ID() +
+				" AND " + X_Z_OrdenPagoLin.COLUMNNAME_C_Invoice_ID + " is not null ";
+
+		List<MZOrdenPagoLin> lines = new Query(getCtx(), I_Z_OrdenPagoLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
 
 	/**
 	 * 	Set the definite document number after completed
