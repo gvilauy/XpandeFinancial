@@ -228,6 +228,19 @@ public interface I_Z_OrdenPago
 	  */
 	public boolean isApproved();
 
+    /** Column name IsPaid */
+    public static final String COLUMNNAME_IsPaid = "IsPaid";
+
+	/** Set Paid.
+	  * The document is paid
+	  */
+	public void setIsPaid(boolean IsPaid);
+
+	/** Get Paid.
+	  * The document is paid
+	  */
+	public boolean isPaid();
+
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -298,4 +311,15 @@ public interface I_Z_OrdenPago
 
 	/** Get Z_OrdenPago ID	  */
 	public int getZ_OrdenPago_ID();
+
+    /** Column name Z_Pago_ID */
+    public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
+
+	/** Set Z_Pago ID	  */
+	public void setZ_Pago_ID(int Z_Pago_ID);
+
+	/** Get Z_Pago ID	  */
+	public int getZ_Pago_ID();
+
+	public I_Z_Pago getZ_Pago() throws RuntimeException;
 }

@@ -33,7 +33,7 @@ public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171018L;
+	private static final long serialVersionUID = 20180312L;
 
     /** Standard Constructor */
     public X_Z_GeneraOrdenPagoLin (Properties ctx, int Z_GeneraOrdenPagoLin_ID, String trxName)
@@ -222,6 +222,34 @@ public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin
 	public int getC_Invoice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_InvoicePaySchedule getC_InvoicePaySchedule() throws RuntimeException
+    {
+		return (I_C_InvoicePaySchedule)MTable.get(getCtx(), I_C_InvoicePaySchedule.Table_Name)
+			.getPO(getC_InvoicePaySchedule_ID(), get_TrxName());	}
+
+	/** Set Invoice Payment Schedule.
+		@param C_InvoicePaySchedule_ID 
+		Invoice Payment Schedule
+	  */
+	public void setC_InvoicePaySchedule_ID (int C_InvoicePaySchedule_ID)
+	{
+		if (C_InvoicePaySchedule_ID < 1) 
+			set_Value (COLUMNNAME_C_InvoicePaySchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_InvoicePaySchedule_ID, Integer.valueOf(C_InvoicePaySchedule_ID));
+	}
+
+	/** Get Invoice Payment Schedule.
+		@return Invoice Payment Schedule
+	  */
+	public int getC_InvoicePaySchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoicePaySchedule_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_PagoResguardo
+/** Generated Interface for Z_PagoOrdenPago
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_PagoResguardo 
+public interface I_Z_PagoOrdenPago 
 {
 
-    /** TableName=Z_PagoResguardo */
-    public static final String Table_Name = "Z_PagoResguardo";
+    /** TableName=Z_PagoOrdenPago */
+    public static final String Table_Name = "Z_PagoOrdenPago";
 
-    /** AD_Table_ID=1000189 */
+    /** AD_Table_ID=1000203 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,45 +63,6 @@ public interface I_Z_PagoResguardo
 	  */
 	public int getAD_Org_ID();
 
-    /** Column name AmtAllocation */
-    public static final String COLUMNNAME_AmtAllocation = "AmtAllocation";
-
-	/** Set AmtAllocation.
-	  * Monto afectación
-	  */
-	public void setAmtAllocation(BigDecimal AmtAllocation);
-
-	/** Get AmtAllocation.
-	  * Monto afectación
-	  */
-	public BigDecimal getAmtAllocation();
-
-    /** Column name AmtAllocationMT */
-    public static final String COLUMNNAME_AmtAllocationMT = "AmtAllocationMT";
-
-	/** Set AmtAllocationMT.
-	  * Monto afectación en moneda de la transacción
-	  */
-	public void setAmtAllocationMT(BigDecimal AmtAllocationMT);
-
-	/** Get AmtAllocationMT.
-	  * Monto afectación en moneda de la transacción
-	  */
-	public BigDecimal getAmtAllocationMT();
-
-    /** Column name AmtDocument */
-    public static final String COLUMNNAME_AmtDocument = "AmtDocument";
-
-	/** Set AmtDocument.
-	  * Monto documento
-	  */
-	public void setAmtDocument(BigDecimal AmtDocument);
-
-	/** Get AmtDocument.
-	  * Monto documento
-	  */
-	public BigDecimal getAmtDocument();
-
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -116,21 +77,6 @@ public interface I_Z_PagoResguardo
 	public int getC_Currency_ID();
 
 	public I_C_Currency getC_Currency() throws RuntimeException;
-
-    /** Column name C_DocType_ID */
-    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
-
-	/** Set Document Type.
-	  * Document type or rules
-	  */
-	public void setC_DocType_ID(int C_DocType_ID);
-
-	/** Get Document Type.
-	  * Document type or rules
-	  */
-	public int getC_DocType_ID();
-
-	public I_C_DocType getC_DocType() throws RuntimeException;
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -161,19 +107,6 @@ public interface I_Z_PagoResguardo
 	  */
 	public Timestamp getDateTrx();
 
-    /** Column name DocumentNoRef */
-    public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
-
-	/** Set DocumentNoRef.
-	  * Numero de documento referenciado
-	  */
-	public void setDocumentNoRef(String DocumentNoRef);
-
-	/** Get DocumentNoRef.
-	  * Numero de documento referenciado
-	  */
-	public String getDocumentNoRef();
-
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -187,27 +120,18 @@ public interface I_Z_PagoResguardo
 	  */
 	public boolean isActive();
 
-    /** Column name IsSelected */
-    public static final String COLUMNNAME_IsSelected = "IsSelected";
+    /** Column name TotalAmt */
+    public static final String COLUMNNAME_TotalAmt = "TotalAmt";
 
-	/** Set Selected	  */
-	public void setIsSelected(boolean IsSelected);
-
-	/** Get Selected	  */
-	public boolean isSelected();
-
-    /** Column name MultiplyRate */
-    public static final String COLUMNNAME_MultiplyRate = "MultiplyRate";
-
-	/** Set Multiply Rate.
-	  * Rate to multiple the source by to calculate the target.
+	/** Set Total Amount.
+	  * Total Amount
 	  */
-	public void setMultiplyRate(BigDecimal MultiplyRate);
+	public void setTotalAmt(BigDecimal TotalAmt);
 
-	/** Get Multiply Rate.
-	  * Rate to multiple the source by to calculate the target.
+	/** Get Total Amount.
+	  * Total Amount
 	  */
-	public BigDecimal getMultiplyRate();
+	public BigDecimal getTotalAmt();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -247,23 +171,12 @@ public interface I_Z_PagoResguardo
 
 	public I_Z_Pago getZ_Pago() throws RuntimeException;
 
-    /** Column name Z_PagoResguardo_ID */
-    public static final String COLUMNNAME_Z_PagoResguardo_ID = "Z_PagoResguardo_ID";
+    /** Column name Z_PagoOrdenPago_ID */
+    public static final String COLUMNNAME_Z_PagoOrdenPago_ID = "Z_PagoOrdenPago_ID";
 
-	/** Set Z_PagoResguardo ID	  */
-	public void setZ_PagoResguardo_ID(int Z_PagoResguardo_ID);
+	/** Set Z_PagoOrdenPago ID	  */
+	public void setZ_PagoOrdenPago_ID(int Z_PagoOrdenPago_ID);
 
-	/** Get Z_PagoResguardo ID	  */
-	public int getZ_PagoResguardo_ID();
-
-    /** Column name Z_ResguardoSocio_ID */
-    public static final String COLUMNNAME_Z_ResguardoSocio_ID = "Z_ResguardoSocio_ID";
-
-	/** Set Z_ResguardoSocio ID	  */
-	public void setZ_ResguardoSocio_ID(int Z_ResguardoSocio_ID);
-
-	/** Get Z_ResguardoSocio ID	  */
-	public int getZ_ResguardoSocio_ID();
-
-	public I_Z_ResguardoSocio getZ_ResguardoSocio() throws RuntimeException;
+	/** Get Z_PagoOrdenPago ID	  */
+	public int getZ_PagoOrdenPago_ID();
 }
