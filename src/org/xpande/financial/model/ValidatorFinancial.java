@@ -3,9 +3,11 @@ package org.xpande.financial.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 /**
  * ModelValidator para funcionalidades relacionadas a gestión financiera del Core.
@@ -59,7 +61,7 @@ public class ValidatorFinancial implements ModelValidator {
 
 
     /***
-     * Validaciones para documentos de la tabla C_Invoice en gestión financiera.
+     * Validaciones y procesos para documentos de la tabla C_Invoice en gestión financiera.
      * Xpande. Created by Gabriel Vila on 8/8/17.
      * @param model
      * @param timing
@@ -68,6 +70,7 @@ public class ValidatorFinancial implements ModelValidator {
     private String docValidate(MInvoice model, int timing) {
 
         String message = null;
+        String action = "";
 
         if ((timing == TIMING_BEFORE_REACTIVATE) || (timing == TIMING_BEFORE_VOID)){
 
@@ -79,6 +82,136 @@ public class ValidatorFinancial implements ModelValidator {
                     return message;
                 }
             }
+        }
+
+        if ((timing == TIMING_AFTER_REACTIVATE) || (timing == TIMING_AFTER_VOID)){
+
+            // Al momento de reactivar o anular, debo eliminar invoice del estado de cuenta
+            if (!model.isSOTrx()){
+                action = " delete from z_estadocuenta where c_invoice_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+            }
+        }
+
+        if (timing == TIMING_AFTER_COMPLETE){
+
+            MDocType docType = (MDocType) model.getC_DocTypeTarget();
+            String documentNoRef = model.getDocumentNo();
+            if (model.get_ValueAsString("DocumentSerie") != null){
+                if (!model.get_ValueAsString("DocumentSerie").trim().equalsIgnoreCase("")){
+                    documentNoRef = model.get_ValueAsString("DocumentSerie").trim() + documentNoRef;
+                }
+            }
+
+            // Al completar impacto en estado de cuenta
+            // Impacto según vencimientos o no de esta invoice
+            MInvoicePaySchedule[] paySchedules = MInvoicePaySchedule.getInvoicePaySchedule(model.getCtx(), model.get_ID(), 0, model.get_TrxName());
+            if (paySchedules.length > 0){
+                for (int i = 0; i < paySchedules.length; i++){
+                    MInvoicePaySchedule ips = paySchedules[i];
+                    MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(model.getCtx(), 0, model.get_TrxName());
+                    estadoCuenta.setC_Invoice_ID(model.get_ID());
+                    estadoCuenta.setC_InvoicePaySchedule_ID(ips.get_ID());
+                    estadoCuenta.setAD_Table_ID(model.get_Table_ID());
+
+                    if (!model.isSOTrx()){
+                        if (docType.getDocBaseType().equalsIgnoreCase("API")){
+                            estadoCuenta.setAmtSourceCr(ips.getDueAmt());
+                            estadoCuenta.setAmtSourceDr(Env.ZERO);
+                        }
+                        else if (docType.getDocBaseType().equalsIgnoreCase("APC")){
+                            estadoCuenta.setAmtSourceCr(Env.ZERO);
+                            estadoCuenta.setAmtSourceDr(ips.getDueAmt());
+                        }
+                        else{
+                            estadoCuenta.setAmtSourceCr(ips.getDueAmt());
+                            estadoCuenta.setAmtSourceDr(Env.ZERO);
+                        }
+                    }
+                    else{
+                        if (docType.getDocBaseType().equalsIgnoreCase("ARC")){
+                            estadoCuenta.setAmtSourceCr(ips.getDueAmt());
+                            estadoCuenta.setAmtSourceDr(Env.ZERO);
+                        }
+                        else if (docType.getDocBaseType().equalsIgnoreCase("ARI")){
+                            estadoCuenta.setAmtSourceCr(Env.ZERO);
+                            estadoCuenta.setAmtSourceDr(ips.getDueAmt());
+                        }
+                        else{
+                            estadoCuenta.setAmtSourceCr(Env.ZERO);
+                            estadoCuenta.setAmtSourceDr(ips.getDueAmt());
+                        }
+                    }
+
+                    estadoCuenta.setC_BPartner_ID(model.getC_BPartner_ID());
+                    estadoCuenta.setC_Currency_ID(model.getC_Currency_ID());
+                    estadoCuenta.setC_DocType_ID(model.getC_DocTypeTarget_ID());
+                    estadoCuenta.setDateDoc(model.getDateInvoiced());
+                    estadoCuenta.setDocBaseType(docType.getDocBaseType());
+                    estadoCuenta.setDocumentNoRef(documentNoRef);
+                    estadoCuenta.setDueDate(ips.getDueDate());
+                    estadoCuenta.setEstadoAprobacion(model.get_ValueAsString("EstadoAprobacion"));
+                    estadoCuenta.setIsSOTrx(model.isSOTrx());
+                    estadoCuenta.setRecord_ID(model.get_ID());
+                    estadoCuenta.setAD_Org_ID(model.getAD_Org_ID());
+                    estadoCuenta.saveEx();
+                }
+            }
+            else{
+                // Fecha de Vencimiento de esta invoice, directamente de termino de pago
+                String sql = " select paymentTermDueDate(C_PaymentTerm_ID, DateInvoiced) as DueDate " +
+                                " from c_invoice " +
+                                " whee c_invoice_id =" + model.get_ID();
+                Timestamp dueDate = DB.getSQLValueTSEx(model.get_TrxName(), sql);
+                if (dueDate == null){
+                    dueDate = model.getDateInvoiced();
+                }
+
+                MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(model.getCtx(), 0, model.get_TrxName());
+                estadoCuenta.setC_Invoice_ID(model.get_ID());
+                estadoCuenta.setAD_Table_ID(model.get_Table_ID());
+                if (!model.isSOTrx()){
+                    if (docType.getDocBaseType().equalsIgnoreCase("API")){
+                        estadoCuenta.setAmtSourceCr(model.getGrandTotal());
+                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                    }
+                    else if (docType.getDocBaseType().equalsIgnoreCase("APC")){
+                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        estadoCuenta.setAmtSourceDr(model.getGrandTotal());
+                    }
+                    else{
+                        estadoCuenta.setAmtSourceCr(model.getGrandTotal());
+                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                    }
+                }
+                else{
+                    if (docType.getDocBaseType().equalsIgnoreCase("ARC")){
+                        estadoCuenta.setAmtSourceCr(model.getGrandTotal());
+                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                    }
+                    else if (docType.getDocBaseType().equalsIgnoreCase("ARI")){
+                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        estadoCuenta.setAmtSourceDr(model.getGrandTotal());
+                    }
+                    else{
+                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        estadoCuenta.setAmtSourceDr(model.getGrandTotal());
+                    }
+                }
+                estadoCuenta.setC_BPartner_ID(model.getC_BPartner_ID());
+                estadoCuenta.setC_Currency_ID(model.getC_Currency_ID());
+                estadoCuenta.setC_DocType_ID(model.getC_DocTypeTarget_ID());
+                estadoCuenta.setDateDoc(model.getDateInvoiced());
+                estadoCuenta.setDocBaseType(docType.getDocBaseType());
+                estadoCuenta.setDocumentNoRef(documentNoRef);
+                estadoCuenta.setDueDate(dueDate);
+                estadoCuenta.setEstadoAprobacion(model.get_ValueAsString("EstadoAprobacion"));
+                estadoCuenta.setIsSOTrx(model.isSOTrx());
+                estadoCuenta.setRecord_ID(model.get_ID());
+                estadoCuenta.setAD_Org_ID(model.getAD_Org_ID());
+                estadoCuenta.saveEx();
+            }
+
         }
 
         return null;

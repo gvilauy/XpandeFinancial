@@ -1195,43 +1195,52 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			// Recorro comprobantes
 			for (MZPagoLin pagoLin: pagoLinList){
 
-				// Afecta cada comprobante por el monto de afectación
-				MZInvoiceAfectacion invoiceAfecta = null;
+				if (pagoLin.getC_Invoice_ID() > 0){
+					// Afecta cada comprobante por el monto de afectación
+					MZInvoiceAfectacion invoiceAfecta = null;
 
-				// Si tengo orden de pago asociada, busco afectación de la invoice o vencimiento del a misma, para esta orden de pago y le actualizo el campo ID de pago.
-				// Esto es porque ya esta afectado.
-				if (pagoLin.getZ_OrdenPago_ID() > 0){
-					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-						invoiceAfecta = MZInvoiceAfectacion.getByInvoiceSchOrdenPago(getCtx(), pagoLin.getC_InvoicePaySchedule_ID(), pagoLin.getZ_OrdenPago_ID(), get_TrxName());
+					// Si tengo orden de pago asociada, busco afectación de la invoice o vencimiento del a misma, para esta orden de pago y le actualizo el campo ID de pago.
+					// Esto es porque ya esta afectado.
+					if (pagoLin.getZ_OrdenPago_ID() > 0){
+						if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+							invoiceAfecta = MZInvoiceAfectacion.getByInvoiceSchOrdenPago(getCtx(), pagoLin.getC_InvoicePaySchedule_ID(), pagoLin.getZ_OrdenPago_ID(), get_TrxName());
+						}
+						else {
+							invoiceAfecta = MZInvoiceAfectacion.getByInvoiceOrdenPago(getCtx(), pagoLin.getC_Invoice_ID(), pagoLin.getZ_OrdenPago_ID(), get_TrxName());
+						}
 					}
-					else {
-						invoiceAfecta = MZInvoiceAfectacion.getByInvoiceOrdenPago(getCtx(), pagoLin.getC_Invoice_ID(), pagoLin.getZ_OrdenPago_ID(), get_TrxName());
+					if (invoiceAfecta == null){
+
+						BigDecimal amtAllocation = pagoLin.getAmtAllocation();
+						if (amtAllocation.compareTo(Env.ZERO) < 0){
+							amtAllocation = amtAllocation.negate();
+						}
+
+						invoiceAfecta = new MZInvoiceAfectacion(getCtx(), 0, get_TrxName());
+						invoiceAfecta.setAD_Table_ID(this.get_Table_ID());
+						invoiceAfecta.setAmtAllocation(amtAllocation);
+						invoiceAfecta.setC_DocType_ID(this.getC_DocType_ID());
+						invoiceAfecta.setC_Invoice_ID(pagoLin.getC_Invoice_ID());
+						if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+							invoiceAfecta.setC_InvoicePaySchedule_ID(pagoLin.getC_InvoicePaySchedule_ID());
+						}
+						invoiceAfecta.setDateDoc(this.getDateDoc());
+						invoiceAfecta.setDocumentNoRef(this.getDocumentNo());
+						invoiceAfecta.setDueDate(pagoLin.getDueDateDoc());
+						invoiceAfecta.setRecord_ID(this.get_ID());
+						invoiceAfecta.setC_Currency_ID(pagoLin.getC_Currency_ID());
+						invoiceAfecta.setAD_Org_ID(this.getAD_Org_ID());
+					}
+					invoiceAfecta.setZ_Pago_ID(this.get_ID());
+					invoiceAfecta.saveEx();
+
+					// Me aseguro marca de invoice como paga cuando no viene de ordenes de pago
+					if (!this.isTieneOrdenPago()){
+						MInvoice invoice = (MInvoice) pagoLin.getC_Invoice();
+						invoice.setIsPaid(true);
+						invoice.saveEx();
 					}
 				}
-				if (invoiceAfecta == null){
-
-					BigDecimal amtAllocation = pagoLin.getAmtAllocation();
-					if (amtAllocation.compareTo(Env.ZERO) < 0){
-						amtAllocation = amtAllocation.negate();
-					}
-
-					invoiceAfecta = new MZInvoiceAfectacion(getCtx(), 0, get_TrxName());
-					invoiceAfecta.setAD_Table_ID(this.get_Table_ID());
-					invoiceAfecta.setAmtAllocation(amtAllocation);
-					invoiceAfecta.setC_DocType_ID(this.getC_DocType_ID());
-					invoiceAfecta.setC_Invoice_ID(pagoLin.getC_Invoice_ID());
-					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-						invoiceAfecta.setC_InvoicePaySchedule_ID(pagoLin.getC_InvoicePaySchedule_ID());
-					}
-					invoiceAfecta.setDateDoc(this.getDateDoc());
-					invoiceAfecta.setDocumentNoRef(this.getDocumentNo());
-					invoiceAfecta.setDueDate(pagoLin.getDueDateDoc());
-					invoiceAfecta.setRecord_ID(this.get_ID());
-					invoiceAfecta.setC_Currency_ID(pagoLin.getC_Currency_ID());
-					invoiceAfecta.setAD_Org_ID(this.getAD_Org_ID());
-				}
-				invoiceAfecta.setZ_Pago_ID(this.get_ID());
-				invoiceAfecta.saveEx();
 			}
 
 		}

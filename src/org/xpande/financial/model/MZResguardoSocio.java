@@ -261,9 +261,11 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		log.info(toString());
 		//
 
+		// Lista de documentos asociados a este resguardo
+		List<MZResguardoSocioDoc> docs = this.getResguardoDocs();
 
 		// Validaciones del documento
-		String message =  this.validateDocument();
+		String message =  this.validateDocument(docs);
 		if (message != null){
 			m_processMsg = message;
 			return DocAction.STATUS_Invalid;
@@ -274,6 +276,37 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
 			this.setDescription("CONTRADOCUMENTO DE E-RESGUARDO");
 		}
+
+
+		// Impacto documento en estado de cuenta
+		MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
+		estadoCuenta.setZ_ResguardoSocio_ID(this.get_ID());
+		estadoCuenta.setAD_Table_ID(this.get_Table_ID());
+		// Monto al debe o al haber segun sea resguardo o contra-resguardo
+		if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
+			estadoCuenta.setAmtSourceCr(this.getTotalAmt());
+			estadoCuenta.setAmtSourceDr(Env.ZERO);
+		}
+		else{
+			estadoCuenta.setAmtSourceCr(Env.ZERO);
+			estadoCuenta.setAmtSourceDr(this.getTotalAmt());
+		}
+		estadoCuenta.setC_BPartner_ID(this.getC_BPartner_ID());
+		estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
+		estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
+		estadoCuenta.setDateDoc(this.getDateDoc());
+		estadoCuenta.setDocBaseType(docType.getDocBaseType());
+		estadoCuenta.setDocumentNoRef(this.getDocumentNo());
+		estadoCuenta.setIsSOTrx(false);
+		estadoCuenta.setRecord_ID(this.get_ID());
+		estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
+		estadoCuenta.saveEx();
+
+		// Impacto asociación de resguardo a invoices en estado de cuenta
+		String action = " update z_estadocuenta set z_resguardosocio_to_id =" + this.get_ID() +
+						" where c_invoice_id is not null " +
+						" and c_invoice_id in (select c_invoice_id from z_resguardosociodoc where z_resguardosocio_id =" + this.get_ID() + ")";
+		DB.executeUpdateEx(action, get_TrxName());
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -299,8 +332,9 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 	 * Validaciones al documento al momento de completar.
 	 * Xpande. Created by Gabriel Vila on 9/9/17.
 	 * @return
+	 * @param docs
 	 */
-	private String validateDocument() {
+	private String validateDocument(List<MZResguardoSocioDoc> docs) {
 
 		String message = null;
 
@@ -313,8 +347,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 
 			int cPeriodID = 0;
 
-			// Obtengo y recorro documentos de este resguardo para validaciones
-			List<MZResguardoSocioDoc> docs = this.getResguardoDocs();
+			// Recorro documentos de este resguardo para validaciones
 			for (MZResguardoSocioDoc resguardoSocioDoc: docs){
 
 				// Valido documentos del mismo periodo, ya que no es posible mezclar documentos de distintos periodos en un mismo resguardo.
