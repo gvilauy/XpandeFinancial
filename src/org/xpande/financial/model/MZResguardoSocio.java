@@ -1116,10 +1116,21 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		CAEDataType caeDataType = new CAEDataType();
 		objCfe.getEResg().setCAEData(caeDataType);
 
+		/*
 		caeDataType.setCAEID(new BigDecimal(90160202170.0).toBigInteger());
 		caeDataType.setDNro(new BigDecimal(1).toBigInteger());
 		caeDataType.setHNro(new BigDecimal(12000).toBigInteger());
 		caeDataType.setFecVenc(Timestamp_to_XmlGregorianCalendar_OnlyDate(Timestamp.valueOf("2018-10-27 00:00:00"), false));//mDgiCae.getfechaVencimiento() Emi
+		*/
+
+
+		// Cambios de CAE al 15/03/1018 en Covadonga
+		caeDataType.setCAEID(new BigDecimal(90180136300.0).toBigInteger());
+		caeDataType.setDNro(new BigDecimal(12001).toBigInteger());
+		caeDataType.setHNro(new BigDecimal(111999).toBigInteger());
+		caeDataType.setFecVenc(Timestamp_to_XmlGregorianCalendar_OnlyDate(Timestamp.valueOf("2020-03-14 00:00:00"), false));//mDgiCae.getfechaVencimiento() Emi
+
+
 
 	}
 

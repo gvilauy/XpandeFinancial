@@ -33,7 +33,7 @@ public class X_Z_InvoiceAfectacion extends PO implements I_Z_InvoiceAfectacion, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180308L;
+	private static final long serialVersionUID = 20180315L;
 
     /** Standard Constructor */
     public X_Z_InvoiceAfectacion (Properties ctx, int Z_InvoiceAfectacion_ID, String trxName)
@@ -48,6 +48,8 @@ public class X_Z_InvoiceAfectacion extends PO implements I_Z_InvoiceAfectacion, 
 			setC_Invoice_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 			setDocumentNoRef (null);
+			setIsValid (true);
+// Y
 			setRecord_ID (0);
 			setZ_InvoiceAfectacion_ID (0);
         } */
@@ -290,6 +292,30 @@ public class X_Z_InvoiceAfectacion extends PO implements I_Z_InvoiceAfectacion, 
 	public Timestamp getDueDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DueDate);
+	}
+
+	/** Set Valid.
+		@param IsValid 
+		Element is valid
+	  */
+	public void setIsValid (boolean IsValid)
+	{
+		set_Value (COLUMNNAME_IsValid, Boolean.valueOf(IsValid));
+	}
+
+	/** Get Valid.
+		@return Element is valid
+	  */
+	public boolean isValid () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsValid);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Record ID.

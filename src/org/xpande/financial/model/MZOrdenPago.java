@@ -318,11 +318,16 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			for (MZOrdenPagoLin pagoLin: pagoLinList){
 				if (pagoLin.getC_Invoice_ID() > 0){
 
+					BigDecimal amtAllocation = pagoLin.getAmtAllocation();
+					if (amtAllocation.compareTo(Env.ZERO) < 0){
+						amtAllocation = amtAllocation.negate();
+					}
+
 					// Afecta cada comprobante por el monto de afectación
 					MZInvoiceAfectacion invoiceAfecta = new MZInvoiceAfectacion(getCtx(), 0, get_TrxName());
 					invoiceAfecta.setZ_OrdenPago_ID(this.get_ID());
 					invoiceAfecta.setAD_Table_ID(this.get_Table_ID());
-					invoiceAfecta.setAmtAllocation(pagoLin.getAmtAllocation());
+					invoiceAfecta.setAmtAllocation(amtAllocation);
 					invoiceAfecta.setC_DocType_ID(this.getC_DocType_ID());
 					invoiceAfecta.setC_Invoice_ID(pagoLin.getC_Invoice_ID());
 

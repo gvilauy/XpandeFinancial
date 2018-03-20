@@ -255,9 +255,19 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			return DocAction.STATUS_Invalid;
 		}
 
-		// Emite medios de pago cuando es un Pago
+		// Emite medios de pago cuando es un Pago y no esta referenciando ordenes de pago
 		if (!this.isSOTrx()){
-			//m_processMsg = this.emitirMediosPago(medioPagoList);
+			if (!this.isTieneOrdenPago()){
+				//m_processMsg = this.emitirMediosPago(medioPagoList);
+				if (m_processMsg != null){
+					return DocAction.STATUS_Invalid;
+				}
+			}
+		}
+
+		// Afecta ordendes de pago asociados a este pago, si este pago referencia ordenes de pago
+		if (!this.isSOTrx()){
+			m_processMsg = this.afectarOrdenesPago();
 			if (m_processMsg != null){
 				return DocAction.STATUS_Invalid;
 			}
@@ -700,6 +710,21 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 
 	/***
+	 * Obtiene y retorna ordenes de pago asociadas a este modelo.
+	 * Xpande. Created by Gabriel Vila on 1/24/18.
+	 * @return
+	 */
+	public List<MZPagoOrdenPago> getOrdenesPagoReferenciadas(){
+
+		String whereClause = X_Z_PagoOrdenPago.COLUMNNAME_Z_Pago_ID + " =" + this.get_ID();
+
+		List<MZPagoOrdenPago> lines = new Query(getCtx(), I_Z_PagoOrdenPago.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
+	/***
 	 * Obtiene y retorna medios de pago asociados a este modelo.
 	 * Xpande. Created by Gabriel Vila on 1/24/18.
 	 * @return
@@ -871,6 +896,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and c_currency_id =" + this.getC_Currency_ID() +
 					" and docstatus='CO' " +
 					" and ispaid='N' " +
+					" and z_ordenpago_id not in (select z_ordenpago_id from z_pagoordenpago where z_pago_id =" + this.get_ID() + ") " +
 					" order by datedoc ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
@@ -953,9 +979,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					pagoResguardo.setZ_ResguardoSocio_ID(ordenPagoLin.getZ_ResguardoSocio_ID());
 					pagoResguardo.setDateTrx(ordenPagoLin.getDateDoc());
 					pagoResguardo.setC_DocType_ID(ordenPagoLin.getC_DocType_ID());
-					pagoResguardo.setAmtAllocation(ordenPagoLin.getAmtAllocation());
-					pagoResguardo.setAmtAllocationMT(ordenPagoLin.getAmtAllocationMT());
-					pagoResguardo.setAmtDocument(ordenPagoLin.getAmtDocument());
+					pagoResguardo.setAmtAllocation(ordenPagoLin.getAmtAllocation().negate());
+					pagoResguardo.setAmtAllocationMT(ordenPagoLin.getAmtAllocationMT().negate());
+					pagoResguardo.setAmtDocument(ordenPagoLin.getAmtDocument().negate());
 					pagoResguardo.setC_Currency_ID(ordenPagoLin.getC_Currency_ID());
 					pagoResguardo.setDocumentNoRef(ordenPagoLin.getDocumentNoRef());
 					pagoResguardo.setIsSelected(true);
@@ -1097,6 +1123,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					continue;
 				}
 
+				// Por las dudas me aseguro que no venga un medio de pago que ya fue emitido en una orden de pago
+				if (pagoMedioPago.getZ_OrdenPago_ID() > 0){
+					continue;
+				}
+
 				MZMedioPagoFolio folio = (MZMedioPagoFolio) pagoMedioPago.getZ_MedioPagoFolio();
 				MZMedioPagoItem medioPagoItem = null;
 
@@ -1165,23 +1196,41 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			for (MZPagoLin pagoLin: pagoLinList){
 
 				// Afecta cada comprobante por el monto de afectación
-				MZInvoiceAfectacion invoiceAfecta = new MZInvoiceAfectacion(getCtx(), 0, get_TrxName());
-				invoiceAfecta.setZ_Pago_ID(this.get_ID());
-				invoiceAfecta.setAD_Table_ID(this.get_Table_ID());
-				invoiceAfecta.setAmtAllocation(pagoLin.getAmtAllocation());
-				invoiceAfecta.setC_DocType_ID(this.getC_DocType_ID());
-				invoiceAfecta.setC_Invoice_ID(pagoLin.getC_Invoice_ID());
+				MZInvoiceAfectacion invoiceAfecta = null;
 
-				if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-					invoiceAfecta.setC_InvoicePaySchedule_ID(pagoLin.getC_InvoicePaySchedule_ID());
+				// Si tengo orden de pago asociada, busco afectación de la invoice o vencimiento del a misma, para esta orden de pago y le actualizo el campo ID de pago.
+				// Esto es porque ya esta afectado.
+				if (pagoLin.getZ_OrdenPago_ID() > 0){
+					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+						invoiceAfecta = MZInvoiceAfectacion.getByInvoiceSchOrdenPago(getCtx(), pagoLin.getC_InvoicePaySchedule_ID(), pagoLin.getZ_OrdenPago_ID(), get_TrxName());
+					}
+					else {
+						invoiceAfecta = MZInvoiceAfectacion.getByInvoiceOrdenPago(getCtx(), pagoLin.getC_Invoice_ID(), pagoLin.getZ_OrdenPago_ID(), get_TrxName());
+					}
 				}
+				if (invoiceAfecta == null){
 
-				invoiceAfecta.setDateDoc(this.getDateDoc());
-				invoiceAfecta.setDocumentNoRef(this.getDocumentNo());
-				invoiceAfecta.setDueDate(pagoLin.getDueDateDoc());
-				invoiceAfecta.setRecord_ID(this.get_ID());
-				invoiceAfecta.setC_Currency_ID(pagoLin.getC_Currency_ID());
-				invoiceAfecta.setAD_Org_ID(this.getAD_Org_ID());
+					BigDecimal amtAllocation = pagoLin.getAmtAllocation();
+					if (amtAllocation.compareTo(Env.ZERO) < 0){
+						amtAllocation = amtAllocation.negate();
+					}
+
+					invoiceAfecta = new MZInvoiceAfectacion(getCtx(), 0, get_TrxName());
+					invoiceAfecta.setAD_Table_ID(this.get_Table_ID());
+					invoiceAfecta.setAmtAllocation(amtAllocation);
+					invoiceAfecta.setC_DocType_ID(this.getC_DocType_ID());
+					invoiceAfecta.setC_Invoice_ID(pagoLin.getC_Invoice_ID());
+					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+						invoiceAfecta.setC_InvoicePaySchedule_ID(pagoLin.getC_InvoicePaySchedule_ID());
+					}
+					invoiceAfecta.setDateDoc(this.getDateDoc());
+					invoiceAfecta.setDocumentNoRef(this.getDocumentNo());
+					invoiceAfecta.setDueDate(pagoLin.getDueDateDoc());
+					invoiceAfecta.setRecord_ID(this.get_ID());
+					invoiceAfecta.setC_Currency_ID(pagoLin.getC_Currency_ID());
+					invoiceAfecta.setAD_Org_ID(this.getAD_Org_ID());
+				}
+				invoiceAfecta.setZ_Pago_ID(this.get_ID());
 				invoiceAfecta.saveEx();
 			}
 
@@ -1222,6 +1271,39 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Afecta ordenes de pago utilizados en este pago
+	 * Xpande. Created by Gabriel Vila on 3/12/18.
+	 * @return
+	 */
+	private String afectarOrdenesPago() {
+
+		String message = null;
+
+		try{
+
+			// No aplica para cobros.
+			if (this.isSOTrx()){
+				return null;
+			}
+
+			List<MZPagoOrdenPago> pagoOrdenPagoList = this.getOrdenesPagoReferenciadas();
+			for (MZPagoOrdenPago pagoOrdenPago: pagoOrdenPagoList){
+				MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
+				ordenPago.setZ_Pago_ID(this.get_ID());
+				ordenPago.setIsPaid(true);
+				ordenPago.saveEx();
+			}
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
 		}
 
 		return message;
