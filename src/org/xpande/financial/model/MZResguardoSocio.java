@@ -278,6 +278,23 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		}
 
 
+		// Impacto asociación de resguardo a invoices en estado de cuenta
+		String action = " update z_estadocuenta set z_resguardosocio_to_id =" + this.get_ID() +
+						" where c_invoice_id is not null " +
+						" and c_invoice_id in (select c_invoice_id from z_resguardosociodoc where z_resguardosocio_id =" + this.get_ID() + ")";
+		DB.executeUpdateEx(action, get_TrxName());
+
+		//	User Validation
+		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
+		if (valid != null)
+		{
+			m_processMsg = valid;
+			return DocAction.STATUS_Invalid;
+		}
+
+		//	Set Definitive Document No
+		setDefiniteDocumentNo();
+
 		// Impacto documento en estado de cuenta
 		MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
 		estadoCuenta.setZ_ResguardoSocio_ID(this.get_ID());
@@ -302,24 +319,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
 		estadoCuenta.saveEx();
 
-		// Impacto asociación de resguardo a invoices en estado de cuenta
-		String action = " update z_estadocuenta set z_resguardosocio_to_id =" + this.get_ID() +
-						" where c_invoice_id is not null " +
-						" and c_invoice_id in (select c_invoice_id from z_resguardosociodoc where z_resguardosocio_id =" + this.get_ID() + ")";
-		DB.executeUpdateEx(action, get_TrxName());
-
-		//	User Validation
-		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
-		if (valid != null)
-		{
-			m_processMsg = valid;
-			return DocAction.STATUS_Invalid;
-		}
-
-		//	Set Definitive Document No
-		setDefiniteDocumentNo();
-
-
+		// CFE
 		this.cfe();
 
 		setProcessed(true);
