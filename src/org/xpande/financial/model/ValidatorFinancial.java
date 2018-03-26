@@ -161,7 +161,7 @@ public class ValidatorFinancial implements ModelValidator {
                 // Fecha de Vencimiento de esta invoice, directamente de termino de pago
                 String sql = " select paymentTermDueDate(C_PaymentTerm_ID, DateInvoiced) as DueDate " +
                                 " from c_invoice " +
-                                " whee c_invoice_id =" + model.get_ID();
+                                " where c_invoice_id =" + model.get_ID();
                 Timestamp dueDate = DB.getSQLValueTSEx(model.get_TrxName(), sql);
                 if (dueDate == null){
                     dueDate = model.getDateInvoiced();

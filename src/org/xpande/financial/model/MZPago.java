@@ -258,7 +258,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		// Emite medios de pago cuando es un Pago y no esta referenciando ordenes de pago
 		if (!this.isSOTrx()){
 			if (!this.isTieneOrdenPago()){
-				//m_processMsg = this.emitirMediosPago(medioPagoList);
+				m_processMsg = this.emitirMediosPago(medioPagoList);
 				if (m_processMsg != null){
 					return DocAction.STATUS_Invalid;
 				}
@@ -286,6 +286,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				return DocAction.STATUS_Invalid;
 			}
 		}
+
+		// Impactos en estado de cuenta del socio de negocio
+		this.setEstadoCuenta();
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -1189,6 +1192,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	private String afectarInvoices(List<MZPagoLin> pagoLinList) {
 
 		String message = null;
+		String action = "";
 
 		try{
 
@@ -1240,6 +1244,19 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						invoice.setIsPaid(true);
 						invoice.saveEx();
 					}
+
+					// Afecto estado de cuenta de esta invoice cuando es cobro o es un pago que no esta referenciando ordenes de pago.
+					if (!this.isTieneOrdenPago()){
+						if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+							action = " update z_estadocuenta set referenciapago ='RECIBO " + this.getDocumentNo() + "' " +
+									" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+						}
+						else{
+							action = " update z_estadocuenta set referenciapago ='RECIBO " + this.getDocumentNo() + "' " +
+									" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
+						}
+						DB.executeUpdateEx(action, get_TrxName());
+					}
 				}
 			}
 
@@ -1259,6 +1276,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	private String afectarResguardos() {
 
 		String message = null;
+		String action = "";
 
 		try{
 
@@ -1269,11 +1287,19 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			List<MZPagoResguardo> pagoResguardoList = this.getResguardos();
 			for (MZPagoResguardo pagoResguardo: pagoResguardoList){
+
 				if (pagoResguardo.isSelected()){
 					MZResguardoSocio resguardoSocio = (MZResguardoSocio) pagoResguardo.getZ_ResguardoSocio();
 					resguardoSocio.setZ_Pago_ID(this.get_ID());
 					resguardoSocio.setIsPaid(true);
 					resguardoSocio.saveEx();
+
+					// Afecto estado de cuenta de este resguardo, cuando el pago no esta referenciando ordenes de pago
+					if (!this.isTieneOrdenPago()){
+						action = " update z_estadocuenta set referenciapago ='RECIBO " + this.getDocumentNo() + "' " +
+								" where z_resguardosocio_id =" + resguardoSocio.get_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+					}
 				}
 			}
 
@@ -1294,6 +1320,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	private String afectarOrdenesPago() {
 
 		String message = null;
+		String action = "";
 
 		try{
 
@@ -1308,6 +1335,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				ordenPago.setZ_Pago_ID(this.get_ID());
 				ordenPago.setIsPaid(true);
 				ordenPago.saveEx();
+
+				action = " update z_estadocuenta set referenciapago ='RECIBO " + this.getDocumentNo() + "' " +
+						" where z_ordenpago_id =" + ordenPago.get_ID();
+
+				DB.executeUpdateEx(action, get_TrxName());
 			}
 
 		}
@@ -1316,6 +1348,51 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		}
 
 		return message;
+	}
+
+	/***
+	 * Al completarse el pago / cobro se hacen los impactos necesarios en el estado de cuenta del socio de negocio.
+	 * Xpande. Created by Gabriel Vila on 3/24/18.
+	 */
+	private void setEstadoCuenta() {
+
+		try{
+
+			// Si es un pago que referencia ordenes de pago, no hago nada.
+			if (this.isTieneOrdenPago()){
+				return;
+			}
+
+			MDocType docType = (MDocType) this.getC_DocType();
+
+			// Impacto documento en estado de cuenta
+			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
+			estadoCuenta.setZ_OrdenPago_ID(this.get_ID());
+			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
+			estadoCuenta.setC_BPartner_ID(this.getC_BPartner_ID());
+			estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
+			estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
+			estadoCuenta.setDateDoc(this.getDateDoc());
+			estadoCuenta.setDocBaseType(docType.getDocBaseType());
+			estadoCuenta.setDocumentNoRef(this.getDocumentNo());
+			estadoCuenta.setIsSOTrx(this.isSOTrx());
+
+			if (!this.isSOTrx()){
+				estadoCuenta.setAmtSourceCr(Env.ZERO);
+				estadoCuenta.setAmtSourceDr(this.getPayAmt());
+			}
+			else{
+				estadoCuenta.setAmtSourceCr(this.getPayAmt());
+				estadoCuenta.setAmtSourceDr(Env.ZERO);
+			}
+
+			estadoCuenta.setRecord_ID(this.get_ID());
+			estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
+			estadoCuenta.saveEx();
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
 	}
 
 }

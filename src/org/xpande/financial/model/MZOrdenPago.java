@@ -263,6 +263,9 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			return DocAction.STATUS_Invalid;
 		}
 
+		// Impactos en estado de cuenta del socio de negocio
+		this.setEstadoCuenta();
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -280,6 +283,39 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 
 	/***
+	 * Al completarse la orden de pago, hace los impactos necesarios en el estado de cuenta del socio de negocio.
+	 * Xpande. Created by Gabriel Vila on 3/24/18.
+	 */
+	private void setEstadoCuenta() {
+
+		try{
+
+			MDocType docType = (MDocType) this.getC_DocType();
+
+			// Impacto documento en estado de cuenta
+			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
+			estadoCuenta.setZ_OrdenPago_ID(this.get_ID());
+			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
+			estadoCuenta.setAmtSourceCr(Env.ZERO);
+			estadoCuenta.setAmtSourceDr(this.getTotalAmt());
+			estadoCuenta.setC_BPartner_ID(this.getC_BPartner_ID());
+			estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
+			estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
+			estadoCuenta.setDateDoc(this.getDateDoc());
+			estadoCuenta.setDocBaseType(docType.getDocBaseType());
+			estadoCuenta.setDocumentNoRef(this.getDocumentNo());
+			estadoCuenta.setIsSOTrx(false);
+			estadoCuenta.setRecord_ID(this.get_ID());
+			estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
+			estadoCuenta.saveEx();
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
+
+
+	/***
 	 * Afecta resguardos utilizados en esta orden de pago
 	 * Xpande. Created by Gabriel Vila on 3/12/18.
 	 * @return
@@ -287,6 +323,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 	private String afectarResguardos(List<MZOrdenPagoLin> pagoLinList) {
 
 		String message = null;
+		String action = "";
 
 		try{
 			for (MZOrdenPagoLin pagoLin: pagoLinList){
@@ -295,6 +332,11 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					resguardoSocio.setZ_OrdenPago_ID(this.get_ID());
 					resguardoSocio.setIsPaid(true);
 					resguardoSocio.saveEx();
+
+					// Afecto estado de cuenta de este resguardo
+					action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "' " +
+					 		 " where z_resguardosocio_id =" + pagoLin.getZ_ResguardoSocio_ID();
+					DB.executeUpdateEx(action, get_TrxName());
 				}
 			}
 		}
@@ -348,6 +390,18 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					invoice.setIsPaid(true);
 					invoice.saveEx();
 
+
+					// Afecto estado de cuenta de esta invoice
+					String action = "";
+					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+						action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "' " +
+								" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+					}
+					else{
+						action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "' " +
+								 " where c_invoice_id =" + pagoLin.getC_Invoice_ID();
+					}
+					DB.executeUpdateEx(action, get_TrxName());
 				}
 			}
 		}
