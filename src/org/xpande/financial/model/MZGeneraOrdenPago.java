@@ -494,7 +494,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				whereClause = " AND hdr.DateDoc >='" + this.getDateEmittedFrom() + "' ";
 			}
 			if (this.getDateEmittedTo() != null){
-				whereClause = " AND hdr.DateDoc <='" + this.getDateEmittedTo() + "' ";
+				whereClause += " AND hdr.DateDoc <='" + this.getDateEmittedTo() + "' ";
 			}
 
 			// Filtros de monedas
@@ -654,13 +654,13 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				whereClause = " AND hdr.DateInvoiced >='" + this.getDateEmittedFrom() + "' ";
 			}
 			if (this.getDateEmittedTo() != null){
-				whereClause = " AND hdr.DateInvoiced <='" + this.getDateEmittedTo() + "' ";
+				whereClause += " AND hdr.DateInvoiced <='" + this.getDateEmittedTo() + "' ";
 			}
 			if (this.getDueDateFrom() != null){
-				whereClause = " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced) >='" + this.getDueDateFrom() + "' ";
+				whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced) >='" + this.getDueDateFrom() + "' ";
 			}
 			if (this.getDueDateTo() != null){
-				whereClause = " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced) <='" + this.getDueDateTo() + "' ";
+				whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced) <='" + this.getDueDateTo() + "' ";
 			}
 
 			// Filtros de monedas
@@ -689,6 +689,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					" left outer join c_invoicepayschedule ips on hdr.c_invoice_id = ips.c_invoice_id " +
 					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
 					" and hdr.issotrx='N' " +
+					" and hdr.ispaid='N' " +
 					" and hdr.docstatus='CO' " +
 					" and iop.amtopen > 0 " +
 					" and hdr.c_invoice_id not in (select c_invoice_id from z_generaordenpagolin " +
