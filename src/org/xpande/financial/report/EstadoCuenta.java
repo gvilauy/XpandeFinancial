@@ -27,6 +27,7 @@ public class EstadoCuenta {
     public String tipoSocioNegocio = "";
     public Timestamp startDate = null;
     public Timestamp endDate = null;
+    public boolean sinMovConSaldoIni = true;
 
 
     /***
@@ -48,12 +49,75 @@ public class EstadoCuenta {
             this.deleteData();
             this.getData();
             this.updateData();
+
+            // Si se consideran socios de neogio que tienen saldo inicial y que no tuvieron movimientos en el período de fechas
+            if (sinMovConSaldoIni){
+                this.setSinMovConSaldoIni();
+            }
         }
         catch (Exception e){
             throw new AdempiereException(e);
         }
 
         return message;
+    }
+
+    private void setSinMovConSaldoIni() {
+
+        String sql = "", action = "";
+
+        try{
+
+            String whereClause = "";
+
+            whereClause = " and ad_client_id =" + this.adClientID;
+
+            if (this.adOrgID > 0){
+                whereClause += " and ad_org_id =" + this.adOrgID;
+            }
+
+            if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+                whereClause += " and datedoc < '" + this.startDate + "'";
+            }
+            else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+                whereClause += " and duedate < '" + this.startDate + "'";
+            }
+
+            if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
+                whereClause += " and issotrx ='Y'";
+            }
+            else if (this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
+                whereClause += " and issotrx ='N'";
+            }
+
+            // Cadenas de insert en tablas del reporte
+            action = " insert into " + TABLA_REPORTE + "(ad_user_id, tipofiltrofecha, tiposocionegocio, ad_client_id, ad_org_id, " +
+                    " c_currency_id, c_bpartner_id, amtsourcecr, amtsourcedr, amtstart, amtacumulado) ";
+
+            sql = " select " + this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', " +
+                    " ad_client_id, ad_org_id, c_currency_id, c_bpartner_id, 0, 0, (sum(amtsourcedr) - sum(amtsourcecr)), (sum(amtsourcedr) - sum(amtsourcecr)) " +
+                    " from z_estadocuenta " +
+                    " where c_bpartner_id not in (select c_bpartner_id from z_rp_estadocuenta where ad_user_id =" + this.adUserID + ") " +
+                    whereClause +
+                    " group by ad_client_id, ad_org_id, c_currency_id, c_bpartner_id " +
+                    " order by ad_client_id, ad_org_id, c_currency_id, c_bpartner_id";
+
+            DB.executeUpdateEx(action + sql, null);
+
+            // Elimino socios de negocio que no tuvieron ni movimientos en el periodo, ni tampoco saldo inicial.
+            action = " delete from " + TABLA_REPORTE +
+                    " where ad_user_id =" + this.adUserID +
+                    " and amtsourcecr = 0 " +
+                    " and amtsourcedr = 0 " +
+                    " and amtstart = 0 " +
+                    " and amtacumulado = 0 ";
+            DB.executeUpdateEx(action, null);
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
     }
 
     /***

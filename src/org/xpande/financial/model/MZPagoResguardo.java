@@ -63,6 +63,22 @@ public class MZPagoResguardo extends X_Z_PagoResguardo {
 
         }
 
+        if (newRecord){
+
+            // Actualizo totales del documento
+            MZPago pago = (MZPago) this.getZ_Pago();
+            pago.updateTotals();
+
+        }
+        else if ((is_ValueChanged(X_Z_PagoResguardo.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoResguardo.COLUMNNAME_AmtAllocation))
+                || (is_ValueChanged(X_Z_PagoResguardo.COLUMNNAME_IsSelected))){
+
+            // Actualizo totales del documento
+            MZPago pago = (MZPago) this.getZ_Pago();
+            pago.updateTotals();
+
+        }
+
         return true;
     }
 

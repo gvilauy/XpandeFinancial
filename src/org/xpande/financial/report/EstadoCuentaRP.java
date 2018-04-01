@@ -62,6 +62,9 @@ public class EstadoCuentaRP extends SvrProcess {
                     this.estadoCuentaProcessor.startDate = (Timestamp)para[i].getParameter();
                     this.estadoCuentaProcessor.endDate = (Timestamp)para[i].getParameter_To();
                 }
+                else if (name.trim().equalsIgnoreCase("SinMovConSaldo")) {
+                    this.estadoCuentaProcessor.sinMovConSaldoIni = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
+                }
                 else if (name.trim().equalsIgnoreCase("RP_Titulo")){
                     paramTituloReporte = para[i];
                 }

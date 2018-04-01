@@ -5,6 +5,7 @@ import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -170,32 +171,40 @@ public class ValidatorFinancial implements ModelValidator {
                 MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(model.getCtx(), 0, model.get_TrxName());
                 estadoCuenta.setC_Invoice_ID(model.get_ID());
                 estadoCuenta.setAD_Table_ID(model.get_Table_ID());
+
+                // No se porque razón el grandtotal en esta etapa me lo guarda sin el redondeo.
+                // Fuerzo el redondeo aca para el estado de cuenta
+                BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
+                if (amtRounding == null) amtRounding = Env.ZERO;
+                BigDecimal amtTotal = model.getGrandTotal().add(amtRounding);
+
                 if (!model.isSOTrx()){
+
                     if (docType.getDocBaseType().equalsIgnoreCase("API")){
-                        estadoCuenta.setAmtSourceCr(model.getGrandTotal());
+                        estadoCuenta.setAmtSourceCr(amtTotal);
                         estadoCuenta.setAmtSourceDr(Env.ZERO);
                     }
                     else if (docType.getDocBaseType().equalsIgnoreCase("APC")){
                         estadoCuenta.setAmtSourceCr(Env.ZERO);
-                        estadoCuenta.setAmtSourceDr(model.getGrandTotal());
+                        estadoCuenta.setAmtSourceDr(amtTotal);
                     }
                     else{
-                        estadoCuenta.setAmtSourceCr(model.getGrandTotal());
+                        estadoCuenta.setAmtSourceCr(amtTotal);
                         estadoCuenta.setAmtSourceDr(Env.ZERO);
                     }
                 }
                 else{
                     if (docType.getDocBaseType().equalsIgnoreCase("ARC")){
-                        estadoCuenta.setAmtSourceCr(model.getGrandTotal());
+                        estadoCuenta.setAmtSourceCr(amtTotal);
                         estadoCuenta.setAmtSourceDr(Env.ZERO);
                     }
                     else if (docType.getDocBaseType().equalsIgnoreCase("ARI")){
                         estadoCuenta.setAmtSourceCr(Env.ZERO);
-                        estadoCuenta.setAmtSourceDr(model.getGrandTotal());
+                        estadoCuenta.setAmtSourceDr(amtTotal);
                     }
                     else{
                         estadoCuenta.setAmtSourceCr(Env.ZERO);
-                        estadoCuenta.setAmtSourceDr(model.getGrandTotal());
+                        estadoCuenta.setAmtSourceDr(amtTotal);
                     }
                 }
                 estadoCuenta.setC_BPartner_ID(model.getC_BPartner_ID());
