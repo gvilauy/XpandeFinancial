@@ -1131,6 +1131,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					continue;
 				}
 
+				// Me aseguro fecha de emisión no menor a hoy
+				if (pagoMedioPago.getDateEmitted().before(fechaHoy)){
+					pagoMedioPago.setDateEmitted(fechaHoy);
+				}
+
 				MZMedioPagoFolio folio = (MZMedioPagoFolio) pagoMedioPago.getZ_MedioPagoFolio();
 				MZMedioPagoItem medioPagoItem = null;
 

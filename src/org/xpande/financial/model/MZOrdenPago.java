@@ -30,6 +30,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 /** Generated Model for Z_OrdenPago
  *  @author Adempiere (generated) 
@@ -235,6 +236,13 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			approveIt();
 		log.info(toString());
 		//
+
+		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+		// Me aseguro fecha de generación no menor a hoy
+		if (this.getDateDoc().before(fechaHoy)){
+			this.setDateDoc(fechaHoy);
+		}
 
 		// Valido condiciones para completar este documento
 		m_processMsg = this.validateDocument();

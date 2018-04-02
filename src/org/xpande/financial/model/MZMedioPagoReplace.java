@@ -262,6 +262,12 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 			List<MZMedioPagoReplaceDet> dets = replaceLin.getDetail();
 			for (MZMedioPagoReplaceDet replaceDet: dets){
 
+				// Me aseguro fecha de emisión no menor a hoy
+				if (replaceDet.getDateEmitted().before(fechaHoy)){
+					replaceDet.setDateEmitted(fechaHoy);
+					replaceDet.saveEx();
+				}
+
 				// Emito nuevo medio de pago
 				MZMedioPagoItem NEW_medioPagoItem = ((MZMedioPagoFolio) replaceDet.getZ_MedioPagoFolio()).getCurrentNext();
 				if ((NEW_medioPagoItem == null) || (NEW_medioPagoItem.get_ID() <= 0)){

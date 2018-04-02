@@ -20,6 +20,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -30,6 +31,8 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.compiere.util.TimeUtil;
+import org.xpande.core.utils.DateUtils;
 
 /** Generated Model for Z_EmisionMedioPago
  *  @author Adempiere (generated) 
@@ -236,6 +239,12 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		log.info(toString());
 		//
 
+		// Me aseguro fecha de emisión no menor a hoy
+		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+		if (this.getDateEmitted().before(fechaHoy)){
+			this.setDateEmitted(fechaHoy);
+		}
+
 		// Validaciones de este documento
 		m_processMsg = this.validateDocument();
 		if (m_processMsg != null){
@@ -248,7 +257,7 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 			medioPagoItem.setTotalAmt(this.getTotalAmt());
 			medioPagoItem.setEmitido(true);
 			medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
-			medioPagoItem.setDateEmitted(this.getDateDoc());
+			medioPagoItem.setDateEmitted(this.getDateEmitted());
 			medioPagoItem.setDueDate(this.getDueDate());
 			medioPagoItem.setLeyendasImpresion();
 			medioPagoItem.setZ_EmisionMedioPago_ID(this.get_ID());
@@ -282,6 +291,21 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		String message = null;
 
 		try{
+
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+			// Valido fecha de emsión no menor a fecha de hoy
+			if (this.getDateEmitted().before(fechaHoy)){
+				return "Fecha de emisión no puede ser anterior a la fecha de hoy.";
+			}
+
+			// Valido fecha de vencimiento no mayor a 180 dias a partir de fecha de emisión
+			Date dateFechaAux = new Date(this.getDateEmitted().getTime());
+			dateFechaAux =  DateUtils.addDays(dateFechaAux, 180);
+			Timestamp maxDueDate = new Timestamp(dateFechaAux.getTime());
+			if (this.getDueDate().after(maxDueDate)){
+				return "Fecha de Vencimiento no puede ser mayor a 180 días con respecto a la Fecha de Emisión.";
+			}
 
 			// Validaciones en item de medio de pago
 			if (this.getZ_MedioPagoFolio_ID() > 0){
