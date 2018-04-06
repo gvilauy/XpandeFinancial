@@ -446,45 +446,35 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 						return "Libreta no tiene medios de pago disponibles para utilizar.";
 					}
 					ordenMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
-					ordenMedioPago.setDateEmitted(this.getDateDoc());
-					ordenMedioPago.saveEx();
-
-					// Realizo emisión para este medio de pago a considerar
-					MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
-					emisionMedioPago.setZ_MedioPago_ID(ordenMedioPago.getZ_MedioPago_ID());
-					emisionMedioPago.setZ_MedioPagoFolio_ID(ordenMedioPago.getZ_MedioPagoFolio_ID());
-					emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
-					emisionMedioPago.setZ_OrdenPago_ID(this.get_ID());
-					emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
-					emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
-					emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
-					emisionMedioPago.setDateDoc(this.getDateDoc());
-					emisionMedioPago.setDateEmitted(this.getDateDoc());
-					emisionMedioPago.setDueDate(ordenMedioPago.getDueDate());
-					emisionMedioPago.setTotalAmt(ordenMedioPago.getTotalAmt());
-					emisionMedioPago.saveEx();
-
-					// Completo documento de emisión de medio de pago
-					if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
-						m_processMsg = emisionMedioPago.getProcessMsg();
-						return DocAction.STATUS_Invalid;
-					}
-					emisionMedioPago.saveEx();
-
 				}
-			/*
-			else{
-				medioPagoItem = (MZMedioPagoItem) ordenMedioPago.getZ_MedioPagoItem();
-			}
+				else{
+					medioPagoItem = (MZMedioPagoItem) ordenMedioPago.getZ_MedioPagoItem();
+				}
 
-			medioPagoItem.setTotalAmt(ordenMedioPago.getTotalAmt());
-			medioPagoItem.setEmitido(true);
-			medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
-			medioPagoItem.setDateEmitted(this.getDateDoc());
-			medioPagoItem.setDueDate(ordenMedioPago.getDueDate());
-			medioPagoItem.setLeyendasImpresion();
-			medioPagoItem.saveEx();
-			*/
+				ordenMedioPago.setDateEmitted(this.getDateDoc());
+				ordenMedioPago.saveEx();
+
+				// Realizo emisión para este medio de pago a considerar
+				MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
+				emisionMedioPago.setZ_MedioPago_ID(ordenMedioPago.getZ_MedioPago_ID());
+				emisionMedioPago.setZ_MedioPagoFolio_ID(ordenMedioPago.getZ_MedioPagoFolio_ID());
+				emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+				emisionMedioPago.setZ_OrdenPago_ID(this.get_ID());
+				emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
+				emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
+				emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
+				emisionMedioPago.setDateDoc(this.getDateDoc());
+				emisionMedioPago.setDateEmitted(this.getDateDoc());
+				emisionMedioPago.setDueDate(ordenMedioPago.getDueDate());
+				emisionMedioPago.setTotalAmt(ordenMedioPago.getTotalAmt());
+				emisionMedioPago.saveEx();
+
+				// Completo documento de emisión de medio de pago
+				if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
+					m_processMsg = emisionMedioPago.getProcessMsg();
+					return DocAction.STATUS_Invalid;
+				}
+				emisionMedioPago.saveEx();
 			}
 
 		}
