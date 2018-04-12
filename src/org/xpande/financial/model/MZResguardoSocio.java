@@ -529,13 +529,16 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		try{
 
 			// Limpio datos anteriores
-			action = " update z_resguardosocio set totalamt = 0 where z_resguardosocio_id =" + this.get_ID();
+			action = " update z_resguardosocio set totalamt = 0, totalamtme = 0 where z_resguardosocio_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
 			action = " delete from z_resguardosocioret where z_resguardosocio_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
-			action = " update z_resguardosociodoc set amtretencion = 0 where z_resguardosocio_id =" + this.get_ID();
+			action = " update z_resguardosociodoc set amtretencion = 0, amtretencionmo = 0 where z_resguardosocio_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+			action = " delete from z_resguardosociodocret where z_resguardosocio_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
 			// Obtengo lista de retenciones asociadas a este socio de negocio

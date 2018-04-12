@@ -1,6 +1,7 @@
 package org.xpande.financial.model;
 
 import org.compiere.model.Query;
+import org.compiere.util.DB;
 
 import java.sql.ResultSet;
 import java.util.List;
