@@ -585,6 +585,96 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 	{
 		log.info("voidIt - " + toString());
 
+		String action = "";
+
+		// Valido que esta orden de pago no este asociada a un recibo de proveedor que ademas esta completo.
+		if (this.isPaid()){
+			if (this.getZ_Pago_ID() > 0){
+				MZPago pago = (MZPago) this.getZ_Pago();
+				this.m_processMsg = "No se puede anular esta Orden de Pago porque tiene asociado el Recibo de Pago Nro.: " + pago.getDocumentNo() + ".\n" +
+						"Debe Anular primero el Recibo, para luego Anular esta Orden.";
+			}
+			else{
+				this.m_processMsg = "No se puede anular esta Orden de Pago porque tiene asociado un Recibo de Pago.";
+			}
+			return false;
+		}
+
+		// Anulo medios de pago emitidos en esta orden
+		List<MZOrdenPagoMedio> ordenPagoMedioList = this.getMediosPago();
+		for (MZOrdenPagoMedio ordenPagoMedio: ordenPagoMedioList){
+			if (ordenPagoMedio.getZ_MedioPagoItem_ID() > 0){
+				MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) ordenPagoMedio.getZ_MedioPagoItem();
+				if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
+					MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+					if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
+						this.m_processMsg = emisionMedioPago.getProcessMsg();
+						return false;
+					}
+					emisionMedioPago.saveEx();
+				}
+				else{
+					medioPagoItem.setAnulado(true);
+					medioPagoItem.saveEx();
+				}
+			}
+		}
+
+		// Anulo afectacion de invoices
+		List<MZOrdenPagoLin> pagoLinInvList = this.getInvoices();
+		for (MZOrdenPagoLin pagoLin: pagoLinInvList){
+			if (pagoLin.getC_Invoice_ID() > 0){
+
+				// Marca invoice como no paga
+				MInvoice invoice = (MInvoice) pagoLin.getC_Invoice();
+				invoice.setIsPaid(false);
+				invoice.saveEx();
+
+				// Anulo afectacion para saldo de esta invoice
+				action = " delete from z_invoiceafectacion where z_ordenpago_id =" + this.get_ID();
+				if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+					action += " where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+				}
+				else{
+					action += " where c_invoice_id =" + pagoLin.getC_Invoice_ID();
+				}
+				DB.executeUpdateEx(action, get_TrxName());
+
+
+				// Anulo afectación en estado de cuenta para esta invoice y orden de pago
+				if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+					action = " update z_estadocuenta set referenciapago = null " +
+							" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+				}
+				else{
+					action = " update z_estadocuenta set referenciapago = null " +
+							" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
+				}
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+		}
+
+		// Anulo afectacion de resguardos
+		List<MZOrdenPagoLin> pagoLinResgList = this.getResguardos();
+		for (MZOrdenPagoLin pagoLin: pagoLinResgList){
+			if (pagoLin.getZ_ResguardoSocio_ID() > 0){
+
+				// Marco resguardo como no pago
+				action = " update z_resguardosocio set z_ordenpago_id = null, ispaid ='N' " +
+						 " where z_resguardosocio_id =" + pagoLin.getZ_ResguardoSocio_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+
+				// Afecto estado de cuenta de este resguardo
+				action = " update z_estadocuenta set referenciapago = null " +
+						 " where z_resguardosocio_id =" + pagoLin.getZ_ResguardoSocio_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+		}
+
+
+		// Anulo orden de pago del estado de cuenta del socio de negocio
+		action = " delete from z_estadocuenta where z_ordenpago_id =" + this.get_ID();
+		DB.executeUpdateEx(action, get_TrxName());
 
 		this.setDocStatus(DOCSTATUS_Voided);
 		this.setDocAction(DOCACTION_None);
