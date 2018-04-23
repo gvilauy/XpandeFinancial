@@ -633,10 +633,10 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 				// Anulo afectacion para saldo de esta invoice
 				action = " delete from z_invoiceafectacion where z_ordenpago_id =" + this.get_ID();
 				if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-					action += " where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+					action += " and c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
 				}
 				else{
-					action += " where c_invoice_id =" + pagoLin.getC_Invoice_ID();
+					action += " and c_invoice_id =" + pagoLin.getC_Invoice_ID();
 				}
 				DB.executeUpdateEx(action, get_TrxName());
 
