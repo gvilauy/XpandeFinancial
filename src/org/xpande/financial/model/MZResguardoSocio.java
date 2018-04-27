@@ -527,10 +527,9 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		String action = "", sql = "";
 
 		try{
-
 			// Limpio datos anteriores
-			action = " update z_resguardosocio set totalamt = 0, totalamtme = 0 where z_resguardosocio_id =" + this.get_ID();
-			DB.executeUpdateEx(action, get_TrxName());
+			this.setTotalAmt(Env.ZERO);
+			this.setTotalAmtME(Env.ZERO);
 
 			action = " delete from z_resguardosocioret where z_resguardosocio_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
