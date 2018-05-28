@@ -33,6 +33,7 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.comercial.utils.ComercialUtils;
 import org.xpande.core.utils.CurrencyUtils;
 
 /** Generated Model for Z_GeneraOrdenPago
@@ -946,17 +947,20 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				List<MZGeneraOrdenPagoLin> generaLins = ordenPagoSocio.getSelectedDocuments();
 				for (MZGeneraOrdenPagoLin generaLin: generaLins){
 
-					// Si el documento de esta linea se corresponde con una invoice, valido que tenga resguardo.
-					// En caso de no tenerlo, verifico si aplican retenciones para esta invoice o no, en cuyo caso aviso y salgo.
+					// Si el documento de esta linea se corresponde con una invoice
 					if (generaLin.getC_Invoice_ID() > 0){
+
+						MDocType docType = (MDocType) generaLin.getC_DocType();
+
 						// Refreso dato para esta invoice con respecto a si tiene o no un resguardo
 						generaLin.setResguardoEmitido(MZResguardoSocio.invoiceTieneResguardo(getCtx(), generaLin.getC_Invoice_ID(), get_TrxName()));
 						generaLin.saveEx();
 
+						// Valido que tenga resguardo.
+						// En caso de no tenerlo, verifico si aplican retenciones para esta invoice o no, en cuyo caso aviso y salgo.
 						if (!generaLin.isResguardoEmitido()){
 
 							// Si es factura (no es nota de credito)
-							MDocType docType = (MDocType) generaLin.getC_DocType();
 							if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
 
 								// Si el total de la factura no es CERO, sigo verificando
@@ -968,6 +972,20 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 										return " No es posible generar orden de pago para el Socio de Negocio : " + partner.getName() + "\n" +
 												" El mismo tiene un comprobante que requiere la emisión de resguardo : " + generaLin.getDocumentNoRef();
 									}
+								}
+							}
+						}
+
+						// Si esta invoice tiene marcado que Lleva Nota de Cŕedito al Pago
+						if (generaLin.isTieneDtosNC()){
+							// Si es factura de compra
+							if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
+								// Verifico si esta factura esta referenciada en algun documento de nota de credito
+								// Si no esta, aviso.
+								if (!ComercialUtils.isInvoiceReferenced(getCtx(), generaLin.getC_Invoice_ID(), get_TrxName())){
+									MBPartner partner = (MBPartner) ordenPago.getC_BPartner();
+									return " No es posible generar orden de pago para el Socio de Negocio : " + partner.getName() + "\n" +
+											" El mismo tiene un comprobante que requiere de una Nota de Crédito al Pago : " + generaLin.getDocumentNoRef();
 								}
 							}
 						}

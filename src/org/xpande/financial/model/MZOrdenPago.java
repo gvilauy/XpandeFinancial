@@ -585,6 +585,12 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 	{
 		log.info("voidIt - " + toString());
 
+		// Before Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
+		if (m_processMsg != null)
+			return false;
+
+
 		String action = "";
 
 		// Valido que esta orden de pago no este asociada a un recibo de proveedor que ademas esta completo.
@@ -676,6 +682,12 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		action = " delete from z_estadocuenta where z_ordenpago_id =" + this.get_ID();
 		DB.executeUpdateEx(action, get_TrxName());
 
+		// After Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(true);
 		this.setDocStatus(DOCSTATUS_Voided);
 		this.setDocAction(DOCACTION_None);
 

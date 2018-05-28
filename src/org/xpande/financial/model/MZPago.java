@@ -255,13 +255,17 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			return DocAction.STATUS_Invalid;
 		}
 
-		// Emite medios de pago cuando es un Pago y no esta referenciando ordenes de pago
 		if (!this.isSOTrx()){
+			// Emite medios de pago cuando es un Pago y no esta referenciando ordenes de pago.
 			if (!this.isTieneOrdenPago()){
 				m_processMsg = this.emitirMediosPago(medioPagoList);
-				if (m_processMsg != null){
-					return DocAction.STATUS_Invalid;
-				}
+			}
+			else{
+				// Marca medios de pago que ya fueron emitidos en ordenes de pago, como entregados.
+				m_processMsg = this.entregarMediosPago(medioPagoList);
+			}
+			if (m_processMsg != null){
+				return DocAction.STATUS_Invalid;
 			}
 		}
 
@@ -334,9 +338,148 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	public boolean voidIt()
 	{
 		log.info("voidIt - " + toString());
-		return closeIt();
+
+		// Before Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		// Desafecto documentos asociados a este documento de pago/cobro
+		m_processMsg = this.desafectarDocumentos();
+		if (m_processMsg != null)
+			return false;
+
+		// After Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(true);
+		this.setDocStatus(DOCSTATUS_Voided);
+		this.setDocAction(DOCACTION_None);
+
+		return true;
+
 	}	//	voidIt
-	
+
+
+	/***
+	 * Al anular o reactivar un documento de pago/cobro, debo desasociar los documentos que contenidos en el mismo.
+	 * Xpande. Created by Gabriel Vila on 5/28/18.
+	 * @return
+	 */
+	private String desafectarDocumentos() {
+
+		String message = null;
+		String action = "";
+
+		try{
+			// Marco medios de pago como no entregados y los desasocio de esta documento de pago/cobro
+			action = " update z_mediopagoitem set entregado='N', z_pago_id = null where z_pago_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+			// Para pagos, desasocio ordenes de pago
+			if (!this.isSOTrx()){
+				if (this.isTieneOrdenPago()){
+					action = " update z_ordenpago set ispaid='N', z_pago_id = null where z_pago_id =" + this.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+
+					List<MZPagoOrdenPago> pagoOrdenPagoList = this.getOrdenesPagoReferenciadas();
+					for (MZPagoOrdenPago pagoOrdenPago: pagoOrdenPagoList){
+
+						MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
+
+						action = " update z_estadocuenta set referenciapago = null " + " where z_ordenpago_id =" + ordenPago.get_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+					}
+				}
+			}
+
+			// Desasocio invoices cuando es un pago sin ordenes de pago asociadas o cuando es un cobro
+			if ((this.isSOTrx()) || ((!this.isSOTrx()) && (!this.isTieneOrdenPago()))){
+				action = " update c_invoice set ispaid ='N' where c_invoice_id in " +
+						" (select c_invoice_id from z_pagolin where z_pago_id =" + this.get_ID() + ")";
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+
+			// Elimino Afectacion de invoices
+			action = " update z_invoiceafectacion set z_pago_id = null where z_pago_id =" + this.get_ID() +
+					" and z_ordenpago_id is not null ";
+			DB.executeUpdateEx(action, get_TrxName());
+
+			action = " delete from z_invoiceafectacion where z_pago_id =" + this.get_ID() +
+					" and z_ordenpago_id is null ";
+			DB.executeUpdateEx(action, get_TrxName());
+
+
+			List<MZPagoLin> pagoLinList = this.getSelectedLines();
+			for (MZPagoLin pagoLin: pagoLinList){
+
+				if (pagoLin.getC_Invoice_ID() > 0){
+
+					// Desafecto estado de cuenta de esta invoice cuando es cobro o es un pago que no esta referenciando ordenes de pago.
+					if (!this.isTieneOrdenPago()){
+						if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+							action = " update z_estadocuenta set referenciapago = null " +
+									" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+						}
+						else{
+							action = " update z_estadocuenta set referenciapago = null " +
+									" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
+						}
+						DB.executeUpdateEx(action, get_TrxName());
+					}
+					else{
+						MZOrdenPago ordenPago = (MZOrdenPago) pagoLin.getZ_OrdenPago();
+						if ((ordenPago != null) && (ordenPago.get_ID() > 0)){
+							if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+								action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "' " +
+										" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+							}
+							else{
+								action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "' " +
+										" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
+							}
+							DB.executeUpdateEx(action, get_TrxName());
+						}
+					}
+				}
+			}
+
+			// Desasocio resguardos
+			action = " update z_resguardosocio set ispaid='N', z_pago_id = null where z_pago_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+			List<MZPagoResguardo> pagoResguardoList = this.getResguardos();
+			for (MZPagoResguardo pagoResguardo: pagoResguardoList){
+
+				if (!this.isTieneOrdenPago()){
+					action = " update z_estadocuenta set referenciapago = null " +
+							 " where z_resguardosocio_id =" + pagoResguardo.getZ_ResguardoSocio_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+				else{
+					MZOrdenPago ordenPago = (MZOrdenPago) pagoResguardo.getZ_OrdenPago();
+					if ((ordenPago != null) && (ordenPago.get_ID() > 0)){
+						action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "' " +
+								" where z_resguardosocio_id =" + pagoResguardo.getZ_ResguardoSocio_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+					}
+				}
+			}
+
+			// Desasocio info en estado de cuenta para este documento de pago/cobro
+			action = " delete from z_estadocuenta where z_pago_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
 	/**
 	 * 	Close Document.
 	 * 	Cancel not delivered Qunatities
@@ -378,10 +521,29 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Desafecto documentos asociados a este documento de pago/cobro
+		m_processMsg = this.desafectarDocumentos();
+		if (m_processMsg != null)
+			return false;
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+
+		this.setProcessed(false);
+		this.setPosted(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
 	}	//	reActivateIt
 	
 	
@@ -1179,6 +1341,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					}
 					emisionMedioPago.saveEx();
 				}
+
+				// Marco medio de pago como entregado en este documento de pago
+				medioPagoItem.setZ_Pago_ID(this.get_ID());
+				medioPagoItem.setEntregado(true);
+				medioPagoItem.saveEx();
 			}
 		}
 		catch (Exception e){
@@ -1187,6 +1354,43 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		return message;
 	}
+
+
+	/***
+	 * Proceso que marca los medios de pago para un documento de pago como entregados.
+	 * Xpande. Created by Gabriel Vila on 5/24/18.
+	 * @param medioPagoList
+	 * @return
+	 */
+	private String entregarMediosPago(List<MZPagoMedioPago> medioPagoList) {
+
+		String message = null;
+
+		try{
+			// No procede si es un cobro
+			if (this.isSOTrx()){
+				return null;
+			}
+
+			// Recorre lista de medios de pago de este pago
+			for (MZPagoMedioPago pagoMedioPago: medioPagoList){
+
+				// Si tengo item de medio de pago, lo marco como entregado
+				if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+					MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+					medioPagoItem.setZ_Pago_ID(this.get_ID());
+					medioPagoItem.setEntregado(true);
+					medioPagoItem.saveEx();
+				}
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
 
 	/***
 	 * Afecta invoices asociadas a este documento de pago/cobro.
@@ -1343,7 +1547,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 				action = " update z_estadocuenta set referenciapago ='RECIBO " + this.getDocumentNo() + "' " +
 						" where z_ordenpago_id =" + ordenPago.get_ID();
-
 				DB.executeUpdateEx(action, get_TrxName());
 			}
 
@@ -1372,7 +1575,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			// Impacto documento en estado de cuenta
 			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
-			estadoCuenta.setZ_OrdenPago_ID(this.get_ID());
+			estadoCuenta.setZ_Pago_ID(this.get_ID());
 			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
 			estadoCuenta.setC_BPartner_ID(this.getC_BPartner_ID());
 			estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
