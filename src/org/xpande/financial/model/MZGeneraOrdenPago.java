@@ -982,11 +982,13 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 							if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
 								// Verifico si esta factura esta referenciada en algun documento de nota de credito
 								// Si no esta, aviso.
+								/*
 								if (!ComercialUtils.isInvoiceReferenced(getCtx(), generaLin.getC_Invoice_ID(), get_TrxName())){
 									MBPartner partner = (MBPartner) ordenPago.getC_BPartner();
 									return " No es posible generar orden de pago para el Socio de Negocio : " + partner.getName() + "\n" +
 											" El mismo tiene un comprobante que requiere de una Nota de Crédito al Pago : " + generaLin.getDocumentNoRef();
 								}
+								*/
 							}
 						}
 					}
