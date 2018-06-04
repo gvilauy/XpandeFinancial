@@ -320,7 +320,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		estadoCuenta.saveEx();
 
 		// CFE
-		this.cfe();
+		//this.cfe();
 
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
