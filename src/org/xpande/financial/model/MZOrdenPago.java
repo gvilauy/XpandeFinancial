@@ -471,8 +471,8 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 				// Completo documento de emisión de medio de pago
 				if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
-					m_processMsg = emisionMedioPago.getProcessMsg();
-					return DocAction.STATUS_Invalid;
+					message = emisionMedioPago.getProcessMsg();
+					return message;
 				}
 				emisionMedioPago.saveEx();
 			}
