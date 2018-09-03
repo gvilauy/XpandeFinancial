@@ -97,4 +97,20 @@ public class MZRetencionSocio extends X_Z_RetencionSocio {
 
         return value;
     }
+
+
+    /***
+     * Obtiene y retorna modelo de parametrización contable para esta Retención.
+     * Xpande. Created by Gabriel Vila on 8/28/18.
+     * @return
+     */
+    public MZRetencionSocioAcct getAcct(){
+
+        String whereClause = X_Z_RetencionSocio_Acct.COLUMNNAME_Z_RetencionSocio_ID + " = " + this.get_ID();
+
+        MZRetencionSocioAcct model = new Query(getCtx(), I_Z_RetencionSocio_Acct.Table_Name, whereClause, get_TrxName()).first();
+
+        return model;
+    }
+
 }
