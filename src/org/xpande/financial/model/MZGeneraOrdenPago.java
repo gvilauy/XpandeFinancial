@@ -929,6 +929,14 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 			List<MZGeneraOrdenPagoSocio> ordenPagoSocios = this.getSocios();
 			for (MZGeneraOrdenPagoSocio ordenPagoSocio: ordenPagoSocios){
 
+				// Obtengo lineas con documentos a considerar para este socio de negocio en la generacion de la orden de pago
+				List<MZGeneraOrdenPagoLin> generaLins = ordenPagoSocio.getSelectedDocuments();
+
+				// Si no tengo documentos seleccionados para este socio de negocio, no hay orden de pago
+				if (generaLins.size() <= 0){
+					continue;
+				}
+
 				// Creo nuevo cabezal de orden de pago
 				MZOrdenPago ordenPago = new MZOrdenPago(getCtx(), 0, get_TrxName());
 				ordenPago.setZ_GeneraOrdenPago_ID(this.get_ID());
@@ -941,10 +949,11 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				ordenPago.setIsPaid(false);
 				ordenPago.saveEx();
 
-				// Obtengo y recorro lineas con documentos a considerar para este socio de negocio en la generacion de la orden de pago
+
 				BigDecimal totalPago = Env.ZERO;
 				Timestamp maxDueDate = fechaHoy;
-				List<MZGeneraOrdenPagoLin> generaLins = ordenPagoSocio.getSelectedDocuments();
+
+				// Recorro lineas con documentos a considerar para este socio de negocio
 				for (MZGeneraOrdenPagoLin generaLin: generaLins){
 
 					// Si el documento de esta linea se corresponde con una invoice
