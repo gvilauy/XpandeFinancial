@@ -31,6 +31,7 @@ public class ValidatorFinancial implements ModelValidator {
         engine.addDocValidate(I_C_Invoice.Table_Name, this);
 
         // DB Validations
+        engine.addModelChange(I_C_BankAccount.Table_Name, this);
 
     }
 
@@ -269,5 +270,31 @@ public class ValidatorFinancial implements ModelValidator {
 
         return message;
     }
+
+
+    /***
+     * Validaciones para el modelo de Cuenta Bancaria
+     * Xpande. Created by Gabriel Vila on 9/29/18.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MBankAccount model, int type) throws Exception {
+
+        String mensaje = null, action = "";
+
+        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+
+            // Me aseguro de que se indique Organización distinta de *.
+            if (model.getAD_Org_ID() <= 0){
+                return "Debe indicar Organización para esta Cuenta Bancaria.";
+            }
+
+        }
+
+        return mensaje;
+    }
+
 
 }
