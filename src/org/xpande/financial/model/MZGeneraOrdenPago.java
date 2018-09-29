@@ -949,7 +949,6 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				ordenPago.setIsPaid(false);
 				ordenPago.saveEx();
 
-
 				BigDecimal totalPago = Env.ZERO;
 				Timestamp maxDueDate = fechaHoy;
 
