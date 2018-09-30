@@ -81,6 +81,17 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 		return newIndex;
 	}
 
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		// Me aseguro de que se indique Organización distinta de *.
+		if (this.getAD_Org_ID() <= 0){
+			log.saveError("ATENCIÓN", "Debe Indicar Organización a considerar (no se acepta organización = * )");
+			return false;
+		}
+
+		return true;
+	}
 
 	/**
 	 * 	Get Document Info
