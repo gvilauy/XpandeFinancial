@@ -33,7 +33,7 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180308L;
+	private static final long serialVersionUID = 20181008L;
 
     /** Standard Constructor */
     public X_Z_EmisionMedioPago (Properties ctx, int Z_EmisionMedioPago_ID, String trxName)
@@ -58,6 +58,8 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 // N
 			setPaymentRule (null);
 // S
+			setPosted (false);
+// N
 			setProcessed (false);
 // N
 			setTotalAmt (Env.ZERO);
@@ -463,6 +465,30 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 		return (String)get_Value(COLUMNNAME_PaymentRule);
 	}
 
+	/** Set Posted.
+		@param Posted 
+		Posting status
+	  */
+	public void setPosted (boolean Posted)
+	{
+		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
+	}
+
+	/** Get Posted.
+		@return Posting status
+	  */
+	public boolean isPosted () 
+	{
+		Object oo = get_Value(COLUMNNAME_Posted);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Processed.
 		@param Processed 
 		The document has been processed
@@ -487,6 +513,26 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 		return false;
 	}
 
+	/** Set Processed On.
+		@param ProcessedOn 
+		The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public void setProcessedOn (BigDecimal ProcessedOn)
+	{
+		set_Value (COLUMNNAME_ProcessedOn, ProcessedOn);
+	}
+
+	/** Get Processed On.
+		@return The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public BigDecimal getProcessedOn () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ProcessedOn);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Process Now.
 		@param Processing Process Now	  */
 	public void setProcessing (boolean Processing)
@@ -506,6 +552,23 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Reference No.
+		@param ReferenceNo 
+		Your customer or vendor number at the Business Partner's site
+	  */
+	public void setReferenceNo (String ReferenceNo)
+	{
+		set_Value (COLUMNNAME_ReferenceNo, ReferenceNo);
+	}
+
+	/** Get Reference No.
+		@return Your customer or vendor number at the Business Partner's site
+	  */
+	public String getReferenceNo () 
+	{
+		return (String)get_Value(COLUMNNAME_ReferenceNo);
 	}
 
 	/** Set Total Amount.
