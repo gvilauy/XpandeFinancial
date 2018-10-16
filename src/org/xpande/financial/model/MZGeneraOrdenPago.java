@@ -21,6 +21,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -915,7 +917,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 			MClient client = new MClient(getCtx(), this.getAD_Client_ID(), null);
 
 			// Medio de pago por defecto por ahora CHEQUE
-			MZMedioPago medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
+			//MZMedioPago medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
 
 			// Valida datos para la generación
 			message =  this.validateGenerateOrdenes();
@@ -947,6 +949,10 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				if (generaLins.size() <= 0){
 					continue;
 				}
+
+				// Hashmap de montos a pagar por medio de pago a considerar en esta orden de pago.
+				// Por ejemplo puede aceptar cheque y transferencia para esta orden.
+				HashMap<Integer, BigDecimal> hashMediosPago = new HashMap<Integer, BigDecimal>();
 
 				// Creo nuevo cabezal de orden de pago
 				MZOrdenPago ordenPago = new MZOrdenPago(getCtx(), 0, get_TrxName());
@@ -1080,6 +1086,15 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
 					totalPago = totalPago.add(ordenPagoLin.getAmtAllocationMT());
 
+					// Acumulo monto en medio de pago
+					if (hashMediosPago.containsKey(generaLin.getZ_MedioPago_ID())){
+						BigDecimal amtMedioPago = ((BigDecimal) hashMediosPago.get(generaLin.getZ_MedioPago_ID())).add(ordenPagoLin.getAmtAllocationMT());
+						hashMediosPago.put(generaLin.getZ_MedioPago_ID(), amtMedioPago);
+					}
+					else{
+						hashMediosPago.put(generaLin.getZ_MedioPago_ID(), ordenPagoLin.getAmtAllocationMT());
+					}
+
 					if (generaLin.getDueDateMedioPago() != null){
 						if (generaLin.getDueDateMedioPago().after(fechaHoy)){
 							maxDueDate = generaLin.getDueDateMedioPago();
@@ -1091,19 +1106,22 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				ordenPago.setTotalAmt(totalPago);
 				ordenPago.saveEx();
 
-				// Creo linea para medio de pago a considerarse al completar la orden de pago
-				MZOrdenPagoMedio ordenPagoMedio = new MZOrdenPagoMedio(getCtx(), 0, get_TrxName());
-				ordenPagoMedio.setZ_GeneraOrdenPago_ID(this.get_ID());
-				ordenPagoMedio.setZ_OrdenPago_ID(ordenPago.get_ID());
-				ordenPagoMedio.setC_BankAccount_ID(this.getC_BankAccount_ID());
-				ordenPagoMedio.setDueDate(maxDueDate);
-				ordenPagoMedio.setC_Currency_ID(ordenPago.getC_Currency_ID());
-				ordenPagoMedio.setTotalAmt(ordenPago.getTotalAmt());
-				ordenPagoMedio.setZ_MedioPago_ID(medioPago.get_ID());
-				ordenPagoMedio.setZ_MedioPagoFolio_ID(this.getZ_MedioPagoFolio_ID());
-				ordenPagoMedio.setC_BPartner_ID(ordenPago.getC_BPartner_ID());
-				ordenPagoMedio.saveEx();
-
+				// Creo lineas para cada medio de pago a considerarse al completar la orden de pago
+				if (hashMediosPago != null){
+					for (HashMap.Entry<Integer, BigDecimal> entry : hashMediosPago.entrySet()){
+						MZOrdenPagoMedio ordenPagoMedio = new MZOrdenPagoMedio(getCtx(), 0, get_TrxName());
+						ordenPagoMedio.setZ_GeneraOrdenPago_ID(this.get_ID());
+						ordenPagoMedio.setZ_OrdenPago_ID(ordenPago.get_ID());
+						ordenPagoMedio.setC_BankAccount_ID(this.getC_BankAccount_ID());
+						ordenPagoMedio.setDueDate(maxDueDate);
+						ordenPagoMedio.setC_Currency_ID(ordenPago.getC_Currency_ID());
+						ordenPagoMedio.setTotalAmt(entry.getValue());
+						ordenPagoMedio.setZ_MedioPago_ID(entry.getKey());
+						ordenPagoMedio.setZ_MedioPagoFolio_ID(this.getZ_MedioPagoFolio_ID());
+						ordenPagoMedio.setC_BPartner_ID(ordenPago.getC_BPartner_ID());
+						ordenPagoMedio.saveEx();
+					}
+				}
 			}
 
 		}
