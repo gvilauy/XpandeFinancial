@@ -170,6 +170,19 @@ public interface I_Z_MedioPago
 	  */
 	public boolean isTieneCtaBco();
 
+    /** Column name TieneEmision */
+    public static final String COLUMNNAME_TieneEmision = "TieneEmision";
+
+	/** Set TieneEmision.
+	  * Si un determinado medio de pago tiene o no emisión en modulo financiero
+	  */
+	public void setTieneEmision(boolean TieneEmision);
+
+	/** Get TieneEmision.
+	  * Si un determinado medio de pago tiene o no emisión en modulo financiero
+	  */
+	public boolean isTieneEmision();
+
     /** Column name TieneFecEmi */
     public static final String COLUMNNAME_TieneFecEmi = "TieneFecEmi";
 

@@ -38,6 +38,7 @@ public class MZMedioPagoFolio extends X_Z_MedioPagoFolio {
             for (long i = this.getNumeroDesde(); i <= this.getNumeroHasta(); i++){
                 MZMedioPagoItem item = new MZMedioPagoItem(getCtx(), 0, get_TrxName());
                 item.setZ_MedioPago_ID(this.getZ_MedioPago_ID());
+                item.setAD_Org_ID(this.getAD_Org_ID());
                 item.setZ_MedioPagoFolio_ID(this.get_ID());
                 item.setC_BankAccount_ID(this.getC_BankAccount_ID());
                 item.setC_Currency_ID(this.getC_Currency_ID());

@@ -30,7 +30,7 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180201L;
+	private static final long serialVersionUID = 20181017L;
 
     /** Standard Constructor */
     public X_Z_MedioPago (Properties ctx, int Z_MedioPago_ID, String trxName)
@@ -47,6 +47,8 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 // N
 			setTieneCtaBco (true);
 // Y
+			setTieneEmision (false);
+// N
 			setTieneFecEmi (false);
 // N
 			setTieneFecVenc (false);
@@ -207,6 +209,30 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	public boolean isTieneCtaBco () 
 	{
 		Object oo = get_Value(COLUMNNAME_TieneCtaBco);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneEmision.
+		@param TieneEmision 
+		Si un determinado medio de pago tiene o no emisión en modulo financiero
+	  */
+	public void setTieneEmision (boolean TieneEmision)
+	{
+		set_Value (COLUMNNAME_TieneEmision, Boolean.valueOf(TieneEmision));
+	}
+
+	/** Get TieneEmision.
+		@return Si un determinado medio de pago tiene o no emisión en modulo financiero
+	  */
+	public boolean isTieneEmision () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneEmision);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

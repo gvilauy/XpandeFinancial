@@ -957,6 +957,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				// Creo nuevo cabezal de orden de pago
 				MZOrdenPago ordenPago = new MZOrdenPago(getCtx(), 0, get_TrxName());
 				ordenPago.setZ_GeneraOrdenPago_ID(this.get_ID());
+				ordenPago.setAD_Org_ID(this.getAD_Org_ID());
 				ordenPago.setC_BPartner_ID(ordenPagoSocio.getC_BPartner_ID());
 				ordenPago.setC_Currency_ID(cCurrencyBankAccount);
 				ordenPago.setC_DocType_ID(docOP.get_ID());
@@ -1021,6 +1022,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					// Genero linea de orden de pago para este documento
 					MZOrdenPagoLin ordenPagoLin = new MZOrdenPagoLin(getCtx(), 0, get_TrxName());
 					ordenPagoLin.setZ_OrdenPago_ID(ordenPago.get_ID());
+					ordenPagoLin.setAD_Org_ID(ordenPago.getAD_Org_ID());
 					ordenPagoLin.setAmtAllocation(generaLin.getAmtAllocation());
 					ordenPagoLin.setAmtDocument(generaLin.getAmtDocument());
 					ordenPagoLin.setAmtOpen(generaLin.getAmtOpen());
@@ -1111,6 +1113,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					for (HashMap.Entry<Integer, BigDecimal> entry : hashMediosPago.entrySet()){
 						MZOrdenPagoMedio ordenPagoMedio = new MZOrdenPagoMedio(getCtx(), 0, get_TrxName());
 						ordenPagoMedio.setZ_GeneraOrdenPago_ID(this.get_ID());
+						ordenPagoMedio.setAD_Org_ID(ordenPago.getAD_Org_ID());
 						ordenPagoMedio.setZ_OrdenPago_ID(ordenPago.get_ID());
 						ordenPagoMedio.setC_BankAccount_ID(this.getC_BankAccount_ID());
 						ordenPagoMedio.setDueDate(maxDueDate);
@@ -1220,16 +1223,20 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				return message;
 			}
 
-			if (this.getZ_MedioPagoFolio_ID() <= 0){
-				message = "Debe indicar Libreta para Cheques Diferidos.";
-				return message;
-			}
+			// Si alguno de los distintos medios de pago a utilizarse para las ordenes, requiere folio
+			boolean mediosPagoRequiereFolio = this.mediospagoRequiereFolio();
 
-			if (this.getZ_MedioPagoFolio_2_ID() <= 0){
-				message = "Debe indicar Libreta para Cheques Día";
-				return message;
-			}
+			if (mediosPagoRequiereFolio){
+				if (this.getZ_MedioPagoFolio_ID() <= 0){
+					message = "Debe indicar Libreta para Cheques Diferidos.";
+					return message;
+				}
 
+				if (this.getZ_MedioPagoFolio_2_ID() <= 0){
+					message = "Debe indicar Libreta para Cheques Día";
+					return message;
+				}
+			}
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
@@ -1274,6 +1281,46 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 		}
 
 		return message;
+	}
+
+	/***
+	 * Metodo que verifica si alguno de los distintos medios de pago indicados en las lineas de documentos de esta generación,
+	 * tiene la marca que indica que requiere folio de medios de pago.
+	 * Xpande. Created by Gabriel Vila on 10/16/18.
+	 * @return
+	 */
+	private boolean mediospagoRequiereFolio(){
+
+		boolean result = false;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+		    sql = " select distinct a.z_mediopago_id, mp.tienefolio " +
+					" from z_generaordenpagolin a " +
+					" inner join z_mediopago mp on a.z_mediopago_id = mp.z_mediopago_id " +
+					" where a.z_generaordenpago_id =" + this.get_ID();
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+				if (rs.getString("tienefolio").equalsIgnoreCase("Y")){
+					result = true;
+				}
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return result;
 	}
 
 }

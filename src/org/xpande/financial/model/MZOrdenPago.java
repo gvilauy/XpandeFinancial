@@ -435,17 +435,32 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 			for (MZOrdenPagoMedio ordenMedioPago: mediosPago){
 
-				// Si no tengo item de medio de pago, obtengo el siguiente disponible del folio
+				// Instancio modelo de medio de pago, si es que tengo.
+				MZMedioPago medioPago = (MZMedioPago) ordenMedioPago.getZ_MedioPago();
+				if ((medioPago == null) || (medioPago.get_ID() <= 0)){
+					continue;
+				}
+
+				// Si este medio de pago no se emite por definición
+				if (!medioPago.isTieneEmision()){
+					continue;
+				}
+
+				// Si no tengo item de medio de pago, y en caso de que este medio de pago requiera folio,
+				// entonces obtengo el siguiente disponible del folio
 				MZMedioPagoItem medioPagoItem = null;
 				if (ordenMedioPago.getZ_MedioPagoItem_ID() <= 0){
-					if (ordenMedioPago.getZ_MedioPagoFolio_ID() <= 0){
-						return "Medio de pago no tiene Libreta asociada.";
+
+					if (medioPago.isTieneFolio()){
+						if (ordenMedioPago.getZ_MedioPagoFolio_ID() <= 0){
+							return "Medio de pago no tiene Libreta asociada.";
+						}
+						medioPagoItem = ((MZMedioPagoFolio) ordenMedioPago.getZ_MedioPagoFolio()).getCurrentNext();
+						if ((medioPagoItem == null) || (medioPagoItem.get_ID() <= 0)){
+							return "Libreta no tiene medios de pago disponibles para utilizar.";
+						}
+						ordenMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
 					}
-					medioPagoItem = ((MZMedioPagoFolio) ordenMedioPago.getZ_MedioPagoFolio()).getCurrentNext();
-					if ((medioPagoItem == null) || (medioPagoItem.get_ID() <= 0)){
-						return "Libreta no tiene medios de pago disponibles para utilizar.";
-					}
-					ordenMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
 				}
 				else{
 					medioPagoItem = (MZMedioPagoItem) ordenMedioPago.getZ_MedioPagoItem();
@@ -457,12 +472,25 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 				// Realizo emisión para este medio de pago a considerar
 				MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
 				emisionMedioPago.setZ_MedioPago_ID(ordenMedioPago.getZ_MedioPago_ID());
-				emisionMedioPago.setZ_MedioPagoFolio_ID(ordenMedioPago.getZ_MedioPagoFolio_ID());
-				emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+				emisionMedioPago.setAD_Org_ID(ordenMedioPago.getAD_Org_ID());
+
+				if (ordenMedioPago.getZ_MedioPagoFolio_ID() > 0){
+					emisionMedioPago.setZ_MedioPagoFolio_ID(ordenMedioPago.getZ_MedioPagoFolio_ID());
+				}
+
+				if ((medioPagoItem != null) && (medioPagoItem.get_ID() > 0)){
+					emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+					emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
+					emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
+				}
+				else{
+					emisionMedioPago.setReferenceNo(ordenMedioPago.getDocumentNoRef());
+					emisionMedioPago.setC_Currency_ID(ordenMedioPago.getC_Currency_ID());
+					emisionMedioPago.setC_BankAccount_ID(ordenMedioPago.getC_BankAccount_ID());
+				}
+
 				emisionMedioPago.setZ_OrdenPago_ID(this.get_ID());
-				emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
 				emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
-				emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
 				emisionMedioPago.setDateDoc(this.getDateDoc());
 				emisionMedioPago.setDateEmitted(this.getDateDoc());
 				emisionMedioPago.setDueDate(ordenMedioPago.getDueDate());
