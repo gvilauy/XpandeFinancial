@@ -256,7 +256,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		}
 
 		if (!this.isSOTrx()){
-			// Emite medios de pago cuando es un Pago y no esta referenciando ordenes de pago.
+			// Emite medios de pago cuando es un Pago y no esta referenciando ordenes de pago
+			// (siempre y cuando los medios de pago no fueron emitidos previamente a mano).
 			if (!this.isTieneOrdenPago()){
 				m_processMsg = this.emitirMediosPago(medioPagoList);
 			}
