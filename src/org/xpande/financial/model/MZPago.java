@@ -35,6 +35,7 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.core.utils.AcctUtils;
 
 /** Generated Model for Z_Pago
  *  @author Adempiere (generated) 
@@ -533,6 +534,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		if (m_processMsg != null)
 			return false;
 
+		// Elimino asientos contables.
+		AcctUtils.deleteFact(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
@@ -632,7 +636,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			// Elimino generacion anterior en caso de que el usuario asi lo indique
 			if (!getDocumentosNuevos){
-				this.deleteDocuments();
+				this.deleteDocuments(false);
 			}
 
 			HashMap<Integer, Integer> hashCurrency = new HashMap<Integer, Integer>();
@@ -661,7 +665,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				}
 
 				// Actualizo tasa de cambio y monto en moneda transacción, en lineas y resguardos asociados a este documento.
-				this.updateRates();
+				this.updateRates(false);
 			}
 
 
@@ -673,15 +677,26 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		return message;
 	}
 
+
+
 	/***
 	 * Elimina documentos existentes a considerarse en este proceso.
 	 * Xpande. Created by Gabriel Vila on 1/24/18.
+	 * @param onlyMediosPago : true si solo elimina medios de pago, false si elimina solamente facturas y resguardos.
 	 */
-	private void deleteDocuments() {
+	private void deleteDocuments(boolean onlyMediosPago) {
 
 		String action = "";
 
 		try{
+
+			if (onlyMediosPago){
+
+				action = " delete from z_pagomediopago where z_pago_id =" + this.get_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+
+				return;
+			}
 
 			action = " delete from z_pagolin where z_pago_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
@@ -739,7 +754,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			whereClause += filtroMonedas;
 
 			// Query
-			sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (hdr.documentserie || hdr.documentno) as documentno, " +
+			sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (coalesce(hdr.documentserie,'') || hdr.documentno) as documentno, " +
 					" hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal, ips.c_invoicepayschedule_id, " +
 					" iop.amtopen, " +
 					" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, coalesce(hdr.TieneDtosNC,'N') as TieneDtosNC, " +
@@ -1173,12 +1188,38 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 * Actualiza tasa de cambio y como consecuencia monto a pagar en moneda de transacción, en lineas y resguardos asociados
 	 * a este documento de pago/cobro.
 	 * Xpande. Created by Gabriel Vila on 1/26/18.
+	 * @param onlyMediosPago : true si solo proceso medios de pago, false si proceso solamente facturas y resguardos.
 	 */
-	private void updateRates() {
+	private void updateRates(boolean onlyMediosPago) {
 
 		try{
 
 			HashMap<Integer, MZPagoMoneda> hashCurrency = new HashMap<Integer, MZPagoMoneda>();
+
+			// Si solo tengo que actualizar Tasa de Cabmio y montos en lineas de medios de pago
+			if (onlyMediosPago){
+
+				// Medios de Pago
+				List<MZPagoMedioPago> pagoMedioPagoList = this.getMediosPago();
+				for (MZPagoMedioPago pagoMedioPago: pagoMedioPagoList){
+
+					MZPagoMoneda pagoMoneda = null;
+					if (hashCurrency.containsKey(pagoMedioPago.getC_Currency_ID())){
+						pagoMoneda = hashCurrency.get(pagoMedioPago.getC_Currency_ID());
+					}
+					else{
+						pagoMoneda = MZPagoMoneda.getByCurrency(getCtx(), this.get_ID(), pagoMedioPago.getC_Currency_ID(), get_TrxName());
+						hashCurrency.put(pagoMedioPago.getC_Currency_ID(), pagoMoneda);
+					}
+					if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+						pagoMedioPago.setMultiplyRate(pagoMoneda.getMultiplyRate());
+						pagoMedioPago.saveEx();
+					}
+				}
+
+				return;
+			}
+
 
 			// Lineas
 			List<MZPagoLin> pagoLinList = this.getLines();
@@ -1190,6 +1231,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				}
 				else{
 					pagoMoneda = MZPagoMoneda.getByCurrency(getCtx(), this.get_ID(), pagoLin.getC_Currency_ID(), get_TrxName());
+					hashCurrency.put(pagoLin.getC_Currency_ID(), pagoMoneda);
 				}
 				if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
 					pagoLin.setMultiplyRate(pagoMoneda.getMultiplyRate());
@@ -1207,6 +1249,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				}
 				else{
 					pagoMoneda = MZPagoMoneda.getByCurrency(getCtx(), this.get_ID(), pagoResguardo.getC_Currency_ID(), get_TrxName());
+					hashCurrency.put(pagoResguardo.getC_Currency_ID(), pagoMoneda);
 				}
 				if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
 					pagoResguardo.setMultiplyRate(pagoMoneda.getMultiplyRate());
@@ -1602,6 +1645,116 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		catch (Exception e){
 			throw new AdempiereException(e);
 		}
+	}
+
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		if (this.getAD_Org_ID() == 0){
+			log.saveError("ATENCIÓN", "Debe Indicar Organización a considerar (no se acepta organización = * )");
+			return false;
+		}
+
+		return true;
+	}
+
+
+	/***
+	 * Obtiene y carga medios de pago emitidos para el socio de negocio del documento.
+	 * Xpande. Created by Gabriel Vila on 11/14/18.
+	 * @return
+	 */
+	public String getMediosPagoEmitidos(String tipoAccion){
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			boolean getMPNuevos = true;
+
+			if (!tipoAccion.equalsIgnoreCase("NUEVOS")){
+				getMPNuevos = false;
+			}
+
+			// Elimino generacion anterior en caso de que el usuario asi lo indique
+			if (!getMPNuevos){
+				this.deleteDocuments(true);
+			}
+
+			HashMap<Integer, Integer> hashCurrency = new HashMap<Integer, Integer>();
+
+		    sql = " select i.z_mediopagoitem_id, i.z_mediopago_id, i.z_mediopagofolio_id, i.totalamt, " +
+					"i.c_bankaccount_id, i.c_currency_id, i.dateemitted, i.nromediopago, i.duedate " +
+					"from z_mediopagoitem i " +
+					"where i.c_bpartner_id =" + this.getC_BPartner_ID() +
+					"and i.emitido ='Y' and i.entregado='N' and i.anulado='N' " +
+					"and i.depositado ='N' and i.conciliado ='N' ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), 0, get_TrxName());
+				pagoMedioPago.setZ_Pago_ID(this.get_ID());
+
+				pagoMedioPago.setZ_MedioPago_ID(rs.getInt("z_mediopago_id"));
+				if (rs.getInt("z_mediopagofolio_id") > 0){
+					pagoMedioPago.setZ_MedioPagoFolio_ID(rs.getInt("z_mediopagofolio_id"));
+				}
+
+				pagoMedioPago.setZ_MedioPagoItem_ID(rs.getInt("z_mediopagoitem_id"));
+				pagoMedioPago.setTotalAmtMT(rs.getBigDecimal("totalamt"));
+				pagoMedioPago.setTotalAmt(rs.getBigDecimal("totalamt"));
+				pagoMedioPago.setC_BankAccount_ID(rs.getInt("c_bankaccount_id"));
+				pagoMedioPago.setC_Currency_ID(rs.getInt("c_currency_id"));
+				pagoMedioPago.setDateEmitted(rs.getTimestamp("dateemitted"));
+				pagoMedioPago.setDocumentNoRef(rs.getString("nromediopago"));
+				pagoMedioPago.setDueDate(rs.getTimestamp("duedate"));
+				pagoMedioPago.setEmisionManual(false);
+				pagoMedioPago.setMultiplyRate(Env.ONE);
+				pagoMedioPago.setTieneCaja(false);
+				pagoMedioPago.setTieneCtaBco(true);
+				pagoMedioPago.setTieneFecEmi(true);
+				pagoMedioPago.setTieneFecVenc(true);
+				pagoMedioPago.setTieneFolio(true);
+				pagoMedioPago.saveEx();
+
+				// Guardo moneda en hash si aún no la tengo
+				if (!hashCurrency.containsKey(pagoMedioPago.getC_Currency_ID())){
+					hashCurrency.put(pagoMedioPago.getC_Currency_ID(), pagoMedioPago.getC_Currency_ID());
+				}
+			}
+
+
+			// Si tengo monedas, actualizo tabla de monedas de este pago/cobro
+			if (hashCurrency.size() > 0){
+
+				// Cargo monedas con tasa de cambio a la fecha de este documento
+				message = MZPagoMoneda.setMonedas(getCtx(), this.get_ID(), hashCurrency, get_TrxName());
+				if (message != null){
+					return message;
+				}
+
+				// Actualizo tasa de cambio y monto en moneda transacción, en lineas y resguardos asociados a este documento.
+				this.updateRates(true);
+			}
+
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
 	}
 
 }

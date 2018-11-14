@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
+import dto.migrate.CFEInvoiCyType;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
@@ -32,6 +33,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
+import org.xpande.core.utils.AcctUtils;
 import org.xpande.core.utils.DateUtils;
 
 /** Generated Model for Z_EmisionMedioPago
@@ -72,8 +74,8 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
 			options[newIndex++] = DocumentEngine.ACTION_Void;
+			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
 			//options[newIndex++] = DocumentEngine.ACTION_None;
-			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
 
 		}
 
@@ -239,11 +241,14 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		log.info(toString());
 		//
 
+		/*
+		// Quito esta validación ya que se pueden emitir manualmente cheques de fechas pasadas en caso de contingencia.
 		// Me aseguro fecha de emisión no menor a hoy
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 		if (this.getDateEmitted().before(fechaHoy)){
 			this.setDateEmitted(fechaHoy);
 		}
+		 */
 
 		// Validaciones de este documento
 		m_processMsg = this.validateDocument();
@@ -292,12 +297,16 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 
 		try{
 
+
+			/*
+			// Quito esta validación ya que se pueden emitir manualmente cheques de fechas pasadas en caso de contingencia.
 			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
 			// Valido fecha de emsión no menor a fecha de hoy
 			if (this.getDateEmitted().before(fechaHoy)){
 				return "Fecha de emisión no puede ser anterior a la fecha de hoy.";
 			}
+			*/
 
 			// Valido fecha de vencimiento no mayor a 180 dias a partir de fecha de emisión
 			Date dateFechaAux = new Date(this.getDateEmitted().getTime());
@@ -424,10 +433,53 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		if (this.getZ_MedioPagoItem_ID() > 0){
+
+			MZMedioPagoItem pagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
+
+			// Valido que el medio de pago emitido, siga estando solamente emitido para poder reactivarlo
+			if (!pagoItem.IsOnlyEmitido()){
+				m_processMsg = "El medio de pago tiene que estar solamente Emitido para poder ser Modificado";
+				return false;
+			}
+
+			// Valido que el medio de pago no este asociado a una orden de pago
+			if (pagoItem.getZ_OrdenPago_ID() > 0){
+
+				MZOrdenPago ordenPago = (MZOrdenPago) this.getZ_OrdenPago();
+				m_processMsg = "No se puede reactivar este medio de pago porque esta asociado a la Orden de Pago número : " + ordenPago.getDocumentNo();
+				return false;
+			}
+
+			// Desafecto medio de pago
+			m_processMsg = pagoItem.desafectar();
+			if (m_processMsg != null)
+				return false;
+		}
+
+		// Elimino asientos contables.
+		AcctUtils.deleteFact(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+
+		this.setProcessed(false);
+		this.setPosted(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
+
 	}	//	reActivateIt
 	
 	

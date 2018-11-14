@@ -141,7 +141,9 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
                     return "Debe indicar Fecha de Emisión del Medio de Pago";
                 }
                 if (this.getDateEmitted().before(fechaHoy)){
-                    return "La Fecha de Emisión del Medio de Pago no puede ser menor a la fecha actual";
+                    if (this.isEmisionManual()){
+                        return "La Fecha de Emisión del Medio de Pago no puede ser menor a la fecha actual";
+                    }
                 }
             }
 
@@ -149,8 +151,10 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
                 if (this.getDueDate() == null){
                     return "Debe indicar Fecha de Vencimiento del Medio de Pago";
                 }
-                if (this.getDateEmitted().before(fechaHoy)){
-                    return "La Fecha de Vencimiento del Medio de Pago no puede ser menor a la fecha actual";
+                if (this.getDueDate().before(fechaHoy)){
+                    if (this.isEmisionManual()){
+                        return "La Fecha de Vencimiento del Medio de Pago no puede ser menor a la fecha actual";
+                    }
                 }
                 if (this.getDateEmitted() != null){
                     if (this.getDueDate().before(this.getDateEmitted())){

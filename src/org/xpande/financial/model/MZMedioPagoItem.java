@@ -5,6 +5,7 @@ import org.compiere.apps.ProcessCtl;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MPInstancePara;
 import org.compiere.process.ProcessInfo;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.utils.NumberToString;
 
@@ -118,5 +119,57 @@ public class MZMedioPagoItem extends X_Z_MedioPagoItem {
 
         */
 
+    }
+
+    /***
+     * Informa si este medio de pago esta emitido y nada mas, o si por el contraro tiene otro estado posterior.
+     * Xpande. Created by Gabriel Vila on 11/14/18.
+     * @return
+     */
+    public boolean IsOnlyEmitido(){
+
+        try{
+
+            if (!this.isEmitido()){
+                return false;
+            }
+
+            if (this.isEntregado() || this.isAnulado() || this.isDepositado() || this.isConciliado() || this.isReemplazado()){
+                return false;
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return true;
+    }
+
+
+    /***
+     * Dejo este medio de pago sin ninguna actividad y desafectado de socio de negocio.
+     * Xpande. Created by Gabriel Vila on 11/14/18
+     * @return
+     */
+    public String desafectar() {
+
+        String message = null, action = "";
+
+        try{
+
+            // Desafecto medio de pago
+            action = " update z_mediopagoitem set emitido ='N', c_bpartner_id = null, dateemitted = null, duedate = null, " +
+            " leyendaimpresion1 = null, leyendaimpresion2 = null, totalamt = 0, isprinted='N', z_emisionmediopago_id = null " +
+            " where z_mediopagoitem_id =" + this.get_ID();
+
+            DB.executeUpdateEx(action, get_TrxName());
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return message;
     }
 }
