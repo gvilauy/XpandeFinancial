@@ -46,6 +46,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.X_C_TaxGroup;
 import org.xpande.cfe.model.MZCFERespuestaProvider;
+import org.xpande.cfe.utils.ProcesadorCFE;
 import org.xpande.core.utils.CurrencyUtils;
 
 import javax.xml.bind.JAXBContext;
@@ -320,7 +321,13 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		estadoCuenta.saveEx();
 
 		// CFE
-		this.cfe();
+		//this.cfe();
+		ProcesadorCFE procesadorCFE = new ProcesadorCFE(getCtx(), get_TrxName());
+		m_processMsg = procesadorCFE.executeCFE(this, this.getAD_Org_ID(), this.getC_DocType_ID());
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
 
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
