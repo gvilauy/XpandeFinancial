@@ -33,7 +33,7 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180524L;
+	private static final long serialVersionUID = 20181115L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoItem (Properties ctx, int Z_MedioPagoItem_ID, String trxName)
@@ -43,7 +43,6 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
         {
 			setAnulado (false);
 // N
-			setC_BankAccount_ID (0);
 			setC_Currency_ID (0);
 			setConciliado (false);
 // N
@@ -53,6 +52,8 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 // N
 			setEntregado (false);
 // N
+			setIsOwn (true);
+// Y
 			setIsPrinted (false);
 // N
 			setIsReceipt (false);
@@ -339,6 +340,30 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	public boolean isEntregado () 
 	{
 		Object oo = get_Value(COLUMNNAME_Entregado);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set IsOwn.
+		@param IsOwn 
+		Si le pertenece o no
+	  */
+	public void setIsOwn (boolean IsOwn)
+	{
+		set_Value (COLUMNNAME_IsOwn, Boolean.valueOf(IsOwn));
+	}
+
+	/** Get IsOwn.
+		@return Si le pertenece o no
+	  */
+	public boolean isOwn () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsOwn);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

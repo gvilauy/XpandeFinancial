@@ -241,6 +241,19 @@ public interface I_Z_MedioPagoItem
 	  */
 	public boolean isActive();
 
+    /** Column name IsOwn */
+    public static final String COLUMNNAME_IsOwn = "IsOwn";
+
+	/** Set IsOwn.
+	  * Si le pertenece o no
+	  */
+	public void setIsOwn(boolean IsOwn);
+
+	/** Get IsOwn.
+	  * Si le pertenece o no
+	  */
+	public boolean isOwn();
+
     /** Column name IsPrinted */
     public static final String COLUMNNAME_IsPrinted = "IsPrinted";
 

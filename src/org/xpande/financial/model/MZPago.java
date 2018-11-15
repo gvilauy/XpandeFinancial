@@ -238,9 +238,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		log.info(toString());
 		//
 
-		// Me aseguro fecha de documento igual a hoy
+		// Me aseguro que la fecha del documento no sea mayor a hoy
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-		if ((this.getDateDoc().before(fechaHoy)) || (this.getDateDoc().after(fechaHoy))){
+		if (this.getDateDoc().after(fechaHoy)){
 			this.setDateDoc(fechaHoy);
 		}
 
@@ -269,6 +269,10 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			if (m_processMsg != null){
 				return DocAction.STATUS_Invalid;
 			}
+		}
+		else{
+			// Para cobranzas, creo medios de pago si es necesario.
+			m_processMsg = this.crearMediosPago(medioPagoList);
 		}
 
 		// Afecta ordendes de pago asociados a este pago, si este pago referencia ordenes de pago
@@ -310,6 +314,57 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
+
+
+	/***
+	 * Cuando se trata de un cobro, debo crear los medios de pago según sea necesario.
+	 * Xpande. Created by Gabriel Vila on 11/15/18
+	 * @param medioPagoList
+	 * @return
+	 */
+	private String crearMediosPago(List<MZPagoMedioPago> medioPagoList) {
+
+		String message = null;
+
+		try{
+			// No procede si es un pago
+			if (!this.isSOTrx()){
+				return null;
+			}
+
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+			// Recorre lista de medios de pago a emitir para este documento de pago
+			for (MZPagoMedioPago pagoMedioPago: medioPagoList){
+
+				// Me aseguro fecha de emisión no menor a hoy
+				if (pagoMedioPago.getDateEmitted().before(fechaHoy)){
+					pagoMedioPago.setDateEmitted(fechaHoy);
+				}
+
+				MZMedioPagoItem medioPagoItem = null;
+
+				// Si no tengo item de medio de pago, obtengo el siguiente disponible del folio
+				if (pagoMedioPago.getZ_MedioPagoItem_ID() <= 0){
+				}
+				else{
+					medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+				}
+
+
+				// Marco medio de pago en cartera
+				medioPagoItem.setEntregado(true);
+
+				medioPagoItem.setZ_Pago_ID(this.get_ID());
+				medioPagoItem.saveEx();
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return message;
+	}
 
 	/**
 	 * 	Set the definite document number after completed
