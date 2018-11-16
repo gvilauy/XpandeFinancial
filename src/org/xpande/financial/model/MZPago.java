@@ -337,24 +337,56 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			// Recorre lista de medios de pago a emitir para este documento de pago
 			for (MZPagoMedioPago pagoMedioPago: medioPagoList){
 
-				// Me aseguro fecha de emisión no menor a hoy
-				if (pagoMedioPago.getDateEmitted().before(fechaHoy)){
-					pagoMedioPago.setDateEmitted(fechaHoy);
+				if (pagoMedioPago.getDateEmitted() != null) {
+					// Me aseguro fecha de emisión no mayor a hoy
+					if (pagoMedioPago.getDateEmitted().before(fechaHoy)){
+						pagoMedioPago.setDateEmitted(fechaHoy);
+					}
 				}
 
 				MZMedioPagoItem medioPagoItem = null;
 
-				// Si no tengo item de medio de pago, obtengo el siguiente disponible del folio
+				// Si no tengo item de medio de pago, lo creo ahora
 				if (pagoMedioPago.getZ_MedioPagoItem_ID() <= 0){
+
+					medioPagoItem = new MZMedioPagoItem(getCtx(), 0, get_TrxName());
+					medioPagoItem.setZ_MedioPago_ID(pagoMedioPago.getZ_MedioPago_ID());
+					medioPagoItem.setAD_Org_ID(this.getAD_Org_ID());
+					if (pagoMedioPago.getZ_MedioPagoFolio_ID() > 0){
+						medioPagoItem.setZ_MedioPagoFolio_ID(pagoMedioPago.getZ_MedioPagoFolio_ID());
+					}
+					if (pagoMedioPago.getC_BankAccount_ID() > 0){
+						medioPagoItem.setC_BankAccount_ID(pagoMedioPago.getC_BankAccount_ID());
+					}
+
+					medioPagoItem.setC_Currency_ID(pagoMedioPago.getC_Currency_ID());
+
+					if ((pagoMedioPago.getDocumentNoRef() == null) || (pagoMedioPago.getDocumentNoRef().trim().equalsIgnoreCase(""))){
+
+						medioPagoItem.setNroMedioPago(String.valueOf(pagoMedioPago.get_ID()));
+
+						// Seteo numero de medio de pago en la linea de medio de pago de
+						String action = " update z_pagomediopago set documentnoref ='" + medioPagoItem.getNroMedioPago() + "' " +
+										" where z_pagomediopago_id =" + pagoMedioPago.get_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+
+					}
+					else{
+						medioPagoItem.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
+					}
+
+					medioPagoItem.setIsReceipt(true);
+					medioPagoItem.setEmitido(true);
+					medioPagoItem.setTotalAmt(pagoMedioPago.getTotalAmt());
+					medioPagoItem.setIsOwn(true);
+					medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
 				}
 				else{
 					medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
 				}
 
-
-				// Marco medio de pago en cartera
-				medioPagoItem.setEntregado(true);
-
+				// Marco medio de pago emitido
+				medioPagoItem.setEmitido(true);
 				medioPagoItem.setZ_Pago_ID(this.get_ID());
 				medioPagoItem.saveEx();
 			}

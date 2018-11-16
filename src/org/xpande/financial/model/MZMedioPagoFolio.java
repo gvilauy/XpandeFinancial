@@ -47,6 +47,7 @@ public class MZMedioPagoFolio extends X_Z_MedioPagoFolio {
                 item.setDocumentSerie(this.getDocumentSerie());
                 item.setEmitido(false);
                 item.setTotalAmt(Env.ZERO);
+                item.setIsOwn(true);
                 item.saveEx();
             }
 
