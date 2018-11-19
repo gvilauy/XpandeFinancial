@@ -963,7 +963,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	}
 
 	/***
-	 * Obtiene y retorna resguardos asociados a este modelo.
+	 * Obtiene y retorna resguardos asociados a este modelo en un documento de pago.
 	 * Xpande. Created by Gabriel Vila on 1/24/18.
 	 * @return
 	 */
@@ -972,6 +972,21 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		String whereClause = X_Z_PagoResguardo.COLUMNNAME_Z_Pago_ID + " =" + this.get_ID();
 
 		List<MZPagoResguardo> lines = new Query(getCtx(), I_Z_PagoResguardo.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
+	/***
+	 * Obtiene y retorna resguardos recibiddos del cliente de un documento de cobro.
+	 * Xpande. Created by Gabriel Vila on 11/19/18
+	 * @return
+	 */
+	public List<MZPagoResgRecibido> getResguardosRecibidos(){
+
+		String whereClause = X_Z_PagoResgRecibido.COLUMNNAME_Z_Pago_ID + " =" + this.get_ID();
+
+		List<MZPagoResgRecibido> lines = new Query(getCtx(), I_Z_PagoResgRecibido.Table_Name, whereClause, get_TrxName()).list();
 
 		return lines;
 	}
@@ -1367,12 +1382,21 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			BigDecimal sumLines = DB.getSQLValueBDEx(get_TrxName(), sql);
 			if (sumLines == null) sumLines = Env.ZERO;
 
-			// Obtengo suma de montos de resguardos
-			sql = " select sum(coalesce(amtallocationmt,0)) as total from z_pagoresguardo " +
-					" where z_pago_id =" + this.get_ID() +
-					" and isselected ='Y'";
-			BigDecimal sumResguardos = DB.getSQLValueBDEx(get_TrxName(), sql);
-			if (sumResguardos == null) sumResguardos = Env.ZERO;
+			// Obtengo suma de montos de resguardos segun sean entregados o recibidos
+			BigDecimal sumResguardos = Env.ZERO;
+			if (!this.isSOTrx()){
+				sql = " select sum(coalesce(amtallocationmt,0)) as total from z_pagoresguardo " +
+						" where z_pago_id =" + this.get_ID() +
+						" and isselected ='Y'";
+				sumResguardos = DB.getSQLValueBDEx(get_TrxName(), sql);
+				if (sumResguardos == null) sumResguardos = Env.ZERO;
+			}
+			else{
+				sql = " select sum(coalesce(amtallocationmt,0)) as total from z_pagoresgrecibido " +
+						" where z_pago_id =" + this.get_ID();
+				sumResguardos = DB.getSQLValueBDEx(get_TrxName(), sql);
+				if (sumResguardos == null) sumResguardos = Env.ZERO;
+			}
 
 			// Obtengo suma de montos de medios de pago
 			sql = " select sum(coalesce(totalamtmt,0)) as total from z_pagomediopago " +
