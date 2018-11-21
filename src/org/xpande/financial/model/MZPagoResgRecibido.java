@@ -57,7 +57,7 @@ public class MZPagoResgRecibido extends X_Z_PagoResgRecibido {
         if (!newRecord){
 
             // Si se modifica el monto a pagar o la tasa de cambio, debo recalcular el monto a pagar en moneda de la transacción.
-            if ((is_ValueChanged(X_Z_PagoMedioPago.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoMedioPago.COLUMNNAME_TotalAmt))){
+            if ((is_ValueChanged(X_Z_PagoResgRecibido.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoResgRecibido.COLUMNNAME_AmtAllocation))){
                 if (this.getMultiplyRate().compareTo(Env.ONE) == 0){
                     this.setAmtAllocationMT(this.getAmtAllocation());
                 }

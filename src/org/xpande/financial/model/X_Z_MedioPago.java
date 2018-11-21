@@ -30,7 +30,7 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181017L;
+	private static final long serialVersionUID = 20181120L;
 
     /** Standard Constructor */
     public X_Z_MedioPago (Properties ctx, int Z_MedioPago_ID, String trxName)
@@ -43,17 +43,37 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 			setAplicaEnPago (true);
 // Y
 			setName (null);
+			setTieneBanco (false);
+// N
+			setTieneBancoCobro (false);
+// N
 			setTieneCaja (false);
+// N
+			setTieneCajaCobro (false);
 // N
 			setTieneCtaBco (true);
 // Y
+			setTieneCtaBcoCobro (false);
+// N
 			setTieneEmision (false);
+// N
+			setTieneEmisionCobro (false);
 // N
 			setTieneFecEmi (false);
 // N
+			setTieneFecEmiCobro (false);
+// N
 			setTieneFecVenc (false);
 // N
+			setTieneFecVencCobro (false);
+// N
 			setTieneFolio (false);
+// N
+			setTieneFolioCobro (false);
+// N
+			setTieneNroRef (false);
+// N
+			setTieneNroRefCobro (false);
 // N
 			setValue (null);
 			setZ_MedioPago_ID (0);
@@ -170,6 +190,54 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 		return (String)get_Value(COLUMNNAME_Name);
 	}
 
+	/** Set TieneBanco.
+		@param TieneBanco 
+		Si requiere información de Banco o no
+	  */
+	public void setTieneBanco (boolean TieneBanco)
+	{
+		set_Value (COLUMNNAME_TieneBanco, Boolean.valueOf(TieneBanco));
+	}
+
+	/** Get TieneBanco.
+		@return Si requiere información de Banco o no
+	  */
+	public boolean isTieneBanco () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneBanco);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneBancoCobro.
+		@param TieneBancoCobro 
+		Si requiere información de Banco o no en un documento de Cobro
+	  */
+	public void setTieneBancoCobro (boolean TieneBancoCobro)
+	{
+		set_Value (COLUMNNAME_TieneBancoCobro, Boolean.valueOf(TieneBancoCobro));
+	}
+
+	/** Get TieneBancoCobro.
+		@return Si requiere información de Banco o no en un documento de Cobro
+	  */
+	public boolean isTieneBancoCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneBancoCobro);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set TieneCaja.
 		@param TieneCaja 
 		Si requiere o no una caja asociada
@@ -185,6 +253,30 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	public boolean isTieneCaja () 
 	{
 		Object oo = get_Value(COLUMNNAME_TieneCaja);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneCajaCobro.
+		@param TieneCajaCobro 
+		Si requiere o no una caja asociada en un documento de cobro
+	  */
+	public void setTieneCajaCobro (boolean TieneCajaCobro)
+	{
+		set_Value (COLUMNNAME_TieneCajaCobro, Boolean.valueOf(TieneCajaCobro));
+	}
+
+	/** Get TieneCajaCobro.
+		@return Si requiere o no una caja asociada en un documento de cobro
+	  */
+	public boolean isTieneCajaCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneCajaCobro);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -218,6 +310,30 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 		return false;
 	}
 
+	/** Set TieneCtaBcoCobro.
+		@param TieneCtaBcoCobro 
+		Si requiere o no una cuenta bancaria asociada en un documento de Cobro
+	  */
+	public void setTieneCtaBcoCobro (boolean TieneCtaBcoCobro)
+	{
+		set_Value (COLUMNNAME_TieneCtaBcoCobro, Boolean.valueOf(TieneCtaBcoCobro));
+	}
+
+	/** Get TieneCtaBcoCobro.
+		@return Si requiere o no una cuenta bancaria asociada en un documento de Cobro
+	  */
+	public boolean isTieneCtaBcoCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneCtaBcoCobro);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set TieneEmision.
 		@param TieneEmision 
 		Si un determinado medio de pago tiene o no emisión en modulo financiero
@@ -233,6 +349,30 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	public boolean isTieneEmision () 
 	{
 		Object oo = get_Value(COLUMNNAME_TieneEmision);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneEmisionCobro.
+		@param TieneEmisionCobro 
+		Si un determinado medio de pago tiene o no emisión en un documento de Cobro
+	  */
+	public void setTieneEmisionCobro (boolean TieneEmisionCobro)
+	{
+		set_Value (COLUMNNAME_TieneEmisionCobro, Boolean.valueOf(TieneEmisionCobro));
+	}
+
+	/** Get TieneEmisionCobro.
+		@return Si un determinado medio de pago tiene o no emisión en un documento de Cobro
+	  */
+	public boolean isTieneEmisionCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneEmisionCobro);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -266,6 +406,30 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 		return false;
 	}
 
+	/** Set TieneFecEmiCobro.
+		@param TieneFecEmiCobro 
+		Si lleva o no Fecha de Emisión en un documento de Cobro
+	  */
+	public void setTieneFecEmiCobro (boolean TieneFecEmiCobro)
+	{
+		set_Value (COLUMNNAME_TieneFecEmiCobro, Boolean.valueOf(TieneFecEmiCobro));
+	}
+
+	/** Get TieneFecEmiCobro.
+		@return Si lleva o no Fecha de Emisión en un documento de Cobro
+	  */
+	public boolean isTieneFecEmiCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneFecEmiCobro);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set TieneFecVenc.
 		@param TieneFecVenc 
 		Si lleva o no Fecha de Vencimiento
@@ -290,6 +454,30 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 		return false;
 	}
 
+	/** Set TieneFecVencCobro.
+		@param TieneFecVencCobro 
+		Si lleva o no Fecha de Vencimiento en un documento de Cobro
+	  */
+	public void setTieneFecVencCobro (boolean TieneFecVencCobro)
+	{
+		set_Value (COLUMNNAME_TieneFecVencCobro, Boolean.valueOf(TieneFecVencCobro));
+	}
+
+	/** Get TieneFecVencCobro.
+		@return Si lleva o no Fecha de Vencimiento en un documento de Cobro
+	  */
+	public boolean isTieneFecVencCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneFecVencCobro);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set TieneFolio.
 		@param TieneFolio 
 		Si requiere o no un folio asociado de medios de pago
@@ -305,6 +493,78 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	public boolean isTieneFolio () 
 	{
 		Object oo = get_Value(COLUMNNAME_TieneFolio);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneFolioCobro.
+		@param TieneFolioCobro 
+		Si requiere o no un folio asociado de medios de pago en un documento de cobro
+	  */
+	public void setTieneFolioCobro (boolean TieneFolioCobro)
+	{
+		set_Value (COLUMNNAME_TieneFolioCobro, Boolean.valueOf(TieneFolioCobro));
+	}
+
+	/** Get TieneFolioCobro.
+		@return Si requiere o no un folio asociado de medios de pago en un documento de cobro
+	  */
+	public boolean isTieneFolioCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneFolioCobro);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneNroRef.
+		@param TieneNroRef 
+		Si requiere o no numero de referencia
+	  */
+	public void setTieneNroRef (boolean TieneNroRef)
+	{
+		set_Value (COLUMNNAME_TieneNroRef, Boolean.valueOf(TieneNroRef));
+	}
+
+	/** Get TieneNroRef.
+		@return Si requiere o no numero de referencia
+	  */
+	public boolean isTieneNroRef () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneNroRef);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneNroRefCobro.
+		@param TieneNroRefCobro 
+		Si requiere o no numero de referencia en un documento de Cobro
+	  */
+	public void setTieneNroRefCobro (boolean TieneNroRefCobro)
+	{
+		set_Value (COLUMNNAME_TieneNroRefCobro, Boolean.valueOf(TieneNroRefCobro));
+	}
+
+	/** Get TieneNroRefCobro.
+		@return Si requiere o no numero de referencia en un documento de Cobro
+	  */
+	public boolean isTieneNroRefCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneNroRefCobro);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

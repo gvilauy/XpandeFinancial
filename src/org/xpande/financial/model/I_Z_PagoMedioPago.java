@@ -78,6 +78,21 @@ public interface I_Z_PagoMedioPago
 
 	public I_C_BankAccount getC_BankAccount() throws RuntimeException;
 
+    /** Column name C_Bank_ID */
+    public static final String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
+
+	/** Set Bank.
+	  * Bank
+	  */
+	public void setC_Bank_ID(int C_Bank_ID);
+
+	/** Get Bank.
+	  * Bank
+	  */
+	public int getC_Bank_ID();
+
+	public I_C_Bank getC_Bank() throws RuntimeException;
+
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -187,6 +202,19 @@ public interface I_Z_PagoMedioPago
 	  */
 	public BigDecimal getMultiplyRate();
 
+    /** Column name TieneBanco */
+    public static final String COLUMNNAME_TieneBanco = "TieneBanco";
+
+	/** Set TieneBanco.
+	  * Si requiere información de Banco o no
+	  */
+	public void setTieneBanco(boolean TieneBanco);
+
+	/** Get TieneBanco.
+	  * Si requiere información de Banco o no
+	  */
+	public boolean isTieneBanco();
+
     /** Column name TieneCaja */
     public static final String COLUMNNAME_TieneCaja = "TieneCaja";
 
@@ -251,6 +279,19 @@ public interface I_Z_PagoMedioPago
 	  * Si requiere o no un folio asociado de medios de pago
 	  */
 	public boolean isTieneFolio();
+
+    /** Column name TieneNroRef */
+    public static final String COLUMNNAME_TieneNroRef = "TieneNroRef";
+
+	/** Set TieneNroRef.
+	  * Si requiere o no numero de referencia
+	  */
+	public void setTieneNroRef(boolean TieneNroRef);
+
+	/** Get TieneNroRef.
+	  * Si requiere o no numero de referencia
+	  */
+	public boolean isTieneNroRef();
 
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";

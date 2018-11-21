@@ -375,6 +375,10 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						medioPagoItem.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
 					}
 
+					if (pagoMedioPago.getC_Bank_ID() > 0){
+						medioPagoItem.setC_Bank_ID(pagoMedioPago.getC_Bank_ID());
+					}
+
 					medioPagoItem.setIsReceipt(true);
 					medioPagoItem.setEmitido(true);
 					medioPagoItem.setTotalAmt(pagoMedioPago.getTotalAmt());

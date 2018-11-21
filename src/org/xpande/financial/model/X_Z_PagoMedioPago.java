@@ -33,7 +33,7 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180312L;
+	private static final long serialVersionUID = 20181120L;
 
     /** Standard Constructor */
     public X_Z_PagoMedioPago (Properties ctx, int Z_PagoMedioPago_ID, String trxName)
@@ -41,11 +41,12 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
       super (ctx, Z_PagoMedioPago_ID, trxName);
       /** if (Z_PagoMedioPago_ID == 0)
         {
-			setC_BankAccount_ID (0);
 			setC_Currency_ID (0);
 			setEmisionManual (false);
 // N
 			setMultiplyRate (Env.ZERO);
+			setTieneBanco (false);
+// N
 			setTieneCaja (false);
 // N
 			setTieneCtaBco (true);
@@ -55,6 +56,8 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 			setTieneFecVenc (false);
 // N
 			setTieneFolio (false);
+// N
+			setTieneNroRef (false);
 // N
 			setTotalAmt (Env.ZERO);
 			setTotalAmtMT (Env.ZERO);
@@ -115,6 +118,34 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 	public int getC_BankAccount_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankAccount_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Bank getC_Bank() throws RuntimeException
+    {
+		return (I_C_Bank)MTable.get(getCtx(), I_C_Bank.Table_Name)
+			.getPO(getC_Bank_ID(), get_TrxName());	}
+
+	/** Set Bank.
+		@param C_Bank_ID 
+		Bank
+	  */
+	public void setC_Bank_ID (int C_Bank_ID)
+	{
+		if (C_Bank_ID < 1) 
+			set_Value (COLUMNNAME_C_Bank_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Bank_ID, Integer.valueOf(C_Bank_ID));
+	}
+
+	/** Get Bank.
+		@return Bank
+	  */
+	public int getC_Bank_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Bank_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -243,6 +274,30 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 		return bd;
 	}
 
+	/** Set TieneBanco.
+		@param TieneBanco 
+		Si requiere información de Banco o no
+	  */
+	public void setTieneBanco (boolean TieneBanco)
+	{
+		set_Value (COLUMNNAME_TieneBanco, Boolean.valueOf(TieneBanco));
+	}
+
+	/** Get TieneBanco.
+		@return Si requiere información de Banco o no
+	  */
+	public boolean isTieneBanco () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneBanco);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set TieneCaja.
 		@param TieneCaja 
 		Si requiere o no una caja asociada
@@ -354,6 +409,30 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 	public boolean isTieneFolio () 
 	{
 		Object oo = get_Value(COLUMNNAME_TieneFolio);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneNroRef.
+		@param TieneNroRef 
+		Si requiere o no numero de referencia
+	  */
+	public void setTieneNroRef (boolean TieneNroRef)
+	{
+		set_Value (COLUMNNAME_TieneNroRef, Boolean.valueOf(TieneNroRef));
+	}
+
+	/** Get TieneNroRef.
+		@return Si requiere o no numero de referencia
+	  */
+	public boolean isTieneNroRef () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneNroRef);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

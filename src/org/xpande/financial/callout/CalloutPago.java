@@ -75,12 +75,36 @@ public class CalloutPago extends CalloutEngine {
 
         MZMedioPago medioPago = new MZMedioPago(ctx, zMedioPagoID, null);
 
-        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmi());
-        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecVenc, medioPago.isTieneFecVenc());
-        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCtaBco, medioPago.isTieneCtaBco());
-        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCaja, medioPago.isTieneCaja());
-        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFolio, medioPago.isTieneFolio());
+        if ((medioPago != null) && (medioPago.get_ID() > 0)) {
 
+            int zPagoID = Env.getContextAsInt(ctx, WindowNo, "Z_Pago_ID");
+            MZPago pago = new MZPago(ctx, zPagoID, null);
+            if ((pago != null) && (pago.get_ID() > 0)) {
+
+                // Seteo comportamiento del medio de pago según sea un documento de pago o cobro
+                if (!pago.isSOTrx()) {
+
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmi());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecVenc, medioPago.isTieneFecVenc());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCtaBco, medioPago.isTieneCtaBco());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCaja, medioPago.isTieneCaja());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFolio, medioPago.isTieneFolio());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneBanco, medioPago.isTieneBanco());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneNroRef, medioPago.isTieneNroRef());
+
+                } else {
+
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmiCobro());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecVenc, medioPago.isTieneFecVencCobro());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCtaBco, medioPago.isTieneCtaBcoCobro());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCaja, medioPago.isTieneCajaCobro());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFolio, medioPago.isTieneFolioCobro());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneBanco, medioPago.isTieneBancoCobro());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneNroRef, medioPago.isTieneNroRefCobro());
+                }
+            }
+
+        }
 
         return "";
     }

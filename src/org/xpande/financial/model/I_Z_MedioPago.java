@@ -144,6 +144,32 @@ public interface I_Z_MedioPago
 	  */
 	public String getName();
 
+    /** Column name TieneBanco */
+    public static final String COLUMNNAME_TieneBanco = "TieneBanco";
+
+	/** Set TieneBanco.
+	  * Si requiere información de Banco o no
+	  */
+	public void setTieneBanco(boolean TieneBanco);
+
+	/** Get TieneBanco.
+	  * Si requiere información de Banco o no
+	  */
+	public boolean isTieneBanco();
+
+    /** Column name TieneBancoCobro */
+    public static final String COLUMNNAME_TieneBancoCobro = "TieneBancoCobro";
+
+	/** Set TieneBancoCobro.
+	  * Si requiere información de Banco o no en un documento de Cobro
+	  */
+	public void setTieneBancoCobro(boolean TieneBancoCobro);
+
+	/** Get TieneBancoCobro.
+	  * Si requiere información de Banco o no en un documento de Cobro
+	  */
+	public boolean isTieneBancoCobro();
+
     /** Column name TieneCaja */
     public static final String COLUMNNAME_TieneCaja = "TieneCaja";
 
@@ -156,6 +182,19 @@ public interface I_Z_MedioPago
 	  * Si requiere o no una caja asociada
 	  */
 	public boolean isTieneCaja();
+
+    /** Column name TieneCajaCobro */
+    public static final String COLUMNNAME_TieneCajaCobro = "TieneCajaCobro";
+
+	/** Set TieneCajaCobro.
+	  * Si requiere o no una caja asociada en un documento de cobro
+	  */
+	public void setTieneCajaCobro(boolean TieneCajaCobro);
+
+	/** Get TieneCajaCobro.
+	  * Si requiere o no una caja asociada en un documento de cobro
+	  */
+	public boolean isTieneCajaCobro();
 
     /** Column name TieneCtaBco */
     public static final String COLUMNNAME_TieneCtaBco = "TieneCtaBco";
@@ -170,6 +209,19 @@ public interface I_Z_MedioPago
 	  */
 	public boolean isTieneCtaBco();
 
+    /** Column name TieneCtaBcoCobro */
+    public static final String COLUMNNAME_TieneCtaBcoCobro = "TieneCtaBcoCobro";
+
+	/** Set TieneCtaBcoCobro.
+	  * Si requiere o no una cuenta bancaria asociada en un documento de Cobro
+	  */
+	public void setTieneCtaBcoCobro(boolean TieneCtaBcoCobro);
+
+	/** Get TieneCtaBcoCobro.
+	  * Si requiere o no una cuenta bancaria asociada en un documento de Cobro
+	  */
+	public boolean isTieneCtaBcoCobro();
+
     /** Column name TieneEmision */
     public static final String COLUMNNAME_TieneEmision = "TieneEmision";
 
@@ -182,6 +234,19 @@ public interface I_Z_MedioPago
 	  * Si un determinado medio de pago tiene o no emisión en modulo financiero
 	  */
 	public boolean isTieneEmision();
+
+    /** Column name TieneEmisionCobro */
+    public static final String COLUMNNAME_TieneEmisionCobro = "TieneEmisionCobro";
+
+	/** Set TieneEmisionCobro.
+	  * Si un determinado medio de pago tiene o no emisión en un documento de Cobro
+	  */
+	public void setTieneEmisionCobro(boolean TieneEmisionCobro);
+
+	/** Get TieneEmisionCobro.
+	  * Si un determinado medio de pago tiene o no emisión en un documento de Cobro
+	  */
+	public boolean isTieneEmisionCobro();
 
     /** Column name TieneFecEmi */
     public static final String COLUMNNAME_TieneFecEmi = "TieneFecEmi";
@@ -196,6 +261,19 @@ public interface I_Z_MedioPago
 	  */
 	public boolean isTieneFecEmi();
 
+    /** Column name TieneFecEmiCobro */
+    public static final String COLUMNNAME_TieneFecEmiCobro = "TieneFecEmiCobro";
+
+	/** Set TieneFecEmiCobro.
+	  * Si lleva o no Fecha de Emisión en un documento de Cobro
+	  */
+	public void setTieneFecEmiCobro(boolean TieneFecEmiCobro);
+
+	/** Get TieneFecEmiCobro.
+	  * Si lleva o no Fecha de Emisión en un documento de Cobro
+	  */
+	public boolean isTieneFecEmiCobro();
+
     /** Column name TieneFecVenc */
     public static final String COLUMNNAME_TieneFecVenc = "TieneFecVenc";
 
@@ -209,6 +287,19 @@ public interface I_Z_MedioPago
 	  */
 	public boolean isTieneFecVenc();
 
+    /** Column name TieneFecVencCobro */
+    public static final String COLUMNNAME_TieneFecVencCobro = "TieneFecVencCobro";
+
+	/** Set TieneFecVencCobro.
+	  * Si lleva o no Fecha de Vencimiento en un documento de Cobro
+	  */
+	public void setTieneFecVencCobro(boolean TieneFecVencCobro);
+
+	/** Get TieneFecVencCobro.
+	  * Si lleva o no Fecha de Vencimiento en un documento de Cobro
+	  */
+	public boolean isTieneFecVencCobro();
+
     /** Column name TieneFolio */
     public static final String COLUMNNAME_TieneFolio = "TieneFolio";
 
@@ -221,6 +312,45 @@ public interface I_Z_MedioPago
 	  * Si requiere o no un folio asociado de medios de pago
 	  */
 	public boolean isTieneFolio();
+
+    /** Column name TieneFolioCobro */
+    public static final String COLUMNNAME_TieneFolioCobro = "TieneFolioCobro";
+
+	/** Set TieneFolioCobro.
+	  * Si requiere o no un folio asociado de medios de pago en un documento de cobro
+	  */
+	public void setTieneFolioCobro(boolean TieneFolioCobro);
+
+	/** Get TieneFolioCobro.
+	  * Si requiere o no un folio asociado de medios de pago en un documento de cobro
+	  */
+	public boolean isTieneFolioCobro();
+
+    /** Column name TieneNroRef */
+    public static final String COLUMNNAME_TieneNroRef = "TieneNroRef";
+
+	/** Set TieneNroRef.
+	  * Si requiere o no numero de referencia
+	  */
+	public void setTieneNroRef(boolean TieneNroRef);
+
+	/** Get TieneNroRef.
+	  * Si requiere o no numero de referencia
+	  */
+	public boolean isTieneNroRef();
+
+    /** Column name TieneNroRefCobro */
+    public static final String COLUMNNAME_TieneNroRefCobro = "TieneNroRefCobro";
+
+	/** Set TieneNroRefCobro.
+	  * Si requiere o no numero de referencia en un documento de Cobro
+	  */
+	public void setTieneNroRefCobro(boolean TieneNroRefCobro);
+
+	/** Get TieneNroRefCobro.
+	  * Si requiere o no numero de referencia en un documento de Cobro
+	  */
+	public boolean isTieneNroRefCobro();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
