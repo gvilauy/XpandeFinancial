@@ -374,6 +374,9 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		if (m_processMsg != null)
 			return false;
 
+		MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
+		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
 		// Marco item de medio de pago como Anulado
 		MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
 		medioPagoItem.setAnulado(true);
@@ -439,6 +442,9 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		if (m_processMsg != null)
 			return false;
 
+		// Control de período contable
+		MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
+
 		if (this.getZ_MedioPagoItem_ID() > 0){
 
 			MZMedioPagoItem pagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
@@ -463,9 +469,8 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 				return false;
 		}
 
-		// Elimino asientos contables.
-		AcctUtils.deleteFact(this.get_Table_ID(), this.get_ID(), get_TrxName());
-
+		// Elimino asientos contables
+		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);

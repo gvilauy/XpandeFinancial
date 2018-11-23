@@ -325,6 +325,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	private String crearMediosPago(List<MZPagoMedioPago> medioPagoList) {
 
 		String message = null;
+        String action = "";
 
 		try{
 			// No procede si es un pago
@@ -366,7 +367,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						medioPagoItem.setNroMedioPago(String.valueOf(pagoMedioPago.get_ID()));
 
 						// Seteo numero de medio de pago en la linea de medio de pago de
-						String action = " update z_pagomediopago set documentnoref ='" + medioPagoItem.getNroMedioPago() + "' " +
+						action = " update z_pagomediopago set documentnoref ='" + medioPagoItem.getNroMedioPago() + "' " +
 										" where z_pagomediopago_id =" + pagoMedioPago.get_ID();
 						DB.executeUpdateEx(action, get_TrxName());
 
@@ -382,7 +383,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					medioPagoItem.setIsReceipt(true);
 					medioPagoItem.setEmitido(true);
 					medioPagoItem.setTotalAmt(pagoMedioPago.getTotalAmt());
-					medioPagoItem.setIsOwn(true);
+					medioPagoItem.setIsOwn(false);
 					medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
 				}
 				else{
@@ -393,6 +394,14 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				medioPagoItem.setEmitido(true);
 				medioPagoItem.setZ_Pago_ID(this.get_ID());
 				medioPagoItem.saveEx();
+
+				// Me aseguro de dejar asociado el medio de pago de este documento con el item de medio de pago.
+				if (pagoMedioPago.getZ_MedioPagoItem_ID() <= 0){
+
+                    action = " update z_pagomediopago set z_mediopagoitem_id =" + medioPagoItem.get_ID() +
+                            " where z_pagomediopago_id =" + pagoMedioPago.get_ID();
+                    DB.executeUpdateEx(action, get_TrxName());
+                }
 			}
 		}
 		catch (Exception e){
@@ -436,6 +445,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
 			return false;
+
+        // Control de período contable
+        MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
+
+        // Elimino asientos contables
+        MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
 		// Desafecto documentos asociados a este documento de pago/cobro
 		m_processMsg = this.desafectarDocumentos();
@@ -620,13 +635,16 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		if (m_processMsg != null)
 			return false;
 
-		// Desafecto documentos asociados a este documento de pago/cobro
+        // Control de período contable
+        MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
+
+        // Elimino asientos contables
+        MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+        // Desafecto documentos asociados a este documento de pago/cobro
 		m_processMsg = this.desafectarDocumentos();
 		if (m_processMsg != null)
 			return false;
-
-		// Elimino asientos contables.
-		AcctUtils.deleteFact(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
@@ -1825,6 +1843,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				pagoMedioPago.setZ_MedioPagoItem_ID(rs.getInt("z_mediopagoitem_id"));
 				pagoMedioPago.setTotalAmtMT(rs.getBigDecimal("totalamt"));
 				pagoMedioPago.setTotalAmt(rs.getBigDecimal("totalamt"));
+
+				if (rs.getInt("c_bankaccount_id") > 0){
+					pagoMedioPago.setC_BankAccount_ID(rs.getInt("c_bankaccount_id"));
+				}
+
 				pagoMedioPago.setC_BankAccount_ID(rs.getInt("c_bankaccount_id"));
 				pagoMedioPago.setC_Currency_ID(rs.getInt("c_currency_id"));
 				pagoMedioPago.setDateEmitted(rs.getTimestamp("dateemitted"));
@@ -1832,11 +1855,15 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				pagoMedioPago.setDueDate(rs.getTimestamp("duedate"));
 				pagoMedioPago.setEmisionManual(false);
 				pagoMedioPago.setMultiplyRate(Env.ONE);
-				pagoMedioPago.setTieneCaja(false);
-				pagoMedioPago.setTieneCtaBco(true);
-				pagoMedioPago.setTieneFecEmi(true);
-				pagoMedioPago.setTieneFecVenc(true);
-				pagoMedioPago.setTieneFolio(true);
+
+				MZMedioPago medioPago = new MZMedioPago(getCtx(), rs.getInt("z_mediopago_id"), null);
+
+				pagoMedioPago.setTieneCaja(medioPago.isTieneCaja());
+				pagoMedioPago.setTieneCtaBco(medioPago.isTieneCtaBco());
+				pagoMedioPago.setTieneFecEmi(medioPago.isTieneFecEmi());
+				pagoMedioPago.setTieneFecVenc(medioPago.isTieneFecVenc());
+				pagoMedioPago.setTieneFolio(medioPago.isTieneFolio());
+				pagoMedioPago.setTieneNroRef(medioPago.isTieneNroRef());
 				pagoMedioPago.saveEx();
 
 				// Guardo moneda en hash si aún no la tengo
