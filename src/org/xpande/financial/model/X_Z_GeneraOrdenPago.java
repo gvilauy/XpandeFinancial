@@ -31,7 +31,7 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170816L;
+	private static final long serialVersionUID = 20181128L;
 
     /** Standard Constructor */
     public X_Z_GeneraOrdenPago (Properties ctx, int Z_GeneraOrdenPago_ID, String trxName)
@@ -40,6 +40,7 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
       /** if (Z_GeneraOrdenPago_ID == 0)
         {
 			setC_Currency_ID (0);
+// 142
 			setC_DocType_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
@@ -459,6 +460,46 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 		return false;
 	}
 
+	/** PaymentRulePO AD_Reference_ID=195 */
+	public static final int PAYMENTRULEPO_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULEPO_Cash = "B";
+	/** Credit Card = K */
+	public static final String PAYMENTRULEPO_CreditCard = "K";
+	/** Direct Deposit = T */
+	public static final String PAYMENTRULEPO_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULEPO_Check = "S";
+	/** On Credit = P */
+	public static final String PAYMENTRULEPO_OnCredit = "P";
+	/** Direct Debit = D */
+	public static final String PAYMENTRULEPO_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULEPO_Mixed = "M";
+	/** TARJETA CORPORATIVA = C */
+	public static final String PAYMENTRULEPO_TARJETACORPORATIVA = "C";
+	/** FONDO FIJO = F */
+	public static final String PAYMENTRULEPO_FONDOFIJO = "F";
+	/** CANJE = J */
+	public static final String PAYMENTRULEPO_CANJE = "J";
+	/** Set Payment Rule.
+		@param PaymentRulePO 
+		Purchase payment option
+	  */
+	public void setPaymentRulePO (String PaymentRulePO)
+	{
+
+		set_Value (COLUMNNAME_PaymentRulePO, PaymentRulePO);
+	}
+
+	/** Get Payment Rule.
+		@return Purchase payment option
+	  */
+	public String getPaymentRulePO () 
+	{
+		return (String)get_Value(COLUMNNAME_PaymentRulePO);
+	}
+
 	/** Set ProcessButton.
 		@param ProcessButton ProcessButton	  */
 	public void setProcessButton (String ProcessButton)
@@ -488,6 +529,40 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 	public String getProcessButton2 () 
 	{
 		return (String)get_Value(COLUMNNAME_ProcessButton2);
+	}
+
+	/** Set ProcessButton3.
+		@param ProcessButton3 
+		Botón para proceso
+	  */
+	public void setProcessButton3 (String ProcessButton3)
+	{
+		set_Value (COLUMNNAME_ProcessButton3, ProcessButton3);
+	}
+
+	/** Get ProcessButton3.
+		@return Botón para proceso
+	  */
+	public String getProcessButton3 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton3);
+	}
+
+	/** Set ProcessButton4.
+		@param ProcessButton4 
+		Botón de Proceso
+	  */
+	public void setProcessButton4 (String ProcessButton4)
+	{
+		set_Value (COLUMNNAME_ProcessButton4, ProcessButton4);
+	}
+
+	/** Get ProcessButton4.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton4 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton4);
 	}
 
 	/** Set Processed.

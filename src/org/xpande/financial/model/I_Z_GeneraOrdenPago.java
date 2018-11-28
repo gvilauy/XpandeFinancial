@@ -295,6 +295,19 @@ public interface I_Z_GeneraOrdenPago
 	  */
 	public boolean isApproved();
 
+    /** Column name PaymentRulePO */
+    public static final String COLUMNNAME_PaymentRulePO = "PaymentRulePO";
+
+	/** Set Payment Rule.
+	  * Purchase payment option
+	  */
+	public void setPaymentRulePO(String PaymentRulePO);
+
+	/** Get Payment Rule.
+	  * Purchase payment option
+	  */
+	public String getPaymentRulePO();
+
     /** Column name ProcessButton */
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
@@ -316,6 +329,32 @@ public interface I_Z_GeneraOrdenPago
 	  * Botón de Proceso
 	  */
 	public String getProcessButton2();
+
+    /** Column name ProcessButton3 */
+    public static final String COLUMNNAME_ProcessButton3 = "ProcessButton3";
+
+	/** Set ProcessButton3.
+	  * Botón para proceso
+	  */
+	public void setProcessButton3(String ProcessButton3);
+
+	/** Get ProcessButton3.
+	  * Botón para proceso
+	  */
+	public String getProcessButton3();
+
+    /** Column name ProcessButton4 */
+    public static final String COLUMNNAME_ProcessButton4 = "ProcessButton4";
+
+	/** Set ProcessButton4.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton4(String ProcessButton4);
+
+	/** Get ProcessButton4.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton4();
 
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";

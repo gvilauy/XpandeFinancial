@@ -524,9 +524,14 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				whereClause += " AND " + filtroSocios;
 			}
 
-			// Query
+            // Filtro de Medio de Pago
+            if (this.getPaymentRulePO() != null){
+                whereClause += " AND bp.PaymentRulePo ='" + this.getPaymentRulePO() + "' ";
+            }
+
+            // Query
 			sql = " select hdr.c_bpartner_id, hdr.z_resguardosocio_id, hdr.c_doctype_id, hdr.documentno, " +
-					" hdr.datedoc, hdr.c_currency_id, hdr.totalamt, doc.docbasetype " +
+					" hdr.datedoc, hdr.c_currency_id, hdr.totalamt, doc.docbasetype, bp.PaymentRulePo " +
 					" from z_resguardosocio hdr " +
 					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
 					" inner join c_doctype doc on hdr.c_doctype_id = doc.c_doctype_id " +
@@ -578,7 +583,16 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				MZGeneraOrdenPagoLin ordenPagoLin = new MZGeneraOrdenPagoLin(getCtx(), 0, get_TrxName());
 				ordenPagoLin.setZ_GeneraOrdenPago_ID(this.get_ID());
 				ordenPagoLin.setZ_GeneraOrdenPagoSocio_ID(ordenPagoSocio.get_ID());
-				ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
+
+                // Seteo medio de pago según el socio de negocio en caso de tener uno asociado.
+                ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
+                if (rs.getString("PaymentRulePO") != null){
+                    medioPago = MZMedioPago.getByValue(getCtx(), rs.getString("PaymentRulePO"), null);
+                    if ((medioPago != null) && (medioPago.get_ID() > 0)){
+                        ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
+                    }
+                }
+
 				ordenPagoLin.setZ_ResguardoSocio_ID(rs.getInt("z_resguardosocio_id"));
 				ordenPagoLin.setAmtAllocation(amtDocument);
 				ordenPagoLin.setAmtDocument(amtDocument);
@@ -690,10 +704,15 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				whereClause += " AND " + filtroSocios;
 			}
 
+			// Filtro de Medio de Pago
+            if (this.getPaymentRulePO() != null){
+                whereClause += " AND bp.PaymentRulePo ='" + this.getPaymentRulePO() + "' ";
+            }
+
 			// Query
 		    sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (hdr.documentserie || hdr.documentno) as documentno, " +
 						" hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal, ips.c_invoicepayschedule_id, " +
-						" iop.amtopen, " +
+						" iop.amtopen, bp.PaymentRulePO, " +
 						" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, coalesce(hdr.TieneDtosNC,'N') as TieneDtosNC, " +
 					" coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
 					" from c_invoice hdr " +
@@ -778,7 +797,6 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 				MZGeneraOrdenPagoLin ordenPagoLin = new MZGeneraOrdenPagoLin(getCtx(), 0, get_TrxName());
 				ordenPagoLin.setZ_GeneraOrdenPago_ID(this.get_ID());
 				ordenPagoLin.setZ_GeneraOrdenPagoSocio_ID(ordenPagoSocio.get_ID());
-				ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
 				ordenPagoLin.setAmtDocument(amtDocument);
 				ordenPagoLin.setAmtOpen(amtOpen);
 				ordenPagoLin.setAmtAllocation(amtOpen);
@@ -793,6 +811,15 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
 				if (cInvoicePayScheduleID > 0){
 					ordenPagoLin.setC_InvoicePaySchedule_ID(cInvoicePayScheduleID);
+				}
+
+				// Seteo medio de pago según el socio de negocio en caso de tener uno asociado.
+				ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
+				if (rs.getString("PaymentRulePO") != null){
+					medioPago = MZMedioPago.getByValue(getCtx(), rs.getString("PaymentRulePO"), null);
+					if ((medioPago != null) && (medioPago.get_ID() > 0)){
+						ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
+					}
 				}
 
 				boolean tieneDtosNC = (rs.getString("TieneDtosNC").equalsIgnoreCase("Y")) ? true : false;
