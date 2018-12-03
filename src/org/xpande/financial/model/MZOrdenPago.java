@@ -240,9 +240,11 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
 		// Me aseguro fecha de generación no menor a hoy
+		/*
 		if (this.getDateDoc().before(fechaHoy)){
 			this.setDateDoc(fechaHoy);
 		}
+		*/
 
 		// Valido condiciones para completar este documento
 		m_processMsg = this.validateDocument();
@@ -492,7 +494,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 				emisionMedioPago.setZ_OrdenPago_ID(this.get_ID());
 				emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
 				emisionMedioPago.setDateDoc(this.getDateDoc());
-				emisionMedioPago.setDateEmitted(this.getDateDoc());
+				emisionMedioPago.setDateEmitted(ordenMedioPago.getDateEmitted());
 				emisionMedioPago.setDueDate(ordenMedioPago.getDueDate());
 				emisionMedioPago.setTotalAmt(ordenMedioPago.getTotalAmt());
 				emisionMedioPago.saveEx();

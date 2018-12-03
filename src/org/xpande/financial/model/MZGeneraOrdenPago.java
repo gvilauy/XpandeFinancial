@@ -943,9 +943,6 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 			MClient client = new MClient(getCtx(), this.getAD_Client_ID(), null);
 
-			// Medio de pago por defecto por ahora CHEQUE
-			//MZMedioPago medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
-
 			// Valida datos para la generación
 			message =  this.validateGenerateOrdenes();
 			if (message != null){
@@ -1191,15 +1188,18 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
 			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
+
+			/*
 			// Medio de pago por defecto por ahora CHEQUE
 			MZMedioPago medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
 
-			// Actualizo informacion de medios de pago en lineas de documentos a procesar
+			// Actualizo informacion de medios de pago que no esten seteados, en lineas de documentos a procesar
 			action = " update z_generaordenpagolin set z_mediopago_id =" + medioPago.get_ID()
 					+ " where z_generaordenpago_id =" + this.get_ID()
 					+ " and isselected ='Y' ";
 
 			DB.executeUpdateEx(action, get_TrxName());
+			*/
 
 			// Me aseguro que no queden fechas de vencimiento de medios de pago menores a hoy en lineas de documentos a procesar
 			action = " update z_generaordenpagolin set duedatemediopago ='" + fechaHoy + "' "
@@ -1207,7 +1207,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 					+ " and isselected ='Y' "
 					+ " and c_invoice_id > 0 "
 					+ " and duedatemediopago <'" + fechaHoy + "'";
-			DB.executeUpdateEx(action, get_TrxName());
+			//DB.executeUpdateEx(action, get_TrxName());
 
 		}
 		catch (Exception e){
