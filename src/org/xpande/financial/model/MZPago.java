@@ -338,12 +338,14 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			// Recorre lista de medios de pago a emitir para este documento de pago
 			for (MZPagoMedioPago pagoMedioPago: medioPagoList){
 
+				/*
 				if (pagoMedioPago.getDateEmitted() != null) {
 					// Me aseguro fecha de emisión no mayor a hoy
 					if (pagoMedioPago.getDateEmitted().before(fechaHoy)){
 						pagoMedioPago.setDateEmitted(fechaHoy);
 					}
 				}
+				*/
 
 				MZMedioPagoItem medioPagoItem = null;
 
@@ -379,6 +381,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					if (pagoMedioPago.getC_Bank_ID() > 0){
 						medioPagoItem.setC_Bank_ID(pagoMedioPago.getC_Bank_ID());
 					}
+
+					medioPagoItem.setDateEmitted(pagoMedioPago.getDateEmitted());
+					medioPagoItem.setDueDate(pagoMedioPago.getDueDate());
 
 					medioPagoItem.setIsReceipt(true);
 					medioPagoItem.setEmitido(true);
@@ -1821,13 +1826,15 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			HashMap<Integer, Integer> hashCurrency = new HashMap<Integer, Integer>();
 
 		    sql = " select i.z_mediopagoitem_id, i.z_mediopago_id, i.z_mediopagofolio_id, i.totalamt, " +
-					"i.c_bankaccount_id, i.c_currency_id, i.dateemitted, i.nromediopago, i.duedate " +
-					"from z_mediopagoitem i " +
-					"where i.c_bpartner_id =" + this.getC_BPartner_ID() +
-					"and i.emitido ='Y' and i.entregado='N' and i.anulado='N' " +
-					"and i.depositado ='N' and i.conciliado ='N' ";
+					" i.c_bankaccount_id, i.c_currency_id, i.dateemitted, i.nromediopago, i.duedate " +
+					" from z_mediopagoitem i " +
+					" where i.c_bpartner_id =" + this.getC_BPartner_ID() +
+					" and i.emitido ='Y' and i.entregado='N' and i.anulado='N' " +
+					" and i.depositado ='N' and i.conciliado ='N' " +
+					" and i.z_mediopagoitem_id not in " +
+					" (select z_mediopagoitem_id from z_pagomediopago where z_pago_id =" + this.get_ID() + ") ";
 
-			pstmt = DB.prepareStatement(sql, get_TrxName());
+		    pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
 
 			while(rs.next()){
