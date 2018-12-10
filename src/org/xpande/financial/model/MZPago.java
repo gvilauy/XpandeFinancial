@@ -1764,7 +1764,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
 			estadoCuenta.setDateDoc(this.getDateDoc());
 			estadoCuenta.setDocBaseType(docType.getDocBaseType());
-			estadoCuenta.setDocumentNoRef(this.getDocumentNo());
+			if ((this.getNroRecibo() != null) && (!this.getNroRecibo().trim().equalsIgnoreCase(""))){
+				estadoCuenta.setDocumentNoRef(this.getNroRecibo());
+			}
+			else{
+				estadoCuenta.setDocumentNoRef(this.getDocumentNo());
+			}
+
 			estadoCuenta.setIsSOTrx(this.isSOTrx());
 
 			if (!this.isSOTrx()){
