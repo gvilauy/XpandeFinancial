@@ -432,6 +432,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 	private String emitirMediosPago(List<MZOrdenPagoMedio> mediosPago) {
 
 		String message = null;
+		String action = "";
 
 		try{
 
@@ -463,12 +464,46 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 						}
 						ordenMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
 					}
+					else{
+						// Creo el item de medio de pago sin folio asociado
+						medioPagoItem = new MZMedioPagoItem(getCtx(), 0, get_TrxName());
+						medioPagoItem.setZ_MedioPago_ID(ordenMedioPago.getZ_MedioPago_ID());
+						medioPagoItem.setAD_Org_ID(this.getAD_Org_ID());
+						if (ordenMedioPago.getC_BankAccount_ID() > 0){
+							medioPagoItem.setC_BankAccount_ID(ordenMedioPago.getC_BankAccount_ID());
+						}
+
+						medioPagoItem.setC_Currency_ID(ordenMedioPago.getC_Currency_ID());
+
+						if ((ordenMedioPago.getDocumentNoRef() == null) || (ordenMedioPago.getDocumentNoRef().trim().equalsIgnoreCase(""))){
+
+							medioPagoItem.setNroMedioPago(String.valueOf(ordenMedioPago.get_ID()));
+
+							// Seteo numero de medio de pago en la linea de medio de pago de
+							action = " update z_ordenmediopago set documentnoref ='" + medioPagoItem.getNroMedioPago() + "' " +
+									" where z_ordenmediopago_id =" + ordenMedioPago.get_ID();
+							DB.executeUpdateEx(action, get_TrxName());
+
+						}
+						else{
+							medioPagoItem.setNroMedioPago(ordenMedioPago.getDocumentNoRef());
+						}
+
+						medioPagoItem.setDateEmitted(ordenMedioPago.getDateEmitted());
+						medioPagoItem.setDueDate(ordenMedioPago.getDueDate());
+
+						medioPagoItem.setIsReceipt(false);
+						medioPagoItem.setEmitido(true);
+						medioPagoItem.setTotalAmt(ordenMedioPago.getTotalAmt());
+						medioPagoItem.setIsOwn(true);
+						medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
+					}
 				}
 				else{
 					medioPagoItem = (MZMedioPagoItem) ordenMedioPago.getZ_MedioPagoItem();
 				}
 
-				ordenMedioPago.setDateEmitted(this.getDateDoc());
+				ordenMedioPago.setDateEmitted(ordenMedioPago.getDateEmitted());
 				ordenMedioPago.saveEx();
 
 				// Realizo emisión para este medio de pago a considerar

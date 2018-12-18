@@ -1453,6 +1453,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	private String emitirMediosPago(List<MZPagoMedioPago> medioPagoList) {
 
 		String message = null;
+		String action = "";
 
 		try{
 			// No procede si es un cobro
@@ -1475,20 +1476,63 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					continue;
 				}
 
+				/*
 				// Me aseguro fecha de emisión no menor a hoy
 				if (pagoMedioPago.getDateEmitted().before(fechaHoy)){
 					pagoMedioPago.setDateEmitted(fechaHoy);
 				}
+				*/
 
 				MZMedioPagoFolio folio = (MZMedioPagoFolio) pagoMedioPago.getZ_MedioPagoFolio();
 				MZMedioPagoItem medioPagoItem = null;
 
 				// Si no tengo item de medio de pago, obtengo el siguiente disponible del folio
 				if (pagoMedioPago.getZ_MedioPagoItem_ID() <= 0){
-					medioPagoItem = folio.getCurrentNext();
-					if ((medioPagoItem == null) || (medioPagoItem.get_ID() <= 0)){
-						return  "Libreta no tiene medios de pago disponibles para utilizar : " + folio.getName();
+					if ((folio != null) && (folio.get_ID() > 0)){
+						medioPagoItem = folio.getCurrentNext();
+						if ((medioPagoItem == null) || (medioPagoItem.get_ID() <= 0)){
+							return  "Libreta no tiene medios de pago disponibles para utilizar : " + folio.getName();
+						}
 					}
+					else{
+						// Creo el item de medio de pago sin folio asociado
+						medioPagoItem = new MZMedioPagoItem(getCtx(), 0, get_TrxName());
+						medioPagoItem.setZ_MedioPago_ID(pagoMedioPago.getZ_MedioPago_ID());
+						medioPagoItem.setAD_Org_ID(this.getAD_Org_ID());
+						if (pagoMedioPago.getC_BankAccount_ID() > 0){
+							medioPagoItem.setC_BankAccount_ID(pagoMedioPago.getC_BankAccount_ID());
+						}
+
+						medioPagoItem.setC_Currency_ID(pagoMedioPago.getC_Currency_ID());
+
+						if ((pagoMedioPago.getDocumentNoRef() == null) || (pagoMedioPago.getDocumentNoRef().trim().equalsIgnoreCase(""))){
+
+							medioPagoItem.setNroMedioPago(String.valueOf(pagoMedioPago.get_ID()));
+
+							// Seteo numero de medio de pago en la linea de medio de pago de
+							action = " update z_pagomediopago set documentnoref ='" + medioPagoItem.getNroMedioPago() + "' " +
+									" where z_pagomediopago_id =" + pagoMedioPago.get_ID();
+							DB.executeUpdateEx(action, get_TrxName());
+
+						}
+						else{
+							medioPagoItem.setNroMedioPago(pagoMedioPago.getDocumentNoRef());
+						}
+
+						if (pagoMedioPago.getC_Bank_ID() > 0){
+							medioPagoItem.setC_Bank_ID(pagoMedioPago.getC_Bank_ID());
+						}
+
+						medioPagoItem.setDateEmitted(pagoMedioPago.getDateEmitted());
+						medioPagoItem.setDueDate(pagoMedioPago.getDueDate());
+
+						medioPagoItem.setIsReceipt(false);
+						medioPagoItem.setEmitido(true);
+						medioPagoItem.setTotalAmt(pagoMedioPago.getTotalAmt());
+						medioPagoItem.setIsOwn(true);
+						medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
+					}
+
 					pagoMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
 					pagoMedioPago.saveEx();
 				}
