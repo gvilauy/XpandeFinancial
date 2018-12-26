@@ -358,7 +358,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 			for (MZResguardoSocioDoc resguardoSocioDoc: docs){
 
 				// Valido documentos del mismo periodo, ya que no es posible mezclar documentos de distintos periodos en un mismo resguardo.
-				MPeriod period = MPeriod.get(getCtx(), resguardoSocioDoc.getDateDoc(), 0);
+				MPeriod period = MPeriod.get(getCtx(), resguardoSocioDoc.getDateDoc(), this.getAD_Org_ID());
 				if ((period == null) || (period.get_ID() <= 0)){
 					return "No se pudo obtener Período contable para Fecha : " + resguardoSocioDoc.getDateDoc();
 				}
