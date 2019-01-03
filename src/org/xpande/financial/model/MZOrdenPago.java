@@ -480,8 +480,8 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 							medioPagoItem.setNroMedioPago(String.valueOf(ordenMedioPago.get_ID()));
 
 							// Seteo numero de medio de pago en la linea de medio de pago de
-							action = " update z_ordenmediopago set documentnoref ='" + medioPagoItem.getNroMedioPago() + "' " +
-									" where z_ordenmediopago_id =" + ordenMedioPago.get_ID();
+							action = " update z_ordenpagomedio set documentnoref ='" + medioPagoItem.getNroMedioPago() + "' " +
+									" where z_ordenpagomedio_id =" + ordenMedioPago.get_ID();
 							DB.executeUpdateEx(action, get_TrxName());
 
 						}
