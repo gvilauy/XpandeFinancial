@@ -721,6 +721,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     " inner join zv_financial_invopen iop on hdr.c_invoice_id = iop.c_invoice_id " +
                     " left outer join c_invoicepayschedule ips on hdr.c_invoice_id = ips.c_invoice_id " +
                     " where hdr.ad_client_id =" + this.getAD_Client_ID() +
+                    " and hdr.ad_org_id =" + this.getAD_Org_ID() +
                     " and hdr.issotrx='N' " +
                     " and hdr.ispaid='N' " +
                     " and hdr.docstatus='CO' " +
