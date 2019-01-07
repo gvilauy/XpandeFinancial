@@ -436,6 +436,8 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 		try{
 
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
 			for (MZOrdenPagoMedio ordenMedioPago: mediosPago){
 
 				// Instancio modelo de medio de pago, si es que tengo.
@@ -447,6 +449,10 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 				// Si este medio de pago no se emite por definición
 				if (!medioPago.isTieneEmision()){
 					continue;
+				}
+
+				if (ordenMedioPago.getDateEmitted() == null){
+					ordenMedioPago.setDateEmitted(fechaHoy);
 				}
 
 				// Si no tengo item de medio de pago, y en caso de que este medio de pago requiera folio,
@@ -503,7 +509,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					medioPagoItem = (MZMedioPagoItem) ordenMedioPago.getZ_MedioPagoItem();
 				}
 
-				ordenMedioPago.setDateEmitted(ordenMedioPago.getDateEmitted());
 				ordenMedioPago.saveEx();
 
 				// Realizo emisión para este medio de pago a considerar

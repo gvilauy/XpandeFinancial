@@ -316,6 +316,18 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 				return "Fecha de Vencimiento no puede ser mayor a 180 días con respecto a la Fecha de Emisión.";
 			}
 
+			if ((this.getTotalAmt() == null) || (this.getTotalAmt().compareTo(Env.ZERO) <= 0)){
+				return "Debe indicar Importe.";
+			}
+
+			// Valido atributos del medio de pago
+			MZMedioPago medioPago = (MZMedioPago) this.getZ_MedioPago();
+			if (medioPago.isTieneFolio()){
+				if (this.getZ_MedioPagoFolio_ID() <= 0){
+					return "Debe indicar Libreta de Medios de Pago.";
+				}
+			}
+
 			// Validaciones en item de medio de pago
 			if (this.getZ_MedioPagoFolio_ID() > 0){
 

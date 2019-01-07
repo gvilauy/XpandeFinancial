@@ -196,6 +196,19 @@ public interface I_Z_MedioPagoFolio
 	  */
 	public String getName();
 
+    /** Column name NroMedioPagoDesde */
+    public static final String COLUMNNAME_NroMedioPagoDesde = "NroMedioPagoDesde";
+
+	/** Set NroMedioPagoDesde.
+	  * Nunero de medio de pago desde
+	  */
+	public void setNroMedioPagoDesde(String NroMedioPagoDesde);
+
+	/** Get NroMedioPagoDesde.
+	  * Nunero de medio de pago desde
+	  */
+	public String getNroMedioPagoDesde();
+
     /** Column name NumeroDesde */
     public static final String COLUMNNAME_NumeroDesde = "NumeroDesde";
 

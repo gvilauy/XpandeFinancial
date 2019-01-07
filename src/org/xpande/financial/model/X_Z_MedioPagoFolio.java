@@ -30,7 +30,7 @@ public class X_Z_MedioPagoFolio extends PO implements I_Z_MedioPagoFolio, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170821L;
+	private static final long serialVersionUID = 20190107L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoFolio (Properties ctx, int Z_MedioPagoFolio_ID, String trxName)
@@ -256,6 +256,23 @@ public class X_Z_MedioPagoFolio extends PO implements I_Z_MedioPagoFolio, I_Pers
 	public String getName () 
 	{
 		return (String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set NroMedioPagoDesde.
+		@param NroMedioPagoDesde 
+		Nunero de medio de pago desde
+	  */
+	public void setNroMedioPagoDesde (String NroMedioPagoDesde)
+	{
+		set_Value (COLUMNNAME_NroMedioPagoDesde, NroMedioPagoDesde);
+	}
+
+	/** Get NroMedioPagoDesde.
+		@return Nunero de medio de pago desde
+	  */
+	public String getNroMedioPagoDesde () 
+	{
+		return (String)get_Value(COLUMNNAME_NroMedioPagoDesde);
 	}
 
 	/** Set NumeroDesde.

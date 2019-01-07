@@ -72,6 +72,10 @@ public class MZMedioPagoFolio extends X_Z_MedioPagoFolio {
         String whereClause = X_Z_MedioPagoItem.COLUMNNAME_Z_MedioPagoFolio_ID + " =" + this.get_ID() +
                 " AND " + X_Z_MedioPagoItem.COLUMNNAME_Emitido + " ='N'";
 
+        if (this.getNroMedioPagoDesde() != null){
+            whereClause += " AND " + X_Z_MedioPagoItem.COLUMNNAME_NroMedioPago + " >='" + this.getNroMedioPagoDesde() + "' ";
+        }
+
         MZMedioPagoItem model = new Query(getCtx(), I_Z_MedioPagoItem.Table_Name, whereClause, get_TrxName()).setOrderBy(" NroMedioPago ").first();
 
         return model;

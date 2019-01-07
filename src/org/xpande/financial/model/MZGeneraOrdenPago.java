@@ -815,16 +815,17 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                 }
 
                 // Seteo medio de pago según el socio de negocio en caso de tener uno asociado.
-                ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
+
                 if (rs.getString("PaymentRulePO") != null){
                     medioPago = MZMedioPago.getByValue(getCtx(), rs.getString("PaymentRulePO"), null);
-                    if ((medioPago != null) && (medioPago.get_ID() > 0)){
-                        ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
-                    }
-                    else{
+                    if ((medioPago == null) || (medioPago.get_ID() <= 0)){
                         medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
                     }
                 }
+                else{
+                    medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
+                }
+                ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
 
                 boolean tieneDtosNC = (rs.getString("TieneDtosNC").equalsIgnoreCase("Y")) ? true : false;
                 ordenPagoLin.setTieneDtosNC(tieneDtosNC);
