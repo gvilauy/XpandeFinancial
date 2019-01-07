@@ -820,6 +820,9 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     if ((medioPago != null) && (medioPago.get_ID() > 0)){
                         ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
                     }
+                    else{
+                        medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
+                    }
                 }
 
                 boolean tieneDtosNC = (rs.getString("TieneDtosNC").equalsIgnoreCase("Y")) ? true : false;
