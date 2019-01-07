@@ -92,15 +92,15 @@ public class EstadoCuenta {
 
             // Cadenas de insert en tablas del reporte
             action = " insert into " + TABLA_REPORTE + "(ad_user_id, tipofiltrofecha, tiposocionegocio, ad_client_id, ad_org_id, " +
-                    " c_currency_id, c_bpartner_id, amtsourcecr, amtsourcedr, amtstart, amtacumulado) ";
+                    " issotrx, c_currency_id, c_bpartner_id, amtsourcecr, amtsourcedr, amtstart, amtacumulado) ";
 
             sql = " select " + this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', " +
-                    " ad_client_id, ad_org_id, c_currency_id, c_bpartner_id, 0, 0, (sum(amtsourcedr) - sum(amtsourcecr)), (sum(amtsourcedr) - sum(amtsourcecr)) " +
+                    " ad_client_id, ad_org_id, issotrx, c_currency_id, c_bpartner_id, 0, 0, (sum(amtsourcedr) - sum(amtsourcecr)), (sum(amtsourcedr) - sum(amtsourcecr)) " +
                     " from z_estadocuenta " +
                     " where c_bpartner_id not in (select c_bpartner_id from z_rp_estadocuenta where ad_user_id =" + this.adUserID + ") " +
                     whereClause +
-                    " group by ad_client_id, ad_org_id, c_currency_id, c_bpartner_id " +
-                    " order by ad_client_id, ad_org_id, c_currency_id, c_bpartner_id";
+                    " group by ad_client_id, ad_org_id, issotrx, c_currency_id, c_bpartner_id " +
+                    " order by ad_client_id, ad_org_id, issotrx, c_currency_id, c_bpartner_id";
 
             DB.executeUpdateEx(action + sql, null);
 
@@ -162,7 +162,7 @@ public class EstadoCuenta {
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "' " +
                     " from z_estadocuenta " +
                     " where " + whereClause +
-                    " order by c_currency_id, c_bpartner_id, datedoc, c_doctype_id, z_estadocuenta_id ";
+                    " order by issotrx, c_currency_id, c_bpartner_id, datedoc, c_doctype_id, z_estadocuenta_id ";
 
             DB.executeUpdateEx(action + sql, null);
 
@@ -224,36 +224,42 @@ public class EstadoCuenta {
         ResultSet rs = null;
 
         try{
-            sql = " select a.c_currency_id, a.c_bpartner_id, a.amtsourcedr, a.amtsourcecr, a.z_estadocuenta_id " +
+            sql = " select a.issotrx, a.c_currency_id, a.c_bpartner_id, a.amtsourcedr, a.amtsourcecr, a.z_estadocuenta_id " +
                     " from " + TABLA_REPORTE + " a " +
                     " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.ad_user_id =" + this.adUserID +
-                    " order by a.c_currency_id, bp.name, a.datedoc, a.c_doctype_id, a.z_estadocuenta_id ";
+                    " order by a.issotrx, a.c_currency_id, bp.name, a.datedoc, a.c_doctype_id, a.z_estadocuenta_id ";
 
         	pstmt = DB.prepareStatement(sql, null);
         	rs = pstmt.executeQuery();
 
         	int cCurrencyIDAux = 0, cBpartnerIDAux = 0;
+        	String isSOTrxAux = "-";
 
             BigDecimal amtAcumulado = Env.ZERO;
 
         	while(rs.next()){
 
-        	    // Corte por moneda y socio de negocio
-                if ((rs.getInt("c_currency_id") != cCurrencyIDAux) || (rs.getInt("c_bpartner_id") != cBpartnerIDAux)){
+        	    // Corte por issotrx, moneda y socio de negocio
+                if ((!rs.getString("issotrx").equalsIgnoreCase(isSOTrxAux))
+                        || (rs.getInt("c_currency_id") != cCurrencyIDAux)
+                        || (rs.getInt("c_bpartner_id") != cBpartnerIDAux)){
+
 
                     cCurrencyIDAux = rs.getInt("c_currency_id");
                     cBpartnerIDAux = rs.getInt("c_bpartner_id");
+                    isSOTrxAux = rs.getString("issotrx");
 
                     // Obtengo y seteo saldo inicial del socio de negocio-moneda en tabla del reporte
-                    BigDecimal saldoInicial = this.getSaldoInicial(cBpartnerIDAux, cCurrencyIDAux);
+                    BigDecimal saldoInicial = this.getSaldoInicial(cBpartnerIDAux, cCurrencyIDAux, isSOTrxAux);
                     if (saldoInicial == null) saldoInicial = Env.ZERO;
 
                     action = " update " + TABLA_REPORTE +
                             " set AmtStart =" + saldoInicial +
                             " where ad_user_id =" + this.adUserID +
                             " and c_bpartner_id = " + cBpartnerIDAux +
-                            " and c_currency_id = " + cCurrencyIDAux;
+                            " and c_currency_id = " + cCurrencyIDAux +
+                            " and issotrx ='" + isSOTrxAux + "' ";
                     DB.executeUpdateEx(action, null);
 
                     amtAcumulado = saldoInicial;
@@ -290,9 +296,10 @@ public class EstadoCuenta {
      * Xpande. Created by Gabriel Vila on 3/26/18.
      * @param cBpartnerID
      * @param cCurrencyID
+     * @param isSOTrx
      * @return
      */
-    private BigDecimal getSaldoInicial(int cBpartnerID, int cCurrencyID) {
+    private BigDecimal getSaldoInicial(int cBpartnerID, int cCurrencyID, String isSOTrx) {
 
         BigDecimal amt = Env.ZERO;
         String sql = "";
@@ -319,6 +326,9 @@ public class EstadoCuenta {
             }
             else if (this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
                 whereClause += " and issotrx ='N'";
+            }
+            else{
+                whereClause += " and issotrx ='" + isSOTrx + "'";
             }
 
             sql = " select (sum(amtsourcedr) - sum(amtsourcecr)) as saldo " +
