@@ -237,15 +237,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		log.info(toString());
 		//
 
-		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-
-		// Me aseguro fecha de generación no menor a hoy
-		/*
-		if (this.getDateDoc().before(fechaHoy)){
-			this.setDateDoc(fechaHoy);
-		}
-		*/
-
 		// Valido condiciones para completar este documento
 		m_processMsg = this.validateDocument();
 		if (m_processMsg != null){
@@ -436,8 +427,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 		try{
 
-			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-
 			for (MZOrdenPagoMedio ordenMedioPago: mediosPago){
 
 				// Instancio modelo de medio de pago, si es que tengo.
@@ -451,9 +440,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					continue;
 				}
 
-				if (ordenMedioPago.getDateEmitted() == null){
-					ordenMedioPago.setDateEmitted(fechaHoy);
-				}
+				ordenMedioPago.setDateEmitted(this.getDateDoc());
 
 				// Si no tengo item de medio de pago, y en caso de que este medio de pago requiera folio,
 				// entonces obtengo el siguiente disponible del folio
@@ -504,6 +491,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 						medioPagoItem.setIsOwn(true);
 						medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
 					}
+					medioPagoItem.saveEx();
 				}
 				else{
 					medioPagoItem = (MZMedioPagoItem) ordenMedioPago.getZ_MedioPagoItem();
