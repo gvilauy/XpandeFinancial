@@ -78,15 +78,22 @@ public class ValidatorFinancial implements ModelValidator {
 
             // Antes de reactivar o anular valido que esta invoice no tengo movimientos posteriores
             if (!model.isSOTrx()){
+
                 // Para comprobantes de compra, valido que no este asociado a un resguardo.
                 message = this.validateInvoiceResguardo(model);
+                if (message != null){
+                    return message;
+                }
+
+                // Para comprobantes de compra, valido que no este asociado a un pago.
+                message = this.validateInvoicePago(model);
                 if (message != null){
                     return message;
                 }
             }
         }
 
-        if ((timing == TIMING_AFTER_REACTIVATE) || (timing == TIMING_AFTER_VOID)){
+        else if ((timing == TIMING_AFTER_REACTIVATE) || (timing == TIMING_AFTER_VOID)){
 
             // Al momento de reactivar o anular, debo eliminar invoice del estado de cuenta
             if (!model.isSOTrx()){
@@ -95,7 +102,25 @@ public class ValidatorFinancial implements ModelValidator {
             }
         }
 
-        if (timing == TIMING_AFTER_COMPLETE){
+        else if (timing == TIMING_BEFORE_COMPLETE){
+
+            // Manejo de CAJA y FONDO FIJO para medio de pago = Efectivo al completar una Invoice.
+            if (X_C_Invoice.PAYMENTRULE_Cash.equals(model.getPaymentRule())){
+                if (model.get_ValueAsInt("C_CashBook_ID") <= 0){
+                    message = "Debe indicar Caja Destino del Efectivo seleccionado como medio de pago.";
+                    return message;
+                }
+
+                // Genero pago o cobro que refleje el medio de pago efectivo seleccionado, en la caja indicada.
+                MZPago pago = new MZPago(model.getCtx(), 0, model.get_TrxName());
+                message = pago.generateFromCashInvoice(model);
+                if (message != null){
+                    return message;
+                }
+            }
+        }
+
+        else if (timing == TIMING_AFTER_COMPLETE){
 
             MDocType docType = (MDocType) model.getC_DocTypeTarget();
             String documentNoRef = model.getDocumentNo();
@@ -266,6 +291,53 @@ public class ValidatorFinancial implements ModelValidator {
         finally {
             DB.close(rs, pstmt);
         	rs = null; pstmt = null;
+        }
+
+        return message;
+    }
+
+
+    /***
+     * Valida si una invoice esta asociada a un documento de Pago / Cobro
+     * Xpande. Created by Gabriel Vila on 8/8/17.
+     * @param invoice
+     * @return
+     */
+    private String validateInvoicePago(MInvoice invoice) {
+
+        String message = null;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select pl.c_invoice_id, p.documentno, p.docstatus " +
+                    " from z_pagolin pl " +
+                    " inner join z_pago p on pl.z_pago_id = p.z_pago_id " +
+                    " where pl.c_invoice_id =" + invoice.get_ID() +
+                    " and p.docstatus != 'VO' ";
+
+            pstmt = DB.prepareStatement(sql, invoice.get_TrxName());
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+                if (invoice.isSOTrx()){
+                    message = " Este comprobante esta asociado al Cobro : " + rs.getString("documentno") +
+                            " (Estado Documento = " + rs.getString("docstatus") + ")";
+                }
+                else{
+                    message = " Este comprobante esta asociado al Pago : " + rs.getString("documentno") +
+                            " (Estado Documento = " + rs.getString("docstatus") + ")";
+                }
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
         }
 
         return message;

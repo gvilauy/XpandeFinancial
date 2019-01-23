@@ -511,12 +511,27 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 				if ((medioPagoItem != null) && (medioPagoItem.get_ID() > 0)){
 					emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
 					emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
-					emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
+
+					if (medioPagoItem.getC_BankAccount_ID() > 0){
+						emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
+					}
+					if (medioPagoItem.getC_CashBook_ID() > 0){
+						emisionMedioPago.setC_CashBook_ID(medioPagoItem.getC_CashBook_ID());
+					}
 				}
 				else{
 					emisionMedioPago.setReferenceNo(ordenMedioPago.getDocumentNoRef());
 					emisionMedioPago.setC_Currency_ID(ordenMedioPago.getC_Currency_ID());
-					emisionMedioPago.setC_BankAccount_ID(ordenMedioPago.getC_BankAccount_ID());
+
+					if (ordenMedioPago.getC_BankAccount_ID() > 0){
+						emisionMedioPago.setC_BankAccount_ID(ordenMedioPago.getC_BankAccount_ID());
+					}
+
+					/*
+					if (ordenMedioPago.getC_CashBook_ID() > 0){
+						emisionMedioPago.setC_CashBook_ID(ordenMedioPago.getC_CashBook_ID());
+					}
+					*/
 				}
 
 				emisionMedioPago.setZ_OrdenPago_ID(this.get_ID());

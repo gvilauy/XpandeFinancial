@@ -94,6 +94,32 @@ public interface I_Z_FinancialConfig
 	  */
 	public int getCreatedBy();
 
+    /** Column name DefaultDocCCD_ID */
+    public static final String COLUMNNAME_DefaultDocCCD_ID = "DefaultDocCCD_ID";
+
+	/** Set DefaultDocCCD_ID.
+	  * Documento por defecto para Cobro a Clientes
+	  */
+	public void setDefaultDocCCD_ID(int DefaultDocCCD_ID);
+
+	/** Get DefaultDocCCD_ID.
+	  * Documento por defecto para Cobro a Clientes
+	  */
+	public int getDefaultDocCCD_ID();
+
+    /** Column name DefaultDocPPD_ID */
+    public static final String COLUMNNAME_DefaultDocPPD_ID = "DefaultDocPPD_ID";
+
+	/** Set DefaultDocPPD_ID.
+	  * Documento por defecto para Pago a Proveedores
+	  */
+	public void setDefaultDocPPD_ID(int DefaultDocPPD_ID);
+
+	/** Get DefaultDocPPD_ID.
+	  * Documento por defecto para Pago a Proveedores
+	  */
+	public int getDefaultDocPPD_ID();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 

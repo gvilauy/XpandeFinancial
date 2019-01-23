@@ -121,6 +121,21 @@ public interface I_Z_MedioPagoItem
 
 	public I_C_BPartner getC_BPartner() throws RuntimeException;
 
+    /** Column name C_CashBook_ID */
+    public static final String COLUMNNAME_C_CashBook_ID = "C_CashBook_ID";
+
+	/** Set Cash Book.
+	  * Cash Book for recording petty cash transactions
+	  */
+	public void setC_CashBook_ID(int C_CashBook_ID);
+
+	/** Get Cash Book.
+	  * Cash Book for recording petty cash transactions
+	  */
+	public int getC_CashBook_ID();
+
+	public I_C_CashBook getC_CashBook() throws RuntimeException;
+
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -242,6 +257,19 @@ public interface I_Z_MedioPagoItem
 	  * Si esta entregado o no
 	  */
 	public boolean isEntregado();
+
+    /** Column name ID_Virtual */
+    public static final String COLUMNNAME_ID_Virtual = "ID_Virtual";
+
+	/** Set ID_Virtual.
+	  * Identificador virtual para tablas
+	  */
+	public void setID_Virtual(String ID_Virtual);
+
+	/** Get ID_Virtual.
+	  * Identificador virtual para tablas
+	  */
+	public String getID_Virtual();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";

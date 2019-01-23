@@ -30,7 +30,7 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170825L;
+	private static final long serialVersionUID = 20190122L;
 
     /** Standard Constructor */
     public X_Z_FinancialConfig (Properties ctx, int Z_FinancialConfig_ID, String trxName)
@@ -94,6 +94,52 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	public int getC_PaymentTerm_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DefaultDocCCD_ID.
+		@param DefaultDocCCD_ID 
+		Documento por defecto para Cobro a Clientes
+	  */
+	public void setDefaultDocCCD_ID (int DefaultDocCCD_ID)
+	{
+		if (DefaultDocCCD_ID < 1) 
+			set_Value (COLUMNNAME_DefaultDocCCD_ID, null);
+		else 
+			set_Value (COLUMNNAME_DefaultDocCCD_ID, Integer.valueOf(DefaultDocCCD_ID));
+	}
+
+	/** Get DefaultDocCCD_ID.
+		@return Documento por defecto para Cobro a Clientes
+	  */
+	public int getDefaultDocCCD_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocCCD_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DefaultDocPPD_ID.
+		@param DefaultDocPPD_ID 
+		Documento por defecto para Pago a Proveedores
+	  */
+	public void setDefaultDocPPD_ID (int DefaultDocPPD_ID)
+	{
+		if (DefaultDocPPD_ID < 1) 
+			set_Value (COLUMNNAME_DefaultDocPPD_ID, null);
+		else 
+			set_Value (COLUMNNAME_DefaultDocPPD_ID, Integer.valueOf(DefaultDocPPD_ID));
+	}
+
+	/** Get DefaultDocPPD_ID.
+		@return Documento por defecto para Pago a Proveedores
+	  */
+	public int getDefaultDocPPD_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocPPD_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
