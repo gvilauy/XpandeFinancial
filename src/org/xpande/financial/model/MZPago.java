@@ -1550,53 +1550,56 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 				pagoMedioPago.saveEx();
 
+
 				// Realizo emisión para este medio de pago a considerar
-				MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
-				emisionMedioPago.setZ_MedioPago_ID(pagoMedioPago.getZ_MedioPago_ID());
-				emisionMedioPago.setAD_Org_ID(pagoMedioPago.getAD_Org_ID());
+				if (!medioPagoItem.isEmitido()){
+					MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
+					emisionMedioPago.setZ_MedioPago_ID(pagoMedioPago.getZ_MedioPago_ID());
+					emisionMedioPago.setAD_Org_ID(pagoMedioPago.getAD_Org_ID());
 
-				if (pagoMedioPago.getZ_MedioPagoFolio_ID() > 0){
-					emisionMedioPago.setZ_MedioPagoFolio_ID(pagoMedioPago.getZ_MedioPagoFolio_ID());
-				}
-
-				if ((medioPagoItem != null) && (medioPagoItem.get_ID() > 0)){
-					emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
-					emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
-
-					if (medioPagoItem.getC_BankAccount_ID() > 0){
-						emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
-					}
-					if (medioPagoItem.getC_CashBook_ID() > 0){
-						emisionMedioPago.setC_CashBook_ID(medioPagoItem.getC_CashBook_ID());
+					if (pagoMedioPago.getZ_MedioPagoFolio_ID() > 0){
+						emisionMedioPago.setZ_MedioPagoFolio_ID(pagoMedioPago.getZ_MedioPagoFolio_ID());
 					}
 
-				}
-				else{
-					emisionMedioPago.setReferenceNo(pagoMedioPago.getDocumentNoRef());
-					emisionMedioPago.setC_Currency_ID(pagoMedioPago.getC_Currency_ID());
+					if ((medioPagoItem != null) && (medioPagoItem.get_ID() > 0)){
+						emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+						emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
 
-					if (pagoMedioPago.getC_BankAccount_ID() > 0){
-						emisionMedioPago.setC_BankAccount_ID(pagoMedioPago.getC_BankAccount_ID());
+						if (medioPagoItem.getC_BankAccount_ID() > 0){
+							emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
+						}
+						if (medioPagoItem.getC_CashBook_ID() > 0){
+							emisionMedioPago.setC_CashBook_ID(medioPagoItem.getC_CashBook_ID());
+						}
+
 					}
-					if (pagoMedioPago.getC_CashBook_ID() > 0){
-						emisionMedioPago.setC_CashBook_ID(pagoMedioPago.getC_CashBook_ID());
+					else{
+						emisionMedioPago.setReferenceNo(pagoMedioPago.getDocumentNoRef());
+						emisionMedioPago.setC_Currency_ID(pagoMedioPago.getC_Currency_ID());
+
+						if (pagoMedioPago.getC_BankAccount_ID() > 0){
+							emisionMedioPago.setC_BankAccount_ID(pagoMedioPago.getC_BankAccount_ID());
+						}
+						if (pagoMedioPago.getC_CashBook_ID() > 0){
+							emisionMedioPago.setC_CashBook_ID(pagoMedioPago.getC_CashBook_ID());
+						}
 					}
-				}
 
-				emisionMedioPago.setZ_Pago_ID(this.get_ID());
-				emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
-				emisionMedioPago.setDateDoc(this.getDateDoc());
-				emisionMedioPago.setDateEmitted(pagoMedioPago.getDateEmitted());
-				emisionMedioPago.setDueDate(pagoMedioPago.getDueDate());
-				emisionMedioPago.setTotalAmt(pagoMedioPago.getTotalAmt());
-				emisionMedioPago.saveEx();
+					emisionMedioPago.setZ_Pago_ID(this.get_ID());
+					emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
+					emisionMedioPago.setDateDoc(this.getDateDoc());
+					emisionMedioPago.setDateEmitted(pagoMedioPago.getDateEmitted());
+					emisionMedioPago.setDueDate(pagoMedioPago.getDueDate());
+					emisionMedioPago.setTotalAmt(pagoMedioPago.getTotalAmt());
+					emisionMedioPago.saveEx();
 
-				// Completo documento de emisión de medio de pago
-				if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
-					message = emisionMedioPago.getProcessMsg();
-					return message;
+					// Completo documento de emisión de medio de pago
+					if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
+						message = emisionMedioPago.getProcessMsg();
+						return message;
+					}
+					emisionMedioPago.saveEx();
 				}
-				emisionMedioPago.saveEx();
 
 				// Marco medio de pago como entregado en este documento de pago
 				medioPagoItem.setZ_Pago_ID(this.get_ID());

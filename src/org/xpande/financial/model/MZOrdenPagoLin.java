@@ -1,5 +1,8 @@
 package org.xpande.financial.model;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DB;
+
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -16,5 +19,25 @@ public class MZOrdenPagoLin extends X_Z_OrdenPagoLin {
 
     public MZOrdenPagoLin(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
+    }
+
+
+    @Override
+    protected boolean afterDelete(boolean success) {
+
+        if (!success) return success;
+
+        try{
+
+            MZOrdenPago ordenPago = (MZOrdenPago) this.getZ_OrdenPago();
+            ordenPago.updateTotals();
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return true;
+
     }
 }

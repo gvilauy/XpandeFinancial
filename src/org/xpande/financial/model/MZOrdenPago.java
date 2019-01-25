@@ -70,7 +70,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
 			//options[newIndex++] = DocumentEngine.ACTION_None;
-			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
+			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
 			options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
@@ -486,12 +486,13 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 						medioPagoItem.setDueDate(ordenMedioPago.getDueDate());
 
 						medioPagoItem.setIsReceipt(false);
-						medioPagoItem.setEmitido(true);
+						medioPagoItem.setEmitido(false);
 						medioPagoItem.setTotalAmt(ordenMedioPago.getTotalAmt());
 						medioPagoItem.setIsOwn(true);
 						medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
 					}
 					medioPagoItem.saveEx();
+					ordenMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
 				}
 				else{
 					medioPagoItem = (MZMedioPagoItem) ordenMedioPago.getZ_MedioPagoItem();
@@ -499,55 +500,53 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 				ordenMedioPago.saveEx();
 
-				// Realizo emisión para este medio de pago a considerar
-				MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
-				emisionMedioPago.setZ_MedioPago_ID(ordenMedioPago.getZ_MedioPago_ID());
-				emisionMedioPago.setAD_Org_ID(ordenMedioPago.getAD_Org_ID());
+				// Si este medio de pago no esta emitido, lo hago ahora.
+				if (!medioPagoItem.isEmitido()){
 
-				if (ordenMedioPago.getZ_MedioPagoFolio_ID() > 0){
-					emisionMedioPago.setZ_MedioPagoFolio_ID(ordenMedioPago.getZ_MedioPagoFolio_ID());
-				}
+					// Realizo emisión para este medio de pago a considerar
+					MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
+					emisionMedioPago.setZ_MedioPago_ID(ordenMedioPago.getZ_MedioPago_ID());
+					emisionMedioPago.setAD_Org_ID(ordenMedioPago.getAD_Org_ID());
 
-				if ((medioPagoItem != null) && (medioPagoItem.get_ID() > 0)){
-					emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
-					emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
-
-					if (medioPagoItem.getC_BankAccount_ID() > 0){
-						emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
-					}
-					if (medioPagoItem.getC_CashBook_ID() > 0){
-						emisionMedioPago.setC_CashBook_ID(medioPagoItem.getC_CashBook_ID());
-					}
-				}
-				else{
-					emisionMedioPago.setReferenceNo(ordenMedioPago.getDocumentNoRef());
-					emisionMedioPago.setC_Currency_ID(ordenMedioPago.getC_Currency_ID());
-
-					if (ordenMedioPago.getC_BankAccount_ID() > 0){
-						emisionMedioPago.setC_BankAccount_ID(ordenMedioPago.getC_BankAccount_ID());
+					if (ordenMedioPago.getZ_MedioPagoFolio_ID() > 0){
+						emisionMedioPago.setZ_MedioPagoFolio_ID(ordenMedioPago.getZ_MedioPagoFolio_ID());
 					}
 
-					/*
-					if (ordenMedioPago.getC_CashBook_ID() > 0){
-						emisionMedioPago.setC_CashBook_ID(ordenMedioPago.getC_CashBook_ID());
+					if ((medioPagoItem != null) && (medioPagoItem.get_ID() > 0)){
+						emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+						emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
+
+						if (medioPagoItem.getC_BankAccount_ID() > 0){
+							emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
+						}
+						if (medioPagoItem.getC_CashBook_ID() > 0){
+							emisionMedioPago.setC_CashBook_ID(medioPagoItem.getC_CashBook_ID());
+						}
 					}
-					*/
-				}
+					else{
+						emisionMedioPago.setReferenceNo(ordenMedioPago.getDocumentNoRef());
+						emisionMedioPago.setC_Currency_ID(ordenMedioPago.getC_Currency_ID());
 
-				emisionMedioPago.setZ_OrdenPago_ID(this.get_ID());
-				emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
-				emisionMedioPago.setDateDoc(this.getDateDoc());
-				emisionMedioPago.setDateEmitted(ordenMedioPago.getDateEmitted());
-				emisionMedioPago.setDueDate(ordenMedioPago.getDueDate());
-				emisionMedioPago.setTotalAmt(ordenMedioPago.getTotalAmt());
-				emisionMedioPago.saveEx();
+						if (ordenMedioPago.getC_BankAccount_ID() > 0){
+							emisionMedioPago.setC_BankAccount_ID(ordenMedioPago.getC_BankAccount_ID());
+						}
+					}
 
-				// Completo documento de emisión de medio de pago
-				if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
-					message = emisionMedioPago.getProcessMsg();
-					return message;
+					emisionMedioPago.setZ_OrdenPago_ID(this.get_ID());
+					emisionMedioPago.setC_BPartner_ID(this.getC_BPartner_ID());
+					emisionMedioPago.setDateDoc(this.getDateDoc());
+					emisionMedioPago.setDateEmitted(ordenMedioPago.getDateEmitted());
+					emisionMedioPago.setDueDate(ordenMedioPago.getDueDate());
+					emisionMedioPago.setTotalAmt(ordenMedioPago.getTotalAmt());
+					emisionMedioPago.saveEx();
+
+					// Completo documento de emisión de medio de pago
+					if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
+						message = emisionMedioPago.getProcessMsg();
+						return message;
+					}
+					emisionMedioPago.saveEx();
 				}
-				emisionMedioPago.saveEx();
 			}
 
 		}
@@ -679,6 +678,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			return false;
 		}
 
+
 		// Anulo medios de pago emitidos en esta orden
 		List<MZOrdenPagoMedio> ordenPagoMedioList = this.getMediosPago();
 		for (MZOrdenPagoMedio ordenPagoMedio: ordenPagoMedioList){
@@ -699,61 +699,12 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			}
 		}
 
-		// Anulo afectacion de invoices
-		List<MZOrdenPagoLin> pagoLinInvList = this.getInvoices();
-		for (MZOrdenPagoLin pagoLin: pagoLinInvList){
-			if (pagoLin.getC_Invoice_ID() > 0){
 
-				// Marca invoice como no paga
-				MInvoice invoice = (MInvoice) pagoLin.getC_Invoice();
-				invoice.setIsPaid(false);
-				invoice.saveEx();
+		// Desafecto documentos asociados a este documento
+		m_processMsg = this.desafectarDocumentos();
+		if (m_processMsg != null)
+			return false;
 
-				// Anulo afectacion para saldo de esta invoice
-				action = " delete from z_invoiceafectacion where z_ordenpago_id =" + this.get_ID();
-				if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-					action += " and c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
-				}
-				else{
-					action += " and c_invoice_id =" + pagoLin.getC_Invoice_ID();
-				}
-				DB.executeUpdateEx(action, get_TrxName());
-
-
-				// Anulo afectación en estado de cuenta para esta invoice y orden de pago
-				if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-					action = " update z_estadocuenta set referenciapago = null " +
-							" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
-				}
-				else{
-					action = " update z_estadocuenta set referenciapago = null " +
-							" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
-				}
-				DB.executeUpdateEx(action, get_TrxName());
-			}
-		}
-
-		// Anulo afectacion de resguardos
-		List<MZOrdenPagoLin> pagoLinResgList = this.getResguardos();
-		for (MZOrdenPagoLin pagoLin: pagoLinResgList){
-			if (pagoLin.getZ_ResguardoSocio_ID() > 0){
-
-				// Marco resguardo como no pago
-				action = " update z_resguardosocio set z_ordenpago_id = null, ispaid ='N' " +
-						 " where z_resguardosocio_id =" + pagoLin.getZ_ResguardoSocio_ID();
-				DB.executeUpdateEx(action, get_TrxName());
-
-				// Afecto estado de cuenta de este resguardo
-				action = " update z_estadocuenta set referenciapago = null " +
-						 " where z_resguardosocio_id =" + pagoLin.getZ_ResguardoSocio_ID();
-				DB.executeUpdateEx(action, get_TrxName());
-			}
-		}
-
-
-		// Anulo orden de pago del estado de cuenta del socio de negocio
-		action = " delete from z_estadocuenta where z_ordenpago_id =" + this.get_ID();
-		DB.executeUpdateEx(action, get_TrxName());
 
 		// After Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
@@ -808,13 +759,144 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Valido que esta orden de pago no este asociada a un recibo de proveedor que ademas esta completo.
+		if (this.isPaid()){
+			if (this.getZ_Pago_ID() > 0){
+				MZPago pago = (MZPago) this.getZ_Pago();
+				this.m_processMsg = "No se puede Reactivar esta Orden de Pago porque tiene asociado el Recibo de Pago Nro.: " + pago.getDocumentNo() + ".\n" +
+						"Debe Anular o Eliminar primero el Recibo, para luego Reactivar esta Orden.";
+			}
+			else{
+				this.m_processMsg = "No se puede Reactivar esta Orden de Pago porque tiene asociado un Recibo de Pago.";
+			}
+			return false;
+		}
+
+		// Anulo emision de medios de pago emitidos en esta orden que no tengan folio asociado (esto para no anular cheques por ejemplo, pero si transferencias.)
+		List<MZOrdenPagoMedio> ordenPagoMedioList = this.getMediosPago();
+		for (MZOrdenPagoMedio ordenPagoMedio: ordenPagoMedioList){
+			if (ordenPagoMedio.getZ_MedioPagoFolio_ID() <= 0){
+				if (ordenPagoMedio.getZ_MedioPagoItem_ID() > 0){
+					MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) ordenPagoMedio.getZ_MedioPagoItem();
+					if (medioPagoItem.getZ_MedioPagoFolio_ID() <= 0){
+						if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
+							MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+							if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
+								this.m_processMsg = emisionMedioPago.getProcessMsg();
+								return false;
+							}
+							emisionMedioPago.saveEx();
+							emisionMedioPago.deleteEx(true);
+						}
+
+						// Desafecto item de medio de pago de esta orden y lo elimino
+						String action = " update z_ordenpagomedio set z_mediopagoitem_id = null where z_ordenpagomedio_id =" + ordenPagoMedio.get_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+
+						medioPagoItem.deleteEx(true);
+					}
+				}
+			}
+		}
+
+
+		// Desafecto documentos asociados a este documento de pago/cobro
+		m_processMsg = this.desafectarDocumentos();
+		if (m_processMsg != null)
+			return false;
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+
+		this.setProcessed(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
+
 	}	//	reActivateIt
-	
-	
+
+	private String desafectarDocumentos() {
+
+		String message = null;
+		String action = "";
+
+		try{
+
+			// Anulo afectacion de invoices
+			List<MZOrdenPagoLin> pagoLinInvList = this.getInvoices();
+			for (MZOrdenPagoLin pagoLin: pagoLinInvList){
+				if (pagoLin.getC_Invoice_ID() > 0){
+
+					// Marca invoice como no paga
+					MInvoice invoice = (MInvoice) pagoLin.getC_Invoice();
+					invoice.setIsPaid(false);
+					invoice.saveEx();
+
+					// Anulo afectacion para saldo de esta invoice
+					action = " delete from z_invoiceafectacion where z_ordenpago_id =" + this.get_ID();
+					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+						action += " and c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+					}
+					else{
+						action += " and c_invoice_id =" + pagoLin.getC_Invoice_ID();
+					}
+					DB.executeUpdateEx(action, get_TrxName());
+
+
+					// Anulo afectación en estado de cuenta para esta invoice y orden de pago
+					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
+						action = " update z_estadocuenta set referenciapago = null " +
+								" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+					}
+					else{
+						action = " update z_estadocuenta set referenciapago = null " +
+								" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
+					}
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+			}
+
+			// Anulo afectacion de resguardos
+			List<MZOrdenPagoLin> pagoLinResgList = this.getResguardos();
+			for (MZOrdenPagoLin pagoLin: pagoLinResgList){
+				if (pagoLin.getZ_ResguardoSocio_ID() > 0){
+
+					// Marco resguardo como no pago
+					action = " update z_resguardosocio set z_ordenpago_id = null, ispaid ='N' " +
+							" where z_resguardosocio_id =" + pagoLin.getZ_ResguardoSocio_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+
+					// Afecto estado de cuenta de este resguardo
+					action = " update z_estadocuenta set referenciapago = null " +
+							" where z_resguardosocio_id =" + pagoLin.getZ_ResguardoSocio_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+			}
+
+
+			// Anulo orden de pago del estado de cuenta del socio de negocio
+			action = " delete from z_estadocuenta where z_ordenpago_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+
 	/*************************************************************************
 	 * 	Get Summary
 	 *	@return Summary of Document
@@ -878,4 +960,40 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
         .append(getSummary()).append("]");
       return sb.toString();
     }
+
+
+	/***
+	 * Actualiza totales de este documento, segun montos de lineas, resguardos y medios de pago.
+	 * Xpande. Created by Gabriel Vila on 1/26/18.
+	 */
+	public void updateTotals(){
+
+		String action = "", sql = "";
+
+		try{
+			// Obtengo suma de montos a pagar de documentos
+			sql = " select sum(coalesce(amtallocationmt,0)) as total from z_ordenpagolin " +
+					" where z_ordenpago_id =" + this.get_ID();
+			BigDecimal sumLines = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (sumLines == null) sumLines = Env.ZERO;
+
+			// Obtengo suma de montos de medios de pago
+			sql = " select sum(coalesce(totalamt,0)) as total from z_ordenpagomedio " +
+					" where z_ordenpago_id =" + this.get_ID();
+			BigDecimal sumMedios = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (sumMedios == null) sumMedios = Env.ZERO;
+
+			action = " update z_ordenpago set TotalAmt =" + sumLines + ", " +
+					" AmtPaymentRule =" + sumMedios +
+					" where z_ordenpago_id =" + this.get_ID();
+
+			DB.executeUpdateEx(action, get_TrxName());
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+	}
+
+
 }
