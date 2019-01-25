@@ -335,7 +335,8 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					resguardoSocio.saveEx();
 
 					// Afecto estado de cuenta de este resguardo
-					action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "' " +
+					action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "', " +
+							 " z_ordenpago_id =" + this.get_ID() +
 					 		 " where z_resguardosocio_id =" + pagoLin.getZ_ResguardoSocio_ID();
 					DB.executeUpdateEx(action, get_TrxName());
 				}
@@ -395,11 +396,13 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					// Afecto estado de cuenta de esta invoice
 					String action = "";
 					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-						action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "' " +
-								" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+						action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "', " +
+								 " z_ordenpago_id =" + this.get_ID() +
+								 " where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
 					}
 					else{
-						action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "' " +
+						action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "', " +
+								 " z_ordenpago_id =" + this.get_ID() +
 								 " where c_invoice_id =" + pagoLin.getC_Invoice_ID();
 					}
 					DB.executeUpdateEx(action, get_TrxName());
@@ -855,11 +858,11 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 					// Anulo afectación en estado de cuenta para esta invoice y orden de pago
 					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-						action = " update z_estadocuenta set referenciapago = null " +
+						action = " update z_estadocuenta set referenciapago = null, z_ordenpago_id = null " +
 								" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
 					}
 					else{
-						action = " update z_estadocuenta set referenciapago = null " +
+						action = " update z_estadocuenta set referenciapago = null, z_ordenpago_id = null " +
 								" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
 					}
 					DB.executeUpdateEx(action, get_TrxName());
@@ -877,7 +880,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					DB.executeUpdateEx(action, get_TrxName());
 
 					// Afecto estado de cuenta de este resguardo
-					action = " update z_estadocuenta set referenciapago = null " +
+					action = " update z_estadocuenta set referenciapago = null, z_ordenpago_id = null " +
 							" where z_resguardosocio_id =" + pagoLin.getZ_ResguardoSocio_ID();
 					DB.executeUpdateEx(action, get_TrxName());
 				}

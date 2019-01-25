@@ -502,7 +502,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 						MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
 
-						action = " update z_estadocuenta set referenciapago = null " + " where z_ordenpago_id =" + ordenPago.get_ID();
+						action = " update z_estadocuenta set referenciapago = null, z_pago_id = null " +
+								" where z_ordenpago_id =" + ordenPago.get_ID();
 						DB.executeUpdateEx(action, get_TrxName());
 					}
 				}
@@ -533,11 +534,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					// Desafecto estado de cuenta de esta invoice cuando es cobro o es un pago que no esta referenciando ordenes de pago.
 					if (!this.isTieneOrdenPago()){
 						if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-							action = " update z_estadocuenta set referenciapago = null " +
+							action = " update z_estadocuenta set referenciapago = null, z_pago_id = null " +
 									" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
 						}
 						else{
-							action = " update z_estadocuenta set referenciapago = null " +
+							action = " update z_estadocuenta set referenciapago = null, z_pago_id = null " +
 									" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
 						}
 						DB.executeUpdateEx(action, get_TrxName());
@@ -546,11 +547,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						MZOrdenPago ordenPago = (MZOrdenPago) pagoLin.getZ_OrdenPago();
 						if ((ordenPago != null) && (ordenPago.get_ID() > 0)){
 							if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-								action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "' " +
+								action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "', " +
+										" z_ordenpago_id =" + ordenPago.get_ID() +
 										" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
 							}
 							else{
-								action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "' " +
+								action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "', " +
+										" z_ordenpago_id =" + ordenPago.get_ID() +
 										" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
 							}
 							DB.executeUpdateEx(action, get_TrxName());
@@ -567,14 +570,15 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			for (MZPagoResguardo pagoResguardo: pagoResguardoList){
 
 				if (!this.isTieneOrdenPago()){
-					action = " update z_estadocuenta set referenciapago = null " +
+					action = " update z_estadocuenta set referenciapago = null, z_pago_id = null " +
 							 " where z_resguardosocio_id =" + pagoResguardo.getZ_ResguardoSocio_ID();
 					DB.executeUpdateEx(action, get_TrxName());
 				}
 				else{
 					MZOrdenPago ordenPago = (MZOrdenPago) pagoResguardo.getZ_OrdenPago();
 					if ((ordenPago != null) && (ordenPago.get_ID() > 0)){
-						action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "' " +
+						action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "', " +
+								" z_ordenpago_id =" + ordenPago.get_ID() +
 								" where z_resguardosocio_id =" + pagoResguardo.getZ_ResguardoSocio_ID();
 						DB.executeUpdateEx(action, get_TrxName());
 					}
@@ -1664,6 +1668,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		try{
 
+			String documentNoRef = this.getDocumentNo();
+			if ((this.getNroRecibo() != null) && (!this.getNroRecibo().trim().equalsIgnoreCase(""))){
+				documentNoRef = this.getNroRecibo();
+			}
+
 			// Recorro comprobantes
 			for (MZPagoLin pagoLin: pagoLinList){
 
@@ -1697,7 +1706,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 							invoiceAfecta.setC_InvoicePaySchedule_ID(pagoLin.getC_InvoicePaySchedule_ID());
 						}
 						invoiceAfecta.setDateDoc(this.getDateDoc());
-						invoiceAfecta.setDocumentNoRef(this.getDocumentNo());
+						invoiceAfecta.setDocumentNoRef(documentNoRef);
 						invoiceAfecta.setDueDate(pagoLin.getDueDateDoc());
 						invoiceAfecta.setRecord_ID(this.get_ID());
 						invoiceAfecta.setC_Currency_ID(pagoLin.getC_Currency_ID());
@@ -1715,13 +1724,16 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 					// Afecto estado de cuenta de esta invoice cuando es cobro o es un pago que no esta referenciando ordenes de pago.
 					if (!this.isTieneOrdenPago()){
+
 						if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-							action = " update z_estadocuenta set referenciapago ='RECIBO " + this.getDocumentNo() + "' " +
-									" where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
+							action = " update z_estadocuenta set referenciapago ='RECIBO " + documentNoRef + "', " +
+									 " z_pago_id =" + this.get_ID() +
+									 " where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
 						}
 						else{
-							action = " update z_estadocuenta set referenciapago ='RECIBO " + this.getDocumentNo() + "' " +
-									" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
+							action = " update z_estadocuenta set referenciapago ='RECIBO " + documentNoRef + "', " +
+									 " z_pago_id =" + this.get_ID() +
+									 " where c_invoice_id =" + pagoLin.getC_Invoice_ID();
 						}
 						DB.executeUpdateEx(action, get_TrxName());
 					}
@@ -1753,6 +1765,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				return null;
 			}
 
+			String documentNoRef = this.getDocumentNo();
+			if ((this.getNroRecibo() != null) && (!this.getNroRecibo().trim().equalsIgnoreCase(""))){
+				documentNoRef = this.getNroRecibo();
+			}
+
+
 			List<MZPagoResguardo> pagoResguardoList = this.getResguardos();
 			for (MZPagoResguardo pagoResguardo: pagoResguardoList){
 
@@ -1764,8 +1782,10 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 					// Afecto estado de cuenta de este resguardo, cuando el pago no esta referenciando ordenes de pago
 					if (!this.isTieneOrdenPago()){
-						action = " update z_estadocuenta set referenciapago ='RECIBO " + this.getDocumentNo() + "' " +
-								" where z_resguardosocio_id =" + resguardoSocio.get_ID();
+
+						action = " update z_estadocuenta set referenciapago ='RECIBO " + documentNoRef + "', " +
+								 " z_pago_id =" + this.get_ID() +
+								 " where z_resguardosocio_id =" + resguardoSocio.get_ID();
 						DB.executeUpdateEx(action, get_TrxName());
 					}
 				}
@@ -1797,6 +1817,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				return null;
 			}
 
+			String documentNoRef = this.getDocumentNo();
+			if ((this.getNroRecibo() != null) && (!this.getNroRecibo().trim().equalsIgnoreCase(""))){
+				documentNoRef = this.getNroRecibo();
+			}
+
 			List<MZPagoOrdenPago> pagoOrdenPagoList = this.getOrdenesPagoReferenciadas();
 			for (MZPagoOrdenPago pagoOrdenPago: pagoOrdenPagoList){
 				MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
@@ -1804,8 +1829,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				ordenPago.setIsPaid(true);
 				ordenPago.saveEx();
 
-				action = " update z_estadocuenta set referenciapago ='RECIBO " + this.getDocumentNo() + "' " +
-						" where z_ordenpago_id =" + ordenPago.get_ID();
+				action = " update z_estadocuenta set referenciapago ='RECIBO " + documentNoRef + "', " +
+						 " z_pago_id =" + this.get_ID() +
+						 " where z_ordenpago_id =" + ordenPago.get_ID();
 				DB.executeUpdateEx(action, get_TrxName());
 			}
 
