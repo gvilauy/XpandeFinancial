@@ -1541,7 +1541,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						medioPagoItem.setDueDate(pagoMedioPago.getDueDate());
 
 						medioPagoItem.setIsReceipt(false);
-						medioPagoItem.setEmitido(true);
+						medioPagoItem.setEmitido(false);
 						medioPagoItem.setTotalAmt(pagoMedioPago.getTotalAmt());
 						medioPagoItem.setIsOwn(true);
 						medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
@@ -2089,6 +2089,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			MZMedioPago medioPago = MZMedioPago.getByValue(getCtx(), invoice.getPaymentRule(), null);
 			MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), 0, get_TrxName());
 			pagoMedioPago.setZ_Pago_ID(this.get_ID());
+			pagoMedioPago.setAD_Org_ID(this.getAD_Org_ID());
 			pagoMedioPago.setZ_MedioPago_ID(medioPago.get_ID());
 			pagoMedioPago.setC_CashBook_ID(invoice.get_ValueAsInt("C_CashBook_ID"));
 			pagoMedioPago.setC_Currency_ID(this.getC_Currency_ID());
