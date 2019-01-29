@@ -1,14 +1,17 @@
 package org.xpande.financial.model;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.comercial.model.MZInvoiceRef;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * ModelValidator para funcionalidades relacionadas a gestión financiera del Core.
@@ -245,6 +248,26 @@ public class ValidatorFinancial implements ModelValidator {
                 estadoCuenta.setRecord_ID(model.get_ID());
                 estadoCuenta.setAD_Org_ID(model.getAD_Org_ID());
                 estadoCuenta.saveEx();
+            }
+
+            // Si estoy en una nota de crédito de clientes y tengo invoices referenciadas, guardo afectación
+            if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_ARCredit)){
+                List<MZInvoiceRef> invoiceRefList = MZInvoiceRef.getByInvoice(model.getCtx(), model.get_ID(), model.get_TrxName());
+                for (MZInvoiceRef invoiceRef: invoiceRefList){
+                    MZInvoiceAfectacion invoiceAfecta = new MZInvoiceAfectacion(model.getCtx(), 0, model.get_TrxName());
+                    invoiceAfecta.setRef_Invoice_ID(model.get_ID());
+                    invoiceAfecta.setAD_Table_ID(model.get_Table_ID());
+                    invoiceAfecta.setAmtAllocation(invoiceRef.getAmtAllocation());
+                    invoiceAfecta.setC_DocType_ID(model.getC_DocTypeTarget_ID());
+                    invoiceAfecta.setC_Invoice_ID(invoiceRef.getC_Invoice_To_ID());
+                    invoiceAfecta.setDateDoc(model.getDateInvoiced());
+                    invoiceAfecta.setDocumentNoRef(model.getDocumentNo());
+                    invoiceAfecta.setDueDate(model.getDateInvoiced());
+                    invoiceAfecta.setRecord_ID(model.get_ID());
+                    invoiceAfecta.setC_Currency_ID(model.getC_Currency_ID());
+                    invoiceAfecta.setAD_Org_ID(model.getAD_Org_ID());
+                    invoiceAfecta.saveEx();
+                }
             }
 
         }
