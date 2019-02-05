@@ -6,6 +6,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -112,4 +113,45 @@ public class MZMedioPagoFolio extends X_Z_MedioPagoFolio {
 
     }
 
+
+    /***
+     * Obtiene y retorna lista de itemas de medios de pago emitidos y asociados a este folio.
+     * Xpande. Created by Gabriel Vila on 1/31/19.
+     * @return
+     */
+    public List<MZMedioPagoItem> getItemsEmitidos(){
+
+        String whereClause = X_Z_MedioPagoItem.COLUMNNAME_Z_MedioPagoFolio_ID + " =" + this.get_ID() +
+                " AND " + X_Z_MedioPagoItem.COLUMNNAME_Emitido + " ='Y' ";
+
+        List<MZMedioPagoItem> lines = new Query(getCtx(), I_Z_MedioPagoItem.Table_Name, whereClause, get_TrxName()).list();
+
+        return lines;
+    }
+
+    @Override
+    protected boolean beforeDelete() {
+
+        try{
+
+            // Obtengo lista de items emitidos de este folio.
+            // Si tengo al menos uno, aviso y no hago nada.
+            List<MZMedioPagoItem> itemList = this.getItemsEmitidos();
+            if (itemList.size() > 0){
+
+                log.saveError("ATENCIÓN", "No es posible eliminar Folio ya que tiene Items Emitidos.");
+                return false;
+            }
+
+            // ELimino primero items, para que pueda eliminarse este folio.
+            String action = " delete from z_mediopagoitem where z_mediopagofolio_id =" + this.get_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return true;
+    }
 }

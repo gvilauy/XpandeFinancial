@@ -335,10 +335,12 @@ public class ValidatorFinancial implements ModelValidator {
         ResultSet rs = null;
 
         try{
+
             sql = " select pl.c_invoice_id, p.documentno, p.docstatus " +
                     " from z_pagolin pl " +
                     " inner join z_pago p on pl.z_pago_id = p.z_pago_id " +
                     " where pl.c_invoice_id =" + invoice.get_ID() +
+                    " and pl.IsSelected ='Y' " +
                     " and p.docstatus != 'VO' ";
 
             pstmt = DB.prepareStatement(sql, invoice.get_TrxName());
