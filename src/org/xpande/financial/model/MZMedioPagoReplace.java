@@ -288,6 +288,10 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 					emisionMedioPago.setZ_OrdenPago_ID(OLD_medioPagoItem.getZ_OrdenPago_ID());
 				}
 
+				if (OLD_medioPagoItem.getZ_Pago_ID() > 0){
+					emisionMedioPago.setZ_Pago_ID(OLD_medioPagoItem.getZ_Pago_ID());
+				}
+
 				emisionMedioPago.setC_Currency_ID(NEW_medioPagoItem.getC_Currency_ID());
 				emisionMedioPago.setC_BPartner_ID(OLD_medioPagoItem.getC_BPartner_ID());
 				emisionMedioPago.setC_BankAccount_ID(NEW_medioPagoItem.getC_BankAccount_ID());
@@ -382,14 +386,6 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 			return "El documento no tiene medios de pago para Reemplazar.";
 		}
 
-		if (this.getC_BankAccount_ID() <= 0){
-			return "Debe indicar Cuenta Bancaria correspondiente a los nuevos Medios de Pago";
-		}
-
-		if (this.getZ_MedioPagoFolio_ID() <= 0){
-			return "Debe indicar Libreta correspondiente a los nuevos Medios de Pago";
-		}
-
 		// Valido detalle de nuevos medios de pago por cada linea del medio de pago que se quiere reemplazar
 		for (MZMedioPagoReplaceLin replaceLin: lines){
 
@@ -434,7 +430,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 	 * Xpande. Created by Gabriel Vila on 9/27/17.
 	 * @return
 	 */
-	private List<MZMedioPagoReplaceLin> getLines() {
+	public List<MZMedioPagoReplaceLin> getLines() {
 
 		String whereClause = X_Z_MedioPagoReplaceLin.COLUMNNAME_Z_MedioPagoReplace_ID + " =" + this.get_ID();
 
@@ -635,7 +631,8 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 		    sql = " select mpi.z_mediopagoitem_id " +
 					" from z_mediopagoitem mpi " +
 					" where mpi.c_currency_id =" + this.getC_Currency_ID() +
-					" and mpi.emitido ='Y' and mpi.anulado ='N' and mpi.entregado ='N' " + whereClause;
+					//" and mpi.emitido ='Y' and mpi.anulado ='N' and mpi.entregado ='N' " + whereClause;
+					" and mpi.emitido ='Y' and mpi.anulado ='N' and mpi.conciliado ='N' " + whereClause;
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
@@ -659,6 +656,10 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 					replaceLin.setZ_OrdenPago_ID(medioPagoItem.getZ_OrdenPago_ID());
 				}
 
+				if (medioPagoItem.getZ_Pago_ID() > 0){
+					replaceLin.setZ_Pago_ID(medioPagoItem.getZ_Pago_ID());
+				}
+
 				replaceLin.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
 				replaceLin.setC_BPartner_ID(medioPagoItem.getC_BPartner_ID());
 				replaceLin.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
@@ -677,18 +678,22 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 				replaceLin.setTotalAmt(medioPagoItem.getTotalAmt());
 				replaceLin.saveEx();
 
-				// Nuevo medio de pago por defecto para este reemplazo
-				MZMedioPagoReplaceDet replaceDet = new MZMedioPagoReplaceDet(getCtx(), 0, get_TrxName());
-				replaceDet.setC_BankAccount_ID(replaceLin.getC_BankAccount_ID());
-				replaceDet.setC_Currency_ID(replaceLin.getC_Currency_ID());
-				replaceDet.setDateEmitted(fechaHoy);
-				replaceDet.setDueDate(replaceLin.getDueDateTo());
-				replaceDet.setTotalAmt(replaceLin.getTotalAmt());
-				replaceDet.setZ_MedioPago_ID(replaceLin.getZ_MedioPago_ID());
-				replaceDet.setZ_MedioPagoFolio_ID(replaceLin.getZ_MedioPagoFolio_ID());
-				replaceDet.setZ_MedioPagoReplace_ID(this.get_ID());
-				replaceDet.setZ_MedioPagoReplaceLin_ID(replaceLin.get_ID());
-				replaceDet.saveEx();
+
+				// Si el usuario indica flag de sugerir medio de pago nuevos
+				if (this.isSelected()){
+					// Nuevo medio de pago por defecto para este reemplazo
+					MZMedioPagoReplaceDet replaceDet = new MZMedioPagoReplaceDet(getCtx(), 0, get_TrxName());
+					replaceDet.setC_BankAccount_ID(replaceLin.getC_BankAccount_ID());
+					replaceDet.setC_Currency_ID(replaceLin.getC_Currency_ID());
+					replaceDet.setDateEmitted(fechaHoy);
+					replaceDet.setDueDate(replaceLin.getDueDateTo());
+					replaceDet.setTotalAmt(replaceLin.getTotalAmt());
+					replaceDet.setZ_MedioPago_ID(replaceLin.getZ_MedioPago_ID());
+					replaceDet.setZ_MedioPagoFolio_ID(replaceLin.getZ_MedioPagoFolio_ID());
+					replaceDet.setZ_MedioPagoReplace_ID(this.get_ID());
+					replaceDet.setZ_MedioPagoReplaceLin_ID(replaceLin.get_ID());
+					replaceDet.saveEx();
+				}
 			}
 		}
 		catch (Exception e){

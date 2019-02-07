@@ -308,6 +308,15 @@ public interface I_Z_MedioPagoReplace
 	  */
 	public boolean isApproved();
 
+    /** Column name IsSelected */
+    public static final String COLUMNNAME_IsSelected = "IsSelected";
+
+	/** Set Selected	  */
+	public void setIsSelected(boolean IsSelected);
+
+	/** Get Selected	  */
+	public boolean isSelected();
+
     /** Column name NumeroDesde */
     public static final String COLUMNNAME_NumeroDesde = "NumeroDesde";
 
@@ -333,6 +342,19 @@ public interface I_Z_MedioPagoReplace
 	  * Numero hasta para Rango de Enteros
 	  */
 	public int getNumeroHasta();
+
+    /** Column name Posted */
+    public static final String COLUMNNAME_Posted = "Posted";
+
+	/** Set Posted.
+	  * Posting status
+	  */
+	public void setPosted(boolean Posted);
+
+	/** Get Posted.
+	  * Posting status
+	  */
+	public boolean isPosted();
 
     /** Column name ProcessButton */
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
@@ -368,6 +390,19 @@ public interface I_Z_MedioPagoReplace
 	  * The document has been processed
 	  */
 	public boolean isProcessed();
+
+    /** Column name ProcessedOn */
+    public static final String COLUMNNAME_ProcessedOn = "ProcessedOn";
+
+	/** Set Processed On.
+	  * The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public void setProcessedOn(BigDecimal ProcessedOn);
+
+	/** Get Processed On.
+	  * The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public BigDecimal getProcessedOn();
 
     /** Column name Processing */
     public static final String COLUMNNAME_Processing = "Processing";

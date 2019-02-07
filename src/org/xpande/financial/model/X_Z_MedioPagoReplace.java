@@ -33,7 +33,7 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170921L;
+	private static final long serialVersionUID = 20190207L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoReplace (Properties ctx, int Z_MedioPagoReplace_ID, String trxName)
@@ -41,6 +41,7 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
       super (ctx, Z_MedioPagoReplace_ID, trxName);
       /** if (Z_MedioPagoReplace_ID == 0)
         {
+			setC_Currency_ID (0);
 			setC_DocType_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
@@ -50,6 +51,10 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 // DR
 			setDocumentNo (null);
 			setIsApproved (false);
+// N
+			setIsSelected (false);
+// N
+			setPosted (false);
 // N
 			setProcessed (false);
 // N
@@ -476,6 +481,27 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 		return false;
 	}
 
+	/** Set Selected.
+		@param IsSelected Selected	  */
+	public void setIsSelected (boolean IsSelected)
+	{
+		set_Value (COLUMNNAME_IsSelected, Boolean.valueOf(IsSelected));
+	}
+
+	/** Get Selected.
+		@return Selected	  */
+	public boolean isSelected () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSelected);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set NumeroDesde.
 		@param NumeroDesde 
 		Numero desde para Rango de Enteros
@@ -514,6 +540,30 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Posted.
+		@param Posted 
+		Posting status
+	  */
+	public void setPosted (boolean Posted)
+	{
+		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
+	}
+
+	/** Get Posted.
+		@return Posting status
+	  */
+	public boolean isPosted () 
+	{
+		Object oo = get_Value(COLUMNNAME_Posted);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set ProcessButton.
@@ -569,6 +619,26 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Processed On.
+		@param ProcessedOn 
+		The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public void setProcessedOn (BigDecimal ProcessedOn)
+	{
+		set_Value (COLUMNNAME_ProcessedOn, ProcessedOn);
+	}
+
+	/** Get Processed On.
+		@return The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public BigDecimal getProcessedOn () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ProcessedOn);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Process Now.
