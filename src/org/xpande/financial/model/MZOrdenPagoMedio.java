@@ -34,6 +34,17 @@ public class MZOrdenPagoMedio extends X_Z_OrdenPagoMedio {
             }
         }
 
+        // Si selecciono un item de medio de pago ya emitido, cargo datos del mismo en esta linea.
+        if ((newRecord) || (is_ValueChanged(X_Z_OrdenPagoMedio.COLUMNNAME_Z_MedioPagoItem_ID))){
+            if (this.getZ_MedioPagoItem_ID() > 0){
+                MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
+                if (medioPagoItem.isEmitido()){
+                    this.setDateEmitted(medioPagoItem.getDateEmitted());
+                    this.setDueDate(medioPagoItem.getDueDate());
+                }
+            }
+        }
+
         return true;
     }
 

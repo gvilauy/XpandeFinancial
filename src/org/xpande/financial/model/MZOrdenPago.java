@@ -550,6 +550,10 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					}
 					emisionMedioPago.saveEx();
 				}
+				else{
+					medioPagoItem.setZ_OrdenPago_ID(this.get_ID());
+					medioPagoItem.saveEx();
+				}
 			}
 
 		}
