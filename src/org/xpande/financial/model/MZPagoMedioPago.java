@@ -41,10 +41,13 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
         // Cuando es nuevo registro, por callout obtuve el monto MT y tengo entonces que calcular alreves el monto en moneda de medio de pago
         if (newRecord){
 
-            // Obtengo moneda de pago a considerarse para esta moneda de medio de pago
-            MZPagoMoneda pagoMoneda = MZPagoMoneda.setByCurrency(getCtx(), this.getZ_Pago_ID(), this.getC_Currency_ID(), get_TrxName());
-            if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
-                this.setMultiplyRate(pagoMoneda.getMultiplyRate());
+            // Si no indico tasa de cambio al ingresar medio de pago por primera vez
+            if ((this.getMultiplyRate() == null) || (this.getMultiplyRate().compareTo(Env.ZERO) <= 0)){
+                // Obtengo moneda de pago a considerarse para esta moneda de medio de pago
+                MZPagoMoneda pagoMoneda = MZPagoMoneda.setByCurrency(getCtx(), this.getZ_Pago_ID(), this.getC_Currency_ID(), get_TrxName());
+                if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+                    this.setMultiplyRate(pagoMoneda.getMultiplyRate());
+                }
             }
 
             if (this.getMultiplyRate().compareTo(Env.ONE) == 0){
