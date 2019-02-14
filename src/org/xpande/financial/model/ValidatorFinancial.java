@@ -88,12 +88,19 @@ public class ValidatorFinancial implements ModelValidator {
                     return message;
                 }
 
+                // Para comprobantes de compra, valido que no este asociado a una orden de pago.
+                message = this.validateInvoiceOrdenPago(model);
+                if (message != null){
+                    return message;
+                }
+
                 // Para comprobantes de compra, valido que no este asociado a un pago.
                 message = this.validateInvoicePago(model);
                 if (message != null){
                     return message;
                 }
             }
+
         }
 
         else if ((timing == TIMING_AFTER_REACTIVATE) || (timing == TIMING_AFTER_VOID)){
@@ -356,6 +363,49 @@ public class ValidatorFinancial implements ModelValidator {
                             " (Estado Documento = " + rs.getString("docstatus") + ")";
                 }
             }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+        return message;
+    }
+
+
+    /***
+     * Valida si una invoice esta asociada a un documento de Orden de Pago
+     * Xpande. Created by Gabriel Vila on 8/8/17.
+     * @param invoice
+     * @return
+     */
+    private String validateInvoiceOrdenPago(MInvoice invoice) {
+
+        String message = null;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            sql = " select pl.c_invoice_id, p.documentno, p.docstatus " +
+                    " from z_ordenpagolin pl " +
+                    " inner join z_ordenpago p on pl.z_ordenpago_id = p.z_ordenpago_id " +
+                    " where pl.c_invoice_id =" + invoice.get_ID() +
+                    " and p.docstatus != 'VO' ";
+
+            pstmt = DB.prepareStatement(sql, invoice.get_TrxName());
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+                message = " Este comprobante esta asociado a la Orden de Pago : " + rs.getString("documentno") +
+                        " (Estado Documento = " + rs.getString("docstatus") + ")";
+            }
+
         }
         catch (Exception e){
             throw new AdempiereException(e);
