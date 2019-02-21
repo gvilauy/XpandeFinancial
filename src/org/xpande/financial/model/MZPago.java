@@ -912,7 +912,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				}
 
 				boolean esFactura = true;
-				if (rs.getString("docbasetype").equalsIgnoreCase(Doc.DOCTYPE_APCredit)){
+				if ((rs.getString("docbasetype").equalsIgnoreCase(Doc.DOCTYPE_APCredit))
+				 || (rs.getString("docbasetype").equalsIgnoreCase(Doc.DOCTYPE_ARCredit))){
 					esFactura = false;
 				}
 
