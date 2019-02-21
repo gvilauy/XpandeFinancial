@@ -1939,7 +1939,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		    sql = " select i.z_mediopagoitem_id, i.z_mediopago_id, i.z_mediopagofolio_id, i.totalamt, " +
 					" i.c_bankaccount_id, i.c_currency_id, i.dateemitted, i.nromediopago, i.duedate " +
 					" from z_mediopagoitem i " +
-					" where ((i.c_bpartner_id =" + this.getC_BPartner_ID() + " AND i.isReceipt ='N') or (i.isReceipt ='Y')) " +
+					" where i.c_bpartner_id =" + this.getC_BPartner_ID() +
+					" and i.isReceipt ='N' " +
 					" and i.emitido ='Y' and i.entregado='N' and i.anulado='N' " +
 					" and i.depositado ='N' and i.conciliado ='N' " +
 					" and i.z_mediopagoitem_id not in " +
