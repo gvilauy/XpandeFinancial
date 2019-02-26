@@ -94,6 +94,7 @@ public class ValidatorFinancial implements ModelValidator {
                     return message;
                 }
 
+
                 // Para comprobantes de compra, valido que no este asociado a un pago.
                 message = this.validateInvoicePago(model);
                 if (message != null){
