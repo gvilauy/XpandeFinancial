@@ -156,7 +156,7 @@ public class EstadoCuenta {
             // Armo condicion where dinámica del reporte
             String whereClause = this.getWhereClause();
 
-            sql = " select ad_client_id, " + this.adOrgID + ", amtsourcecr, amtsourcedr, c_bpartner_id, c_currency_id, c_doctype_id, c_invoice_id, " +
+            sql = " select ad_client_id, ad_org_id, amtsourcecr, amtsourcedr, c_bpartner_id, c_currency_id, c_doctype_id, c_invoice_id, " +
                     " c_invoicepayschedule_id, datedoc, docbasetype, documentnoref, duedate, estadoaprobacion, issotrx, referenciapago, " +
                     " z_afectacion_id, z_estadocuenta_id, z_ordenpago_id, z_pago_id, z_resguardosocio_id, z_resguardosocio_to_id, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "' " +
@@ -224,16 +224,16 @@ public class EstadoCuenta {
         ResultSet rs = null;
 
         try{
-            sql = " select a.issotrx, a.c_currency_id, a.c_bpartner_id, a.amtsourcedr, a.amtsourcecr, a.z_estadocuenta_id " +
+            sql = " select a.issotrx, a.ad_org_id, a.c_currency_id, a.c_bpartner_id, a.amtsourcedr, a.amtsourcecr, a.z_estadocuenta_id " +
                     " from " + TABLA_REPORTE + " a " +
                     " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.ad_user_id =" + this.adUserID +
-                    " order by a.issotrx, a.c_currency_id, bp.name, a.datedoc, a.c_doctype_id, a.z_estadocuenta_id ";
+                    " order by a.issotrx, a.ad_org_id, a.c_currency_id, bp.name, a.datedoc, a.c_doctype_id, a.z_estadocuenta_id ";
 
         	pstmt = DB.prepareStatement(sql, null);
         	rs = pstmt.executeQuery();
 
-        	int cCurrencyIDAux = 0, cBpartnerIDAux = 0;
+        	int cCurrencyIDAux = 0, cBpartnerIDAux = 0, adOrgIDAux= 0;
         	String isSOTrxAux = "-";
 
             BigDecimal amtAcumulado = Env.ZERO;
@@ -242,16 +242,18 @@ public class EstadoCuenta {
 
         	    // Corte por issotrx, moneda y socio de negocio
                 if ((!rs.getString("issotrx").equalsIgnoreCase(isSOTrxAux))
+                        || (rs.getInt("ad_org_id") != adOrgIDAux)
                         || (rs.getInt("c_currency_id") != cCurrencyIDAux)
                         || (rs.getInt("c_bpartner_id") != cBpartnerIDAux)){
 
 
                     cCurrencyIDAux = rs.getInt("c_currency_id");
                     cBpartnerIDAux = rs.getInt("c_bpartner_id");
+                    adOrgIDAux = rs.getInt("ad_org_id");
                     isSOTrxAux = rs.getString("issotrx");
 
                     // Obtengo y seteo saldo inicial del socio de negocio-moneda en tabla del reporte
-                    BigDecimal saldoInicial = this.getSaldoInicial(cBpartnerIDAux, cCurrencyIDAux, isSOTrxAux);
+                    BigDecimal saldoInicial = this.getSaldoInicial(cBpartnerIDAux, cCurrencyIDAux, isSOTrxAux, adOrgIDAux);
                     if (saldoInicial == null) saldoInicial = Env.ZERO;
 
                     action = " update " + TABLA_REPORTE +
@@ -259,6 +261,7 @@ public class EstadoCuenta {
                             " where ad_user_id =" + this.adUserID +
                             " and c_bpartner_id = " + cBpartnerIDAux +
                             " and c_currency_id = " + cCurrencyIDAux +
+                            " and ad_org_id =" + adOrgIDAux +
                             " and issotrx ='" + isSOTrxAux + "' ";
                     DB.executeUpdateEx(action, null);
 
@@ -297,9 +300,10 @@ public class EstadoCuenta {
      * @param cBpartnerID
      * @param cCurrencyID
      * @param isSOTrx
+     * @param adOrgIDAux
      * @return
      */
-    private BigDecimal getSaldoInicial(int cBpartnerID, int cCurrencyID, String isSOTrx) {
+    private BigDecimal getSaldoInicial(int cBpartnerID, int cCurrencyID, String isSOTrx, int adOrgIDAux) {
 
         BigDecimal amt = Env.ZERO;
         String sql = "";
@@ -309,10 +313,6 @@ public class EstadoCuenta {
             String whereClause = "";
 
             whereClause = " and ad_client_id =" + this.adClientID;
-
-            if (this.adOrgID > 0){
-                whereClause += " and ad_org_id =" + this.adOrgID;
-            }
 
             if (this.tipoFecha.equalsIgnoreCase("VALOR")){
                 whereClause += " and datedoc < '" + this.startDate + "'";
@@ -333,7 +333,8 @@ public class EstadoCuenta {
 
             sql = " select (sum(amtsourcedr) - sum(amtsourcecr)) as saldo " +
                     " from z_estadocuenta " +
-                    " where c_bpartner_id =" + cBpartnerID +
+                    " where ad_org_id =" + adOrgIDAux +
+                    " and c_bpartner_id =" + cBpartnerID +
                     " and c_currency_id =" + cCurrencyID + whereClause;
 
             amt = DB.getSQLValueBDEx(null, sql);
