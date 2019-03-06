@@ -765,6 +765,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                         ordenPagoSocio.setZ_GeneraOrdenPago_ID(this.get_ID());
                         ordenPagoSocio.setC_BPartner_ID(cBPartnerIDAux);
                         ordenPagoSocio.setTaxID(partner.getTaxID());
+                        ordenPagoSocio.setName(partner.getName());
                         ordenPagoSocio.setC_Currency_ID(this.getC_Currency_ID());
                         ordenPagoSocio.setTotalAmt(Env.ZERO);
                         ordenPagoSocio.saveEx();
@@ -1174,7 +1175,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
         String whereClause = X_Z_GeneraOrdenPagoSocio.COLUMNNAME_Z_GeneraOrdenPago_ID + " =" + this.get_ID();
 
-        List<MZGeneraOrdenPagoSocio> lines = new Query(getCtx(), I_Z_GeneraOrdenPagoSocio.Table_Name, whereClause, get_TrxName()).setOrderBy(" created ").list();
+        List<MZGeneraOrdenPagoSocio> lines = new Query(getCtx(), I_Z_GeneraOrdenPagoSocio.Table_Name, whereClause, get_TrxName()).setOrderBy(" Name ").list();
 
         return lines;
 

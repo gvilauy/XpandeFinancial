@@ -32,7 +32,7 @@ public class X_Z_GeneraOrdenPagoSocio extends PO implements I_Z_GeneraOrdenPagoS
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170816L;
+	private static final long serialVersionUID = 20190305L;
 
     /** Standard Constructor */
     public X_Z_GeneraOrdenPagoSocio (Properties ctx, int Z_GeneraOrdenPagoSocio_ID, String trxName)
@@ -153,6 +153,23 @@ public class X_Z_GeneraOrdenPagoSocio extends PO implements I_Z_GeneraOrdenPagoS
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Name.
+		@param Name 
+		Alphanumeric identifier of the entity
+	  */
+	public void setName (String Name)
+	{
+		set_Value (COLUMNNAME_Name, Name);
+	}
+
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
+	public String getName () 
+	{
+		return (String)get_Value(COLUMNNAME_Name);
 	}
 
 	/** Set ProcessButton.
