@@ -1324,7 +1324,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 * Xpande. Created by Gabriel Vila on 1/26/18.
 	 * @param onlyMediosPago : true si solo proceso medios de pago, false si proceso solamente facturas y resguardos.
 	 */
-	private void updateRates(boolean onlyMediosPago) {
+	public void updateRates(boolean onlyMediosPago) {
 
 		try{
 
@@ -1967,7 +1967,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					pagoMedioPago.setC_BankAccount_ID(rs.getInt("c_bankaccount_id"));
 				}
 
-				pagoMedioPago.setC_BankAccount_ID(rs.getInt("c_bankaccount_id"));
+				//pagoMedioPago.setC_BankAccount_ID(rs.getInt("c_bankaccount_id"));
 				pagoMedioPago.setC_Currency_ID(rs.getInt("c_currency_id"));
 				pagoMedioPago.setDateEmitted(rs.getTimestamp("dateemitted"));
 				pagoMedioPago.setDocumentNoRef(rs.getString("nromediopago"));
