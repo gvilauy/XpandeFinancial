@@ -88,6 +88,7 @@ public class SeleccionMediosPago extends SeleccionMediosPagoAbstract
 				pagoMedioPago.setTieneFecVenc(medioPago.isTieneFecVenc());
 				pagoMedioPago.setTieneFolio(medioPago.isTieneFolio());
 				pagoMedioPago.setTieneNroRef(medioPago.isTieneNroRef());
+				pagoMedioPago.setIsReceipt(medioPagoItem.isReceipt());
 				pagoMedioPago.saveEx();
 
 				// Guardo moneda en hash si aún no la tengo

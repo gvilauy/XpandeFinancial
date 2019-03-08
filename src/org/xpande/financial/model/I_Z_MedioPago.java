@@ -89,6 +89,19 @@ public interface I_Z_MedioPago
 	  */
 	public boolean isAplicaEnPago();
 
+    /** Column name CarteraCobro */
+    public static final String COLUMNNAME_CarteraCobro = "CarteraCobro";
+
+	/** Set CarteraCobro.
+	  * Si un determinado medio de pago queda o no en cartera de la empresa cuando se recibe en un documento de cobro
+	  */
+	public void setCarteraCobro(boolean CarteraCobro);
+
+	/** Get CarteraCobro.
+	  * Si un determinado medio de pago queda o no en cartera de la empresa cuando se recibe en un documento de cobro
+	  */
+	public boolean isCarteraCobro();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 

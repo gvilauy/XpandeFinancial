@@ -204,6 +204,19 @@ public interface I_Z_PagoMedioPago
 	  */
 	public boolean isActive();
 
+    /** Column name IsReceipt */
+    public static final String COLUMNNAME_IsReceipt = "IsReceipt";
+
+	/** Set Receipt.
+	  * This is a sales transaction (receipt)
+	  */
+	public void setIsReceipt(boolean IsReceipt);
+
+	/** Get Receipt.
+	  * This is a sales transaction (receipt)
+	  */
+	public boolean isReceipt();
+
     /** Column name MultiplyRate */
     public static final String COLUMNNAME_MultiplyRate = "MultiplyRate";
 

@@ -33,7 +33,7 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190122L;
+	private static final long serialVersionUID = 20190308L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoItem (Properties ctx, int Z_MedioPagoItem_ID, String trxName)
@@ -566,6 +566,29 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Ref_Cobro_ID.
+		@param Ref_Cobro_ID 
+		ID de un documento de Cobro referenciado.
+	  */
+	public void setRef_Cobro_ID (int Ref_Cobro_ID)
+	{
+		if (Ref_Cobro_ID < 1) 
+			set_Value (COLUMNNAME_Ref_Cobro_ID, null);
+		else 
+			set_Value (COLUMNNAME_Ref_Cobro_ID, Integer.valueOf(Ref_Cobro_ID));
+	}
+
+	/** Get Ref_Cobro_ID.
+		@return ID de un documento de Cobro referenciado.
+	  */
+	public int getRef_Cobro_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_Cobro_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Total Amount.

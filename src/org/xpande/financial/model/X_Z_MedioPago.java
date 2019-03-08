@@ -30,7 +30,7 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181120L;
+	private static final long serialVersionUID = 20190308L;
 
     /** Standard Constructor */
     public X_Z_MedioPago (Properties ctx, int Z_MedioPago_ID, String trxName)
@@ -42,6 +42,8 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 // Y
 			setAplicaEnPago (true);
 // Y
+			setCarteraCobro (false);
+// N
 			setName (null);
 			setTieneBanco (false);
 // N
@@ -147,6 +149,30 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	public boolean isAplicaEnPago () 
 	{
 		Object oo = get_Value(COLUMNNAME_AplicaEnPago);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set CarteraCobro.
+		@param CarteraCobro 
+		Si un determinado medio de pago queda o no en cartera de la empresa cuando se recibe en un documento de cobro
+	  */
+	public void setCarteraCobro (boolean CarteraCobro)
+	{
+		set_Value (COLUMNNAME_CarteraCobro, Boolean.valueOf(CarteraCobro));
+	}
+
+	/** Get CarteraCobro.
+		@return Si un determinado medio de pago queda o no en cartera de la empresa cuando se recibe en un documento de cobro
+	  */
+	public boolean isCarteraCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_CarteraCobro);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

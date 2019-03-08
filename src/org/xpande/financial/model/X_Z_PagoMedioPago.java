@@ -33,7 +33,7 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190122L;
+	private static final long serialVersionUID = 20190308L;
 
     /** Standard Constructor */
     public X_Z_PagoMedioPago (Properties ctx, int Z_PagoMedioPago_ID, String trxName)
@@ -42,7 +42,9 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
       /** if (Z_PagoMedioPago_ID == 0)
         {
 			setC_Currency_ID (0);
-			setEmisionManual (false);
+			setEmisionManual (true);
+// Y
+			setIsReceipt (false);
 // N
 			setMultiplyRate (Env.ZERO);
 			setTieneBanco (false);
@@ -273,6 +275,30 @@ public class X_Z_PagoMedioPago extends PO implements I_Z_PagoMedioPago, I_Persis
 	public boolean isEmisionManual () 
 	{
 		Object oo = get_Value(COLUMNNAME_EmisionManual);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Receipt.
+		@param IsReceipt 
+		This is a sales transaction (receipt)
+	  */
+	public void setIsReceipt (boolean IsReceipt)
+	{
+		set_Value (COLUMNNAME_IsReceipt, Boolean.valueOf(IsReceipt));
+	}
+
+	/** Get Receipt.
+		@return This is a sales transaction (receipt)
+	  */
+	public boolean isReceipt () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsReceipt);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

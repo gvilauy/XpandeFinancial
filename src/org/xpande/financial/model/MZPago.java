@@ -398,6 +398,14 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				// Marco medio de pago emitido
 				medioPagoItem.setEmitido(true);
 				medioPagoItem.setZ_Pago_ID(this.get_ID());
+
+				// Si este medio de pago no queda en cartera de la empresa, lo marco como entregado para que no pueda ser utilizado como medio de pago
+				// en un documento de pago.
+				MZMedioPago medioPago = (MZMedioPago) pagoMedioPago.getZ_MedioPago();
+				if (!medioPago.isCarteraCobro()){
+					medioPagoItem.setEntregado(true);
+				}
+
 				medioPagoItem.saveEx();
 
 				// Me aseguro de dejar asociado el medio de pago de este documento con el item de medio de pago.
@@ -489,6 +497,10 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		try{
 			// Marco medios de pago como no entregados y los desasocio de esta documento de pago/cobro
 			action = " update z_mediopagoitem set entregado='N', z_pago_id = null where z_pago_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+			// Para pagos, me aseguro que si tengo medios de pago recibidos de terceros, les deje la referencia del documento de cobro.
+			action = " update z_mediopagoitem set z_pago_id = ref_cobro_id where isreceipt='Y' and ref_cobro_id > 0 and z_pago_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
 			// Para pagos, desasocio ordenes de pago
@@ -1607,6 +1619,10 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				}
 
 				// Marco medio de pago como entregado en este documento de pago
+				// Si es un medio de pago recibido de terceros, me aseguro de no perder la referencia con el documento de cobro
+				if (medioPagoItem.isReceipt()){
+					medioPagoItem.setRef_Cobro_ID(medioPagoItem.getZ_Pago_ID());
+				}
 				medioPagoItem.setZ_Pago_ID(this.get_ID());
 				medioPagoItem.setEntregado(true);
 				medioPagoItem.saveEx();

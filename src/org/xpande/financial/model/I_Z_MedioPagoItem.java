@@ -375,6 +375,19 @@ public interface I_Z_MedioPagoItem
 	  */
 	public boolean isReemplazado();
 
+    /** Column name Ref_Cobro_ID */
+    public static final String COLUMNNAME_Ref_Cobro_ID = "Ref_Cobro_ID";
+
+	/** Set Ref_Cobro_ID.
+	  * ID de un documento de Cobro referenciado.
+	  */
+	public void setRef_Cobro_ID(int Ref_Cobro_ID);
+
+	/** Get Ref_Cobro_ID.
+	  * ID de un documento de Cobro referenciado.
+	  */
+	public int getRef_Cobro_ID();
+
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";
 
