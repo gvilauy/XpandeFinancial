@@ -89,6 +89,8 @@ public class ValidatorFinancial implements ModelValidator {
                 }
 
 
+                /*
+
                 // Para comprobantes de compra, valido que no este asociado a una orden de pago.
                 message = this.validateInvoiceOrdenPago(model);
                 if (message != null){
@@ -101,6 +103,8 @@ public class ValidatorFinancial implements ModelValidator {
                 if (message != null){
                     return message;
                 }
+
+                */
 
             }
 

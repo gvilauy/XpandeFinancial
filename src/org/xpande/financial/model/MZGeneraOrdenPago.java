@@ -291,7 +291,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
         String whereClause = X_Z_OrdenPago.COLUMNNAME_Z_GeneraOrdenPago_ID + " =" + this.get_ID();
 
-        List<MZOrdenPago> lines = new Query(getCtx(), I_Z_OrdenPago.Table_Name, whereClause, get_TrxName()).list();
+        List<MZOrdenPago> lines = new Query(getCtx(), I_Z_OrdenPago.Table_Name, whereClause, get_TrxName()).setOrderBy(" DocumentNo ").list();
 
         return lines;
     }
