@@ -3,6 +3,7 @@ package org.xpande.financial.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
+import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.comercial.model.MZInvoiceRef;
@@ -121,6 +122,20 @@ public class ValidatorFinancial implements ModelValidator {
 
         else if (timing == TIMING_BEFORE_COMPLETE){
 
+            // Valido información cuando se indica Transferir Saldo a otro Socio de Negocio para pago / cobro
+            if (model.get_ValueAsBoolean("TransferSaldo")){
+                if (model.get_ValueAsInt("C_BPartnerRelation_ID") <= 0){
+                    message = "Debe indicar Socio de Negocio Destino para Transferencia de Saldo.";
+                    return message;
+                }
+
+                // No permito transferir salfo con medio de pago efectivo
+                if (X_C_Invoice.PAYMENTRULE_Cash.equals(model.getPaymentRule())){
+                    message = "No se permite Transferencia de Saldos con el Medio de Pago seleccionado.";
+                    return message;
+                }
+            }
+
             // Manejo de CAJA y FONDO FIJO para medio de pago = Efectivo al completar una Invoice.
             if (X_C_Invoice.PAYMENTRULE_Cash.equals(model.getPaymentRule())){
                 if (model.get_ValueAsInt("C_CashBook_ID") <= 0){
@@ -135,6 +150,7 @@ public class ValidatorFinancial implements ModelValidator {
                     return message;
                 }
             }
+
         }
 
         else if (timing == TIMING_AFTER_COMPLETE){
@@ -284,6 +300,21 @@ public class ValidatorFinancial implements ModelValidator {
                 }
             }
 
+            // Si tengo flag de Transferir Saldo a otro socio de negocio, genero este documento y lo completo.
+            if (model.get_ValueAsBoolean("TransferSaldo")){
+                // Genero documento de transferencia de saldo
+                MZTransferSaldo transferSaldo = new MZTransferSaldo(model.getCtx(), 0, model.get_TrxName());
+                message = transferSaldo.generateFromInvoice(model);
+                if (message != null){
+                    return message;
+                }
+                // Completo documento de transferencia de saldo
+                if (!transferSaldo.processIt(DocAction.ACTION_Complete)){
+                    message = transferSaldo.getProcessMsg();
+                    return message;
+                }
+                transferSaldo.saveEx();
+            }
         }
 
         return null;

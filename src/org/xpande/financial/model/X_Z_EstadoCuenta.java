@@ -33,7 +33,7 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180320L;
+	private static final long serialVersionUID = 20190313L;
 
     /** Standard Constructor */
     public X_Z_EstadoCuenta (Properties ctx, int Z_EstadoCuenta_ID, String trxName)
@@ -418,6 +418,16 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	public static final String DOCBASETYPE_PPAAnticipoAProveedor = "PPA";
 	/** RDI Remito Diferencia Factura = RDI */
 	public static final String DOCBASETYPE_RDIRemitoDiferenciaFactura = "RDI";
+	/** RDC Remito Diferencia Cantidad = RDC */
+	public static final String DOCBASETYPE_RDCRemitoDiferenciaCantidad = "RDC";
+	/** CCD Cobranza a Cliente = CCD */
+	public static final String DOCBASETYPE_CCDCobranzaACliente = "CCD";
+	/** GEN General = GEN */
+	public static final String DOCBASETYPE_GENGeneral = "GEN";
+	/** CII Carga Inicial Invoices = CII */
+	public static final String DOCBASETYPE_CIICargaInicialInvoices = "CII";
+	/** TSP Transferencia Saldo a Pagar = TSP */
+	public static final String DOCBASETYPE_TSPTransferenciaSaldoAPagar = "TSP";
 	/** Set Document BaseType.
 		@param DocBaseType 
 		Logical type of document
@@ -701,6 +711,31 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	public int getZ_ResguardoSocio_To_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ResguardoSocio_To_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_TransferSaldo getZ_TransferSaldo() throws RuntimeException
+    {
+		return (I_Z_TransferSaldo)MTable.get(getCtx(), I_Z_TransferSaldo.Table_Name)
+			.getPO(getZ_TransferSaldo_ID(), get_TrxName());	}
+
+	/** Set Z_TransferSaldo ID.
+		@param Z_TransferSaldo_ID Z_TransferSaldo ID	  */
+	public void setZ_TransferSaldo_ID (int Z_TransferSaldo_ID)
+	{
+		if (Z_TransferSaldo_ID < 1) 
+			set_Value (COLUMNNAME_Z_TransferSaldo_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_TransferSaldo_ID, Integer.valueOf(Z_TransferSaldo_ID));
+	}
+
+	/** Get Z_TransferSaldo ID.
+		@return Z_TransferSaldo ID	  */
+	public int getZ_TransferSaldo_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_TransferSaldo_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -311,4 +311,15 @@ public interface I_Z_InvoiceAfectacion
 	public int getZ_Pago_ID();
 
 	public I_Z_Pago getZ_Pago() throws RuntimeException;
+
+    /** Column name Z_TransferSaldo_ID */
+    public static final String COLUMNNAME_Z_TransferSaldo_ID = "Z_TransferSaldo_ID";
+
+	/** Set Z_TransferSaldo ID	  */
+	public void setZ_TransferSaldo_ID(int Z_TransferSaldo_ID);
+
+	/** Get Z_TransferSaldo ID	  */
+	public int getZ_TransferSaldo_ID();
+
+	public I_Z_TransferSaldo getZ_TransferSaldo() throws RuntimeException;
 }

@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_EstadoCuenta
+/** Generated Interface for Z_TransferSaldo
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_EstadoCuenta 
+public interface I_Z_TransferSaldo 
 {
 
-    /** TableName=Z_EstadoCuenta */
-    public static final String Table_Name = "Z_EstadoCuenta";
+    /** TableName=Z_TransferSaldo */
+    public static final String Table_Name = "Z_TransferSaldo";
 
-    /** AD_Table_ID=1000204 */
+    /** AD_Table_ID=1000272 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,47 +63,6 @@ public interface I_Z_EstadoCuenta
 	  */
 	public int getAD_Org_ID();
 
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
-
-	/** Set Table.
-	  * Database Table information
-	  */
-	public void setAD_Table_ID(int AD_Table_ID);
-
-	/** Get Table.
-	  * Database Table information
-	  */
-	public int getAD_Table_ID();
-
-	public I_AD_Table getAD_Table() throws RuntimeException;
-
-    /** Column name AmtSourceCr */
-    public static final String COLUMNNAME_AmtSourceCr = "AmtSourceCr";
-
-	/** Set Source Credit.
-	  * Source Credit Amount
-	  */
-	public void setAmtSourceCr(BigDecimal AmtSourceCr);
-
-	/** Get Source Credit.
-	  * Source Credit Amount
-	  */
-	public BigDecimal getAmtSourceCr();
-
-    /** Column name AmtSourceDr */
-    public static final String COLUMNNAME_AmtSourceDr = "AmtSourceDr";
-
-	/** Set Source Debit.
-	  * Source Debit Amount
-	  */
-	public void setAmtSourceDr(BigDecimal AmtSourceDr);
-
-	/** Get Source Debit.
-	  * Source Debit Amount
-	  */
-	public BigDecimal getAmtSourceDr();
-
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -118,6 +77,21 @@ public interface I_Z_EstadoCuenta
 	public int getC_BPartner_ID();
 
 	public I_C_BPartner getC_BPartner() throws RuntimeException;
+
+    /** Column name C_BPartnerRelation_ID */
+    public static final String COLUMNNAME_C_BPartnerRelation_ID = "C_BPartnerRelation_ID";
+
+	/** Set Related Partner.
+	  * Related Business Partner
+	  */
+	public void setC_BPartnerRelation_ID(int C_BPartnerRelation_ID);
+
+	/** Get Related Partner.
+	  * Related Business Partner
+	  */
+	public int getC_BPartnerRelation_ID();
+
+	public I_C_BPartner getC_BPartnerRelation() throws RuntimeException;
 
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
@@ -149,6 +123,21 @@ public interface I_Z_EstadoCuenta
 
 	public I_C_DocType getC_DocType() throws RuntimeException;
 
+    /** Column name C_DocTypeTarget_ID */
+    public static final String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
+
+	/** Set Target Document Type.
+	  * Target document type for conversing documents
+	  */
+	public void setC_DocTypeTarget_ID(int C_DocTypeTarget_ID);
+
+	/** Get Target Document Type.
+	  * Target document type for conversing documents
+	  */
+	public int getC_DocTypeTarget_ID();
+
+	public I_C_DocType getC_DocTypeTarget() throws RuntimeException;
+
     /** Column name C_Invoice_ID */
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
@@ -163,21 +152,6 @@ public interface I_Z_EstadoCuenta
 	public int getC_Invoice_ID();
 
 	public I_C_Invoice getC_Invoice() throws RuntimeException;
-
-    /** Column name C_InvoicePaySchedule_ID */
-    public static final String COLUMNNAME_C_InvoicePaySchedule_ID = "C_InvoicePaySchedule_ID";
-
-	/** Set Invoice Payment Schedule.
-	  * Invoice Payment Schedule
-	  */
-	public void setC_InvoicePaySchedule_ID(int C_InvoicePaySchedule_ID);
-
-	/** Get Invoice Payment Schedule.
-	  * Invoice Payment Schedule
-	  */
-	public int getC_InvoicePaySchedule_ID();
-
-	public I_C_InvoicePaySchedule getC_InvoicePaySchedule() throws RuntimeException;
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -208,18 +182,70 @@ public interface I_Z_EstadoCuenta
 	  */
 	public Timestamp getDateDoc();
 
-    /** Column name DocBaseType */
-    public static final String COLUMNNAME_DocBaseType = "DocBaseType";
+    /** Column name DateInvoiced */
+    public static final String COLUMNNAME_DateInvoiced = "DateInvoiced";
 
-	/** Set Document BaseType.
-	  * Logical type of document
+	/** Set Date Invoiced.
+	  * Date printed on Invoice
 	  */
-	public void setDocBaseType(String DocBaseType);
+	public void setDateInvoiced(Timestamp DateInvoiced);
 
-	/** Get Document BaseType.
-	  * Logical type of document
+	/** Get Date Invoiced.
+	  * Date printed on Invoice
 	  */
-	public String getDocBaseType();
+	public Timestamp getDateInvoiced();
+
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/** Set Description.
+	  * Optional short description of the record
+	  */
+	public void setDescription(String Description);
+
+	/** Get Description.
+	  * Optional short description of the record
+	  */
+	public String getDescription();
+
+    /** Column name DocAction */
+    public static final String COLUMNNAME_DocAction = "DocAction";
+
+	/** Set Document Action.
+	  * The targeted status of the document
+	  */
+	public void setDocAction(String DocAction);
+
+	/** Get Document Action.
+	  * The targeted status of the document
+	  */
+	public String getDocAction();
+
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
+
+	/** Set Document Status.
+	  * The current status of the document
+	  */
+	public void setDocStatus(String DocStatus);
+
+	/** Get Document Status.
+	  * The current status of the document
+	  */
+	public String getDocStatus();
+
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/** Set Document No.
+	  * Document sequence number of the document
+	  */
+	public void setDocumentNo(String DocumentNo);
+
+	/** Get Document No.
+	  * Document sequence number of the document
+	  */
+	public String getDocumentNo();
 
     /** Column name DocumentNoRef */
     public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
@@ -234,31 +260,31 @@ public interface I_Z_EstadoCuenta
 	  */
 	public String getDocumentNoRef();
 
-    /** Column name DueDate */
-    public static final String COLUMNNAME_DueDate = "DueDate";
+    /** Column name DocumentSerie */
+    public static final String COLUMNNAME_DocumentSerie = "DocumentSerie";
 
-	/** Set Due Date.
-	  * Date when the payment is due
+	/** Set DocumentSerie.
+	  * Serie de un Documento
 	  */
-	public void setDueDate(Timestamp DueDate);
+	public void setDocumentSerie(String DocumentSerie);
 
-	/** Get Due Date.
-	  * Date when the payment is due
+	/** Get DocumentSerie.
+	  * Serie de un Documento
 	  */
-	public Timestamp getDueDate();
+	public String getDocumentSerie();
 
-    /** Column name EstadoAprobacion */
-    public static final String COLUMNNAME_EstadoAprobacion = "EstadoAprobacion";
+    /** Column name GrandTotal */
+    public static final String COLUMNNAME_GrandTotal = "GrandTotal";
 
-	/** Set EstadoAprobacion.
-	  * Estadode aprobacion de un comprobante
+	/** Set Grand Total.
+	  * Total amount of document
 	  */
-	public void setEstadoAprobacion(String EstadoAprobacion);
+	public void setGrandTotal(BigDecimal GrandTotal);
 
-	/** Get EstadoAprobacion.
-	  * Estadode aprobacion de un comprobante
+	/** Get Grand Total.
+	  * Total amount of document
 	  */
-	public String getEstadoAprobacion();
+	public BigDecimal getGrandTotal();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -273,6 +299,19 @@ public interface I_Z_EstadoCuenta
 	  */
 	public boolean isActive();
 
+    /** Column name IsApproved */
+    public static final String COLUMNNAME_IsApproved = "IsApproved";
+
+	/** Set Approved.
+	  * Indicates if this document requires approval
+	  */
+	public void setIsApproved(boolean IsApproved);
+
+	/** Get Approved.
+	  * Indicates if this document requires approval
+	  */
+	public boolean isApproved();
+
     /** Column name IsSOTrx */
     public static final String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
@@ -286,31 +325,53 @@ public interface I_Z_EstadoCuenta
 	  */
 	public boolean isSOTrx();
 
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
+    /** Column name Posted */
+    public static final String COLUMNNAME_Posted = "Posted";
 
-	/** Set Record ID.
-	  * Direct internal record ID
+	/** Set Posted.
+	  * Posting status
 	  */
-	public void setRecord_ID(int Record_ID);
+	public void setPosted(boolean Posted);
 
-	/** Get Record ID.
-	  * Direct internal record ID
+	/** Get Posted.
+	  * Posting status
 	  */
-	public int getRecord_ID();
+	public boolean isPosted();
 
-    /** Column name ReferenciaPago */
-    public static final String COLUMNNAME_ReferenciaPago = "ReferenciaPago";
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
-	/** Set ReferenciaPago.
-	  * Referencia descriptiva para pagos
+	/** Set Processed.
+	  * The document has been processed
 	  */
-	public void setReferenciaPago(String ReferenciaPago);
+	public void setProcessed(boolean Processed);
 
-	/** Get ReferenciaPago.
-	  * Referencia descriptiva para pagos
+	/** Get Processed.
+	  * The document has been processed
 	  */
-	public String getReferenciaPago();
+	public boolean isProcessed();
+
+    /** Column name ProcessedOn */
+    public static final String COLUMNNAME_ProcessedOn = "ProcessedOn";
+
+	/** Set Processed On.
+	  * The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public void setProcessedOn(BigDecimal ProcessedOn);
+
+	/** Get Processed On.
+	  * The date+time (expressed in decimal format) when the document has been processed
+	  */
+	public BigDecimal getProcessedOn();
+
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
+
+	/** Set Process Now	  */
+	public void setProcessing(boolean Processing);
+
+	/** Get Process Now	  */
+	public boolean isProcessing();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -328,73 +389,18 @@ public interface I_Z_EstadoCuenta
 	  */
 	public int getUpdatedBy();
 
-    /** Column name Z_Afectacion_ID */
-    public static final String COLUMNNAME_Z_Afectacion_ID = "Z_Afectacion_ID";
+    /** Column name UUID */
+    public static final String COLUMNNAME_UUID = "UUID";
 
-	/** Set Z_Afectacion ID	  */
-	public void setZ_Afectacion_ID(int Z_Afectacion_ID);
-
-	/** Get Z_Afectacion ID	  */
-	public int getZ_Afectacion_ID();
-
-	public I_Z_Afectacion getZ_Afectacion() throws RuntimeException;
-
-    /** Column name Z_EstadoCuenta_ID */
-    public static final String COLUMNNAME_Z_EstadoCuenta_ID = "Z_EstadoCuenta_ID";
-
-	/** Set Z_EstadoCuenta ID	  */
-	public void setZ_EstadoCuenta_ID(int Z_EstadoCuenta_ID);
-
-	/** Get Z_EstadoCuenta ID	  */
-	public int getZ_EstadoCuenta_ID();
-
-    /** Column name Z_OrdenPago_ID */
-    public static final String COLUMNNAME_Z_OrdenPago_ID = "Z_OrdenPago_ID";
-
-	/** Set Z_OrdenPago ID	  */
-	public void setZ_OrdenPago_ID(int Z_OrdenPago_ID);
-
-	/** Get Z_OrdenPago ID	  */
-	public int getZ_OrdenPago_ID();
-
-	public I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException;
-
-    /** Column name Z_Pago_ID */
-    public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
-
-	/** Set Z_Pago ID	  */
-	public void setZ_Pago_ID(int Z_Pago_ID);
-
-	/** Get Z_Pago ID	  */
-	public int getZ_Pago_ID();
-
-	public I_Z_Pago getZ_Pago() throws RuntimeException;
-
-    /** Column name Z_ResguardoSocio_ID */
-    public static final String COLUMNNAME_Z_ResguardoSocio_ID = "Z_ResguardoSocio_ID";
-
-	/** Set Z_ResguardoSocio ID	  */
-	public void setZ_ResguardoSocio_ID(int Z_ResguardoSocio_ID);
-
-	/** Get Z_ResguardoSocio ID	  */
-	public int getZ_ResguardoSocio_ID();
-
-	public I_Z_ResguardoSocio getZ_ResguardoSocio() throws RuntimeException;
-
-    /** Column name Z_ResguardoSocio_To_ID */
-    public static final String COLUMNNAME_Z_ResguardoSocio_To_ID = "Z_ResguardoSocio_To_ID";
-
-	/** Set Z_ResguardoSocio_To_ID.
-	  * Referencia a un Resguardo Socio Destino
+	/** Set Immutable Universally Unique Identifier.
+	  * Immutable Universally Unique Identifier
 	  */
-	public void setZ_ResguardoSocio_To_ID(int Z_ResguardoSocio_To_ID);
+	public void setUUID(String UUID);
 
-	/** Get Z_ResguardoSocio_To_ID.
-	  * Referencia a un Resguardo Socio Destino
+	/** Get Immutable Universally Unique Identifier.
+	  * Immutable Universally Unique Identifier
 	  */
-	public int getZ_ResguardoSocio_To_ID();
-
-	public I_Z_ResguardoSocio getZ_ResguardoSocio_To() throws RuntimeException;
+	public String getUUID();
 
     /** Column name Z_TransferSaldo_ID */
     public static final String COLUMNNAME_Z_TransferSaldo_ID = "Z_TransferSaldo_ID";
@@ -404,6 +410,4 @@ public interface I_Z_EstadoCuenta
 
 	/** Get Z_TransferSaldo ID	  */
 	public int getZ_TransferSaldo_ID();
-
-	public I_Z_TransferSaldo getZ_TransferSaldo() throws RuntimeException;
 }
