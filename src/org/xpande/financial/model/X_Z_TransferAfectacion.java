@@ -24,10 +24,10 @@ import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
 
-/** Generated Model for Z_PagoLin
+/** Generated Model for Z_TransferAfectacion
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent 
+public class X_Z_TransferAfectacion extends PO implements I_Z_TransferAfectacion, I_Persistent 
 {
 
 	/**
@@ -36,22 +36,27 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 	private static final long serialVersionUID = 20190314L;
 
     /** Standard Constructor */
-    public X_Z_PagoLin (Properties ctx, int Z_PagoLin_ID, String trxName)
+    public X_Z_TransferAfectacion (Properties ctx, int Z_TransferAfectacion_ID, String trxName)
     {
-      super (ctx, Z_PagoLin_ID, trxName);
-      /** if (Z_PagoLin_ID == 0)
+      super (ctx, Z_TransferAfectacion_ID, trxName);
+      /** if (Z_TransferAfectacion_ID == 0)
         {
-			setIsSelected (false);
-// N
-			setResguardoEmitido (false);
-// N
-			setZ_Pago_ID (0);
-			setZ_PagoLin_ID (0);
+			setAD_Table_ID (0);
+			setAmtAllocation (Env.ZERO);
+			setC_Currency_ID (0);
+			setC_DocType_ID (0);
+			setDateDoc (new Timestamp( System.currentTimeMillis() ));
+			setDocumentNoRef (null);
+			setIsValid (true);
+// Y
+			setRecord_ID (0);
+			setZ_TransferAfectacion_ID (0);
+			setZ_TransferSaldo_ID (0);
         } */
     }
 
     /** Load Constructor */
-    public X_Z_PagoLin (Properties ctx, ResultSet rs, String trxName)
+    public X_Z_TransferAfectacion (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -73,10 +78,38 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_Z_PagoLin[")
+      StringBuffer sb = new StringBuffer ("X_Z_TransferAfectacion[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	public I_AD_Table getAD_Table() throws RuntimeException
+    {
+		return (I_AD_Table)MTable.get(getCtx(), I_AD_Table.Table_Name)
+			.getPO(getAD_Table_ID(), get_TrxName());	}
+
+	/** Set Table.
+		@param AD_Table_ID 
+		Database Table information
+	  */
+	public void setAD_Table_ID (int AD_Table_ID)
+	{
+		if (AD_Table_ID < 1) 
+			set_Value (COLUMNNAME_AD_Table_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+	}
+
+	/** Get Table.
+		@return Database Table information
+	  */
+	public int getAD_Table_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set AmtAllocation.
 		@param AmtAllocation 
@@ -93,66 +126,6 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 	public BigDecimal getAmtAllocation () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAllocation);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set AmtAllocationMT.
-		@param AmtAllocationMT 
-		Monto afectación en moneda de la transacción
-	  */
-	public void setAmtAllocationMT (BigDecimal AmtAllocationMT)
-	{
-		set_Value (COLUMNNAME_AmtAllocationMT, AmtAllocationMT);
-	}
-
-	/** Get AmtAllocationMT.
-		@return Monto afectación en moneda de la transacción
-	  */
-	public BigDecimal getAmtAllocationMT () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAllocationMT);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set AmtDocument.
-		@param AmtDocument 
-		Monto documento
-	  */
-	public void setAmtDocument (BigDecimal AmtDocument)
-	{
-		set_Value (COLUMNNAME_AmtDocument, AmtDocument);
-	}
-
-	/** Get AmtDocument.
-		@return Monto documento
-	  */
-	public BigDecimal getAmtDocument () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtDocument);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set AmtOpen.
-		@param AmtOpen 
-		Monto pendiente
-	  */
-	public void setAmtOpen (BigDecimal AmtOpen)
-	{
-		set_Value (COLUMNNAME_AmtOpen, AmtOpen);
-	}
-
-	/** Get AmtOpen.
-		@return Monto pendiente
-	  */
-	public BigDecimal getAmtOpen () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtOpen);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
@@ -209,34 +182,6 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 	public int getC_DocType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	public I_C_Invoice getC_Invoice() throws RuntimeException
-    {
-		return (I_C_Invoice)MTable.get(getCtx(), I_C_Invoice.Table_Name)
-			.getPO(getC_Invoice_ID(), get_TrxName());	}
-
-	/** Set Invoice.
-		@param C_Invoice_ID 
-		Invoice Identifier
-	  */
-	public void setC_Invoice_ID (int C_Invoice_ID)
-	{
-		if (C_Invoice_ID < 1) 
-			set_Value (COLUMNNAME_C_Invoice_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
-	}
-
-	/** Get Invoice.
-		@return Invoice Identifier
-	  */
-	public int getC_Invoice_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -304,59 +249,38 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 		return (String)get_Value(COLUMNNAME_DocumentNoRef);
 	}
 
-	/** Set DueDateDoc.
-		@param DueDateDoc 
-		Vencimiento del documento
+	/** Set Due Date.
+		@param DueDate 
+		Date when the payment is due
 	  */
-	public void setDueDateDoc (Timestamp DueDateDoc)
+	public void setDueDate (Timestamp DueDate)
 	{
-		set_Value (COLUMNNAME_DueDateDoc, DueDateDoc);
+		set_Value (COLUMNNAME_DueDate, DueDate);
 	}
 
-	/** Get DueDateDoc.
-		@return Vencimiento del documento
+	/** Get Due Date.
+		@return Date when the payment is due
 	  */
-	public Timestamp getDueDateDoc () 
+	public Timestamp getDueDate () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_DueDateDoc);
+		return (Timestamp)get_Value(COLUMNNAME_DueDate);
 	}
 
-	/** EstadoAprobacion AD_Reference_ID=1000018 */
-	public static final int ESTADOAPROBACION_AD_Reference_ID=1000018;
-	/** APROBADO = APROBADO */
-	public static final String ESTADOAPROBACION_APROBADO = "APROBADO";
-	/** BLOQUEADO = BLOQUEADO */
-	public static final String ESTADOAPROBACION_BLOQUEADO = "BLOQUEADO";
-	/** Set EstadoAprobacion.
-		@param EstadoAprobacion 
-		Estadode aprobacion de un comprobante
+	/** Set Valid.
+		@param IsValid 
+		Element is valid
 	  */
-	public void setEstadoAprobacion (String EstadoAprobacion)
+	public void setIsValid (boolean IsValid)
 	{
-
-		set_Value (COLUMNNAME_EstadoAprobacion, EstadoAprobacion);
+		set_Value (COLUMNNAME_IsValid, Boolean.valueOf(IsValid));
 	}
 
-	/** Get EstadoAprobacion.
-		@return Estadode aprobacion de un comprobante
+	/** Get Valid.
+		@return Element is valid
 	  */
-	public String getEstadoAprobacion () 
+	public boolean isValid () 
 	{
-		return (String)get_Value(COLUMNNAME_EstadoAprobacion);
-	}
-
-	/** Set Selected.
-		@param IsSelected Selected	  */
-	public void setIsSelected (boolean IsSelected)
-	{
-		set_Value (COLUMNNAME_IsSelected, Boolean.valueOf(IsSelected));
-	}
-
-	/** Get Selected.
-		@return Selected	  */
-	public boolean isSelected () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsSelected);
+		Object oo = get_Value(COLUMNNAME_IsValid);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -366,70 +290,66 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 		return false;
 	}
 
-	/** Set Multiply Rate.
-		@param MultiplyRate 
-		Rate to multiple the source by to calculate the target.
+	/** Set Record ID.
+		@param Record_ID 
+		Direct internal record ID
 	  */
-	public void setMultiplyRate (BigDecimal MultiplyRate)
+	public void setRecord_ID (int Record_ID)
 	{
-		set_Value (COLUMNNAME_MultiplyRate, MultiplyRate);
-	}
-
-	/** Get Multiply Rate.
-		@return Rate to multiple the source by to calculate the target.
-	  */
-	public BigDecimal getMultiplyRate () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MultiplyRate);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set ResguardoEmitido.
-		@param ResguardoEmitido 
-		Si tiene o no resguardo emitido
-	  */
-	public void setResguardoEmitido (boolean ResguardoEmitido)
-	{
-		set_Value (COLUMNNAME_ResguardoEmitido, Boolean.valueOf(ResguardoEmitido));
-	}
-
-	/** Get ResguardoEmitido.
-		@return Si tiene o no resguardo emitido
-	  */
-	public boolean isResguardoEmitido () 
-	{
-		Object oo = get_Value(COLUMNNAME_ResguardoEmitido);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	public I_Z_MedioPago getZ_MedioPago() throws RuntimeException
-    {
-		return (I_Z_MedioPago)MTable.get(getCtx(), I_Z_MedioPago.Table_Name)
-			.getPO(getZ_MedioPago_ID(), get_TrxName());	}
-
-	/** Set Z_MedioPago ID.
-		@param Z_MedioPago_ID Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID (int Z_MedioPago_ID)
-	{
-		if (Z_MedioPago_ID < 1) 
-			set_Value (COLUMNNAME_Z_MedioPago_ID, null);
+		if (Record_ID < 0) 
+			set_Value (COLUMNNAME_Record_ID, null);
 		else 
-			set_Value (COLUMNNAME_Z_MedioPago_ID, Integer.valueOf(Z_MedioPago_ID));
+			set_Value (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
 	}
 
-	/** Get Z_MedioPago ID.
-		@return Z_MedioPago ID	  */
-	public int getZ_MedioPago_ID () 
+	/** Get Record ID.
+		@return Direct internal record ID
+	  */
+	public int getRecord_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPago_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Immutable Universally Unique Identifier.
+		@param UUID 
+		Immutable Universally Unique Identifier
+	  */
+	public void setUUID (String UUID)
+	{
+		set_Value (COLUMNNAME_UUID, UUID);
+	}
+
+	/** Get Immutable Universally Unique Identifier.
+		@return Immutable Universally Unique Identifier
+	  */
+	public String getUUID () 
+	{
+		return (String)get_Value(COLUMNNAME_UUID);
+	}
+
+	public I_Z_Afectacion getZ_Afectacion() throws RuntimeException
+    {
+		return (I_Z_Afectacion)MTable.get(getCtx(), I_Z_Afectacion.Table_Name)
+			.getPO(getZ_Afectacion_ID(), get_TrxName());	}
+
+	/** Set Z_Afectacion ID.
+		@param Z_Afectacion_ID Z_Afectacion ID	  */
+	public void setZ_Afectacion_ID (int Z_Afectacion_ID)
+	{
+		if (Z_Afectacion_ID < 1) 
+			set_Value (COLUMNNAME_Z_Afectacion_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_Afectacion_ID, Integer.valueOf(Z_Afectacion_ID));
+	}
+
+	/** Get Z_Afectacion ID.
+		@return Z_Afectacion ID	  */
+	public int getZ_Afectacion_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_Afectacion_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -485,21 +405,21 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Z_PagoLin ID.
-		@param Z_PagoLin_ID Z_PagoLin ID	  */
-	public void setZ_PagoLin_ID (int Z_PagoLin_ID)
+	/** Set Z_TransferAfectacion ID.
+		@param Z_TransferAfectacion_ID Z_TransferAfectacion ID	  */
+	public void setZ_TransferAfectacion_ID (int Z_TransferAfectacion_ID)
 	{
-		if (Z_PagoLin_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Z_PagoLin_ID, null);
+		if (Z_TransferAfectacion_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Z_TransferAfectacion_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Z_PagoLin_ID, Integer.valueOf(Z_PagoLin_ID));
+			set_ValueNoCheck (COLUMNNAME_Z_TransferAfectacion_ID, Integer.valueOf(Z_TransferAfectacion_ID));
 	}
 
-	/** Get Z_PagoLin ID.
-		@return Z_PagoLin ID	  */
-	public int getZ_PagoLin_ID () 
+	/** Get Z_TransferAfectacion ID.
+		@return Z_TransferAfectacion ID	  */
+	public int getZ_TransferAfectacion_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_PagoLin_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_TransferAfectacion_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

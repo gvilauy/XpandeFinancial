@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_OrdenPagoLin
+/** Generated Interface for Z_TransferAfectacion
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_OrdenPagoLin 
+public interface I_Z_TransferAfectacion 
 {
 
-    /** TableName=Z_OrdenPagoLin */
-    public static final String Table_Name = "Z_OrdenPagoLin";
+    /** TableName=Z_TransferAfectacion */
+    public static final String Table_Name = "Z_TransferAfectacion";
 
-    /** AD_Table_ID=1000118 */
+    /** AD_Table_ID=1000273 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,6 +63,21 @@ public interface I_Z_OrdenPagoLin
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AD_Table_ID */
+    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/** Set Table.
+	  * Database Table information
+	  */
+	public void setAD_Table_ID(int AD_Table_ID);
+
+	/** Get Table.
+	  * Database Table information
+	  */
+	public int getAD_Table_ID();
+
+	public I_AD_Table getAD_Table() throws RuntimeException;
+
     /** Column name AmtAllocation */
     public static final String COLUMNNAME_AmtAllocation = "AmtAllocation";
 
@@ -75,45 +90,6 @@ public interface I_Z_OrdenPagoLin
 	  * Monto afectación
 	  */
 	public BigDecimal getAmtAllocation();
-
-    /** Column name AmtAllocationMT */
-    public static final String COLUMNNAME_AmtAllocationMT = "AmtAllocationMT";
-
-	/** Set AmtAllocationMT.
-	  * Monto afectación en moneda de la transacción
-	  */
-	public void setAmtAllocationMT(BigDecimal AmtAllocationMT);
-
-	/** Get AmtAllocationMT.
-	  * Monto afectación en moneda de la transacción
-	  */
-	public BigDecimal getAmtAllocationMT();
-
-    /** Column name AmtDocument */
-    public static final String COLUMNNAME_AmtDocument = "AmtDocument";
-
-	/** Set AmtDocument.
-	  * Monto documento
-	  */
-	public void setAmtDocument(BigDecimal AmtDocument);
-
-	/** Get AmtDocument.
-	  * Monto documento
-	  */
-	public BigDecimal getAmtDocument();
-
-    /** Column name AmtOpen */
-    public static final String COLUMNNAME_AmtOpen = "AmtOpen";
-
-	/** Set AmtOpen.
-	  * Monto pendiente
-	  */
-	public void setAmtOpen(BigDecimal AmtOpen);
-
-	/** Get AmtOpen.
-	  * Monto pendiente
-	  */
-	public BigDecimal getAmtOpen();
 
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
@@ -144,21 +120,6 @@ public interface I_Z_OrdenPagoLin
 	public int getC_DocType_ID();
 
 	public I_C_DocType getC_DocType() throws RuntimeException;
-
-    /** Column name C_Invoice_ID */
-    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
-
-	/** Set Invoice.
-	  * Invoice Identifier
-	  */
-	public void setC_Invoice_ID(int C_Invoice_ID);
-
-	/** Get Invoice.
-	  * Invoice Identifier
-	  */
-	public int getC_Invoice_ID();
-
-	public I_C_Invoice getC_Invoice() throws RuntimeException;
 
     /** Column name C_InvoicePaySchedule_ID */
     public static final String COLUMNNAME_C_InvoicePaySchedule_ID = "C_InvoicePaySchedule_ID";
@@ -217,18 +178,18 @@ public interface I_Z_OrdenPagoLin
 	  */
 	public String getDocumentNoRef();
 
-    /** Column name DueDateDoc */
-    public static final String COLUMNNAME_DueDateDoc = "DueDateDoc";
+    /** Column name DueDate */
+    public static final String COLUMNNAME_DueDate = "DueDate";
 
-	/** Set DueDateDoc.
-	  * Vencimiento del documento
+	/** Set Due Date.
+	  * Date when the payment is due
 	  */
-	public void setDueDateDoc(Timestamp DueDateDoc);
+	public void setDueDate(Timestamp DueDate);
 
-	/** Get DueDateDoc.
-	  * Vencimiento del documento
+	/** Get Due Date.
+	  * Date when the payment is due
 	  */
-	public Timestamp getDueDateDoc();
+	public Timestamp getDueDate();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -243,18 +204,31 @@ public interface I_Z_OrdenPagoLin
 	  */
 	public boolean isActive();
 
-    /** Column name MultiplyRate */
-    public static final String COLUMNNAME_MultiplyRate = "MultiplyRate";
+    /** Column name IsValid */
+    public static final String COLUMNNAME_IsValid = "IsValid";
 
-	/** Set Multiply Rate.
-	  * Rate to multiple the source by to calculate the target.
+	/** Set Valid.
+	  * Element is valid
 	  */
-	public void setMultiplyRate(BigDecimal MultiplyRate);
+	public void setIsValid(boolean IsValid);
 
-	/** Get Multiply Rate.
-	  * Rate to multiple the source by to calculate the target.
+	/** Get Valid.
+	  * Element is valid
 	  */
-	public BigDecimal getMultiplyRate();
+	public boolean isValid();
+
+    /** Column name Record_ID */
+    public static final String COLUMNNAME_Record_ID = "Record_ID";
+
+	/** Set Record ID.
+	  * Direct internal record ID
+	  */
+	public void setRecord_ID(int Record_ID);
+
+	/** Get Record ID.
+	  * Direct internal record ID
+	  */
+	public int getRecord_ID();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -272,6 +246,30 @@ public interface I_Z_OrdenPagoLin
 	  */
 	public int getUpdatedBy();
 
+    /** Column name UUID */
+    public static final String COLUMNNAME_UUID = "UUID";
+
+	/** Set Immutable Universally Unique Identifier.
+	  * Immutable Universally Unique Identifier
+	  */
+	public void setUUID(String UUID);
+
+	/** Get Immutable Universally Unique Identifier.
+	  * Immutable Universally Unique Identifier
+	  */
+	public String getUUID();
+
+    /** Column name Z_Afectacion_ID */
+    public static final String COLUMNNAME_Z_Afectacion_ID = "Z_Afectacion_ID";
+
+	/** Set Z_Afectacion ID	  */
+	public void setZ_Afectacion_ID(int Z_Afectacion_ID);
+
+	/** Get Z_Afectacion ID	  */
+	public int getZ_Afectacion_ID();
+
+	public I_Z_Afectacion getZ_Afectacion() throws RuntimeException;
+
     /** Column name Z_OrdenPago_ID */
     public static final String COLUMNNAME_Z_OrdenPago_ID = "Z_OrdenPago_ID";
 
@@ -283,25 +281,25 @@ public interface I_Z_OrdenPagoLin
 
 	public I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException;
 
-    /** Column name Z_OrdenPagoLin_ID */
-    public static final String COLUMNNAME_Z_OrdenPagoLin_ID = "Z_OrdenPagoLin_ID";
+    /** Column name Z_Pago_ID */
+    public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
 
-	/** Set Z_OrdenPagoLin ID	  */
-	public void setZ_OrdenPagoLin_ID(int Z_OrdenPagoLin_ID);
+	/** Set Z_Pago ID	  */
+	public void setZ_Pago_ID(int Z_Pago_ID);
 
-	/** Get Z_OrdenPagoLin ID	  */
-	public int getZ_OrdenPagoLin_ID();
+	/** Get Z_Pago ID	  */
+	public int getZ_Pago_ID();
 
-    /** Column name Z_ResguardoSocio_ID */
-    public static final String COLUMNNAME_Z_ResguardoSocio_ID = "Z_ResguardoSocio_ID";
+	public I_Z_Pago getZ_Pago() throws RuntimeException;
 
-	/** Set Z_ResguardoSocio ID	  */
-	public void setZ_ResguardoSocio_ID(int Z_ResguardoSocio_ID);
+    /** Column name Z_TransferAfectacion_ID */
+    public static final String COLUMNNAME_Z_TransferAfectacion_ID = "Z_TransferAfectacion_ID";
 
-	/** Get Z_ResguardoSocio ID	  */
-	public int getZ_ResguardoSocio_ID();
+	/** Set Z_TransferAfectacion ID	  */
+	public void setZ_TransferAfectacion_ID(int Z_TransferAfectacion_ID);
 
-	public I_Z_ResguardoSocio getZ_ResguardoSocio() throws RuntimeException;
+	/** Get Z_TransferAfectacion ID	  */
+	public int getZ_TransferAfectacion_ID();
 
     /** Column name Z_TransferSaldo_ID */
     public static final String COLUMNNAME_Z_TransferSaldo_ID = "Z_TransferSaldo_ID";

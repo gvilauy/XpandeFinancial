@@ -33,7 +33,7 @@ public class X_Z_TransferSaldo extends PO implements I_Z_TransferSaldo, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190313L;
+	private static final long serialVersionUID = 20190314L;
 
     /** Standard Constructor */
     public X_Z_TransferSaldo (Properties ctx, int Z_TransferSaldo_ID, String trxName)
@@ -58,6 +58,8 @@ public class X_Z_TransferSaldo extends PO implements I_Z_TransferSaldo, I_Persis
 			setDocumentNoRef (null);
 			setGrandTotal (Env.ZERO);
 			setIsApproved (false);
+// N
+			setIsPaid (false);
 // N
 			setIsSOTrx (false);
 // N
@@ -496,6 +498,30 @@ public class X_Z_TransferSaldo extends PO implements I_Z_TransferSaldo, I_Persis
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Paid.
+		@param IsPaid 
+		The document is paid
+	  */
+	public void setIsPaid (boolean IsPaid)
+	{
+		set_Value (COLUMNNAME_IsPaid, Boolean.valueOf(IsPaid));
+	}
+
+	/** Get Paid.
+		@return The document is paid
+	  */
+	public boolean isPaid () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPaid);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

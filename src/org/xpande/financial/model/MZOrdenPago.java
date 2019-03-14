@@ -257,6 +257,13 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			return DocAction.STATUS_Invalid;
 		}
 
+		// Afecta transferencias de saldos asociados
+		List<MZOrdenPagoLin> pagoLinTransferList = this.getTransferSaldos();
+		m_processMsg = this.afectarTransferSaldos(pagoLinTransferList);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
 		// Afecta resguardos asociados
 		List<MZOrdenPagoLin> pagoLinResgList = this.getResguardos();
 		m_processMsg = this.afectarResguardos(pagoLinResgList);
@@ -405,6 +412,60 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 								 " z_ordenpago_id =" + this.get_ID() +
 								 " where c_invoice_id =" + pagoLin.getC_Invoice_ID();
 					}
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Afecta transferencias de saldos afectadas en esta orden de pago
+	 * Xpande. Created by Gabriel Vila on 3/14/19.
+	 * @return
+	 */
+	private String afectarTransferSaldos(List<MZOrdenPagoLin> pagoLinList) {
+
+		String message = null;
+
+		try{
+			for (MZOrdenPagoLin pagoLin: pagoLinList){
+				if (pagoLin.getZ_TransferSaldo_ID() > 0){
+
+					BigDecimal amtAllocation = pagoLin.getAmtAllocation();
+					if (amtAllocation.compareTo(Env.ZERO) < 0){
+						amtAllocation = amtAllocation.negate();
+					}
+
+					// Afecta cada comprobante por el monto de afectación
+					MZTransferAfectacion transferAfecta = new MZTransferAfectacion(getCtx(), 0, get_TrxName());
+					transferAfecta.setZ_OrdenPago_ID(this.get_ID());
+					transferAfecta.setAD_Table_ID(this.get_Table_ID());
+					transferAfecta.setAmtAllocation(amtAllocation);
+					transferAfecta.setC_DocType_ID(this.getC_DocType_ID());
+					transferAfecta.setZ_TransferSaldo_ID(pagoLin.getZ_TransferSaldo_ID());
+					transferAfecta.setDateDoc(this.getDateDoc());
+					transferAfecta.setDocumentNoRef(this.getDocumentNo());
+					transferAfecta.setDueDate(pagoLin.getDueDateDoc());
+					transferAfecta.setRecord_ID(this.get_ID());
+					transferAfecta.setC_Currency_ID(pagoLin.getC_Currency_ID());
+					transferAfecta.setAD_Org_ID(this.getAD_Org_ID());
+					transferAfecta.saveEx();
+
+					// Marca transferencia de saldo como paga
+					MZTransferSaldo transferSaldo = (MZTransferSaldo) pagoLin.getZ_TransferSaldo();
+					transferSaldo.setIsPaid(true);
+					transferSaldo.saveEx();
+
+					// Afecto estado de cuenta de esta transferencia de saldo
+					String action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "', " +
+										" z_ordenpago_id =" + this.get_ID() +
+										" where z_transfersaldo_id =" + pagoLin.getZ_TransferSaldo_ID();
 					DB.executeUpdateEx(action, get_TrxName());
 				}
 			}
@@ -634,6 +695,22 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 	}
 
 
+	/***
+	 * Obtiene y retorna lineas de orden de pago que se corresponden a transferencias de saldos.
+	 * Xpande. Created by Gabriel Vila on 3/14/19.
+	 * @return
+	 */
+	public List<MZOrdenPagoLin> getTransferSaldos(){
+
+		String whereClause = X_Z_OrdenPagoLin.COLUMNNAME_Z_OrdenPago_ID + " =" + this.get_ID() +
+				" AND " + X_Z_OrdenPagoLin.COLUMNNAME_Z_TransferSaldo_ID + " is not null ";
+
+		List<MZOrdenPagoLin> lines = new Query(getCtx(), I_Z_OrdenPagoLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -842,6 +919,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			// Anulo afectacion de invoices
 			List<MZOrdenPagoLin> pagoLinInvList = this.getInvoices();
 			for (MZOrdenPagoLin pagoLin: pagoLinInvList){
+
 				if (pagoLin.getC_Invoice_ID() > 0){
 
 					// Marca invoice como no paga
@@ -869,6 +947,29 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 						action = " update z_estadocuenta set referenciapago = null, z_ordenpago_id = null " +
 								" where c_invoice_id =" + pagoLin.getC_Invoice_ID();
 					}
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+			}
+
+			// Anulo afectacion de transferencias de saldos
+			List<MZOrdenPagoLin> pagoLinTransferList = this.getTransferSaldos();
+			for (MZOrdenPagoLin pagoLin: pagoLinTransferList){
+
+				if (pagoLin.getZ_TransferSaldo_ID() > 0){
+
+					// Marca transferencia de saldo como no paga
+					MZTransferSaldo transferSaldo = (MZTransferSaldo) pagoLin.getZ_TransferSaldo();
+					transferSaldo.setIsPaid(false);
+					transferSaldo.saveEx();
+
+					// Anulo afectacion para esta transferencia de saldo
+					action = " delete from z_transferafectacion where z_ordenpago_id =" + this.get_ID() +
+								" and z_transfersaldo_id =" + pagoLin.getZ_TransferSaldo_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+
+					// Anulo afectación en estado de cuenta para esta transferencia de saldo y orden de pago
+					action = " update z_estadocuenta set referenciapago = null, z_ordenpago_id = null " +
+								" where z_transfersaldo_id =" + pagoLin.getZ_TransferSaldo_ID();
 					DB.executeUpdateEx(action, get_TrxName());
 				}
 			}

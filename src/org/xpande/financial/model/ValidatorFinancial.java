@@ -89,9 +89,6 @@ public class ValidatorFinancial implements ModelValidator {
                     return message;
                 }
 
-
-                /*
-
                 // Para comprobantes de compra, valido que no este asociado a una orden de pago.
                 message = this.validateInvoiceOrdenPago(model);
                 if (message != null){
@@ -104,19 +101,33 @@ public class ValidatorFinancial implements ModelValidator {
                 if (message != null){
                     return message;
                 }
-
-                */
-
             }
 
         }
 
         else if ((timing == TIMING_AFTER_REACTIVATE) || (timing == TIMING_AFTER_VOID)){
 
-            // Al momento de reactivar o anular, debo eliminar invoice del estado de cuenta
+            // Para comprobantes de compra
             if (!model.isSOTrx()){
+
+                // Elimino datos en el estado de cuenta
                 action = " delete from z_estadocuenta where c_invoice_id =" + model.get_ID();
                 DB.executeUpdateEx(action, model.get_TrxName());
+
+                // Si existe, anulo y elimino documento de Transferencia de Saldos asociado.
+                if (model.get_ValueAsBoolean("TransferSaldo")){
+                    String sql = " select z_transfersaldo_id from z_transfersaldo where c_invoice_id =" + model.get_ID();
+                    int transferSaldoID = DB.getSQLValueEx(model.get_TrxName(), sql);
+                    if (transferSaldoID > 0){
+                        MZTransferSaldo transferSaldo = new MZTransferSaldo(model.getCtx(), transferSaldoID, model.get_TrxName());
+                        if (!transferSaldo.processIt(DocAction.ACTION_Void)){
+                            message = transferSaldo.getProcessMsg();
+                            return message;
+                        }
+                        transferSaldo.saveEx();
+                        transferSaldo.deleteEx(true);
+                    }
+                }
             }
         }
 

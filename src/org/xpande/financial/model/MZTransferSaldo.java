@@ -18,8 +18,10 @@ package org.xpande.financial.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -292,7 +294,46 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 	public boolean voidIt()
 	{
 		log.info("voidIt - " + toString());
-		return closeIt();
+
+		// Before Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		// Valido que no este asociado a una orden de pago.
+		m_processMsg = this.validateInOrdenPago();
+		if (m_processMsg != null){
+			return false;
+		}
+
+		// Valido que no este asociado a un pago.
+		m_processMsg = this.validateInPago();
+		if (m_processMsg != null){
+			return false;
+		}
+
+		// Control de período contable
+		MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
+
+		// Elimino asientos contables
+		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+		// Desafecto documentos asociados a este documento
+		m_processMsg = this.desafectarDocumentos();
+		if (m_processMsg != null)
+			return false;
+
+		// After Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(true);
+		this.setDocStatus(DOCSTATUS_Voided);
+		this.setDocAction(DOCACTION_None);
+
+		return true;
+
 	}	//	voidIt
 	
 	/**
@@ -419,6 +460,7 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 
 			MDocType docTypeTarget = (MDocType) this.getC_DocTypeTarget();
 			MDocType docType = (MDocType) this.getC_DocType();
+			MBPartner partner = new MBPartner(getCtx(), this.getC_BPartnerRelation_ID(), null);
 
 			// Impacto documento en estado de cuenta  (se comporta como una invoice)
 			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
@@ -460,7 +502,11 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 			estadoCuenta.setDocBaseType(docType.getDocBaseType());
 			estadoCuenta.setDocumentNoRef(this.getDocumentNo());
 			estadoCuenta.setDueDate(dueDate);
+			if ((partner != null) && (partner.get_ID() > 0)){
+				estadoCuenta.setReferenciaPago(partner.getName());
+			}
 			estadoCuenta.setIsSOTrx(this.isSOTrx());
+			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
 			estadoCuenta.setRecord_ID(this.get_ID());
 			estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
 			estadoCuenta.saveEx();
@@ -497,10 +543,62 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 			invoiceAfecta.setZ_TransferSaldo_ID(this.get_ID());
 			invoiceAfecta.saveEx();
 
+			// Actualizo linea de estado de cuento original de la invoice
 			String action = " update z_estadocuenta set referenciapago ='TRANSF.SALDO " + this.getDocumentNo() + "', " +
 							" z_transfersaldo_id =" + this.get_ID() +
 							" where c_invoice_id =" + this.getC_Invoice_ID();
 			DB.executeUpdateEx(action, get_TrxName());
+
+
+			// Impacto linea en estado de cuenta para bajar la deuda del socio de negocio de la invoice
+			MDocType docTypeTarget = (MDocType) this.getC_DocTypeTarget();
+			MDocType docType = (MDocType) this.getC_DocType();
+			MBPartner partner = (MBPartner) this.getC_BPartner();
+			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
+			estadoCuenta.setZ_TransferSaldo_ID(this.get_ID());
+
+			if (!this.isSOTrx()){
+
+				if (docTypeTarget.getDocBaseType().equalsIgnoreCase("API")){
+					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
+					estadoCuenta.setAmtSourceCr(Env.ZERO);
+				}
+				else if (docTypeTarget.getDocBaseType().equalsIgnoreCase("APC")){
+					estadoCuenta.setAmtSourceDr(Env.ZERO);
+					estadoCuenta.setAmtSourceCr(this.getGrandTotal());
+				}
+				else{
+					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
+					estadoCuenta.setAmtSourceCr(Env.ZERO);
+				}
+			}
+			else{
+				if (docTypeTarget.getDocBaseType().equalsIgnoreCase("ARC")){
+					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
+					estadoCuenta.setAmtSourceCr(Env.ZERO);
+				}
+				else if (docTypeTarget.getDocBaseType().equalsIgnoreCase("ARI")){
+					estadoCuenta.setAmtSourceCr(Env.ZERO);
+					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
+				}
+				else{
+					estadoCuenta.setAmtSourceCr(Env.ZERO);
+					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
+				}
+			}
+			estadoCuenta.setC_BPartner_ID(this.getC_BPartnerRelation_ID());
+			estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
+			estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
+			estadoCuenta.setDateDoc(this.getDateDoc());
+			estadoCuenta.setDocBaseType(docType.getDocBaseType());
+			estadoCuenta.setDocumentNoRef(this.getDocumentNo());
+			estadoCuenta.setDueDate(dueDate);
+			estadoCuenta.setIsSOTrx(this.isSOTrx());
+			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
+			estadoCuenta.setRecord_ID(this.get_ID());
+			estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
+			estadoCuenta.setReferenciaPago(partner.getName());
+			estadoCuenta.saveEx();
 
 		}
 		catch (Exception e){
@@ -557,6 +655,127 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+	/***
+	 * Al anular o reactivar un documento debo desasociar la invoice referenciada.
+	 * Xpande. Created by Gabriel Vila on 3/14/19.
+	 * @return
+	 */
+	private String desafectarDocumentos() {
+
+		String message = null;
+		String action = "";
+
+		try{
+
+			// Elimino Afectacion de invoices
+			action = " delete from z_invoiceafectacion where z_transfersaldo_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+			action = " update z_estadocuenta set referenciapago = null, z_transfersaldo_id = null " +
+					" where c_invoice_id =" + this.getC_Invoice_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+			// Desasocio info en estado de cuenta para este documento
+			action = " delete from z_estadocuenta where z_transfersaldo_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+	/***
+	 * Valida si este documento esta asociado a un documento de Orden de Pago
+	 * Xpande. Created by Gabriel Vila on 3/14/19.
+	 * @return
+	 */
+	private String validateInOrdenPago() {
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			sql = " select pl.z_transfersaldo_id, p.documentno, p.docstatus " +
+					" from z_ordenpagolin pl " +
+					" inner join z_ordenpago p on pl.z_ordenpago_id = p.z_ordenpago_id " +
+					" where pl.z_transfersaldo_id =" + this.get_ID() +
+					" and p.docstatus != 'VO' ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			if (rs.next()){
+				message = " Este comprobante esta asociado a la Orden de Pago : " + rs.getString("documentno") +
+						" (Estado Documento = " + rs.getString("docstatus") + ")";
+			}
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Valida si este documento esta asociado a un documento de Pago / Cobro
+	 * Xpande. Created by Gabriel Vila on 3/14/19.
+	 * @return
+	 */
+	private String validateInPago() {
+
+		String message = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			sql = " select pl.z_transfersaldo_id, p.documentno, p.docstatus " +
+					" from z_pagolin pl " +
+					" inner join z_pago p on pl.z_pago_id = p.z_pago_id " +
+					" where pl.z_transfersaldo_id =" + this.get_ID() +
+					" and pl.IsSelected ='Y' " +
+					" and p.docstatus != 'VO' ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			if (rs.next()){
+				if (this.isSOTrx()){
+					message = " Este comprobante esta asociado al Cobro : " + rs.getString("documentno") +
+							" (Estado Documento = " + rs.getString("docstatus") + ")";
+				}
+				else{
+					message = " Este comprobante esta asociado al Pago : " + rs.getString("documentno") +
+							" (Estado Documento = " + rs.getString("docstatus") + ")";
+				}
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
 		}
 
 		return message;

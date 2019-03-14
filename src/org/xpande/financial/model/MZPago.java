@@ -283,8 +283,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			}
 		}
 
-		// Afecta invoices asociadas a este pago/cobro.
-		m_processMsg = this.afectarInvoices(pagoLinList);
+		// Afecta documentos asociadas a este pago/cobro.
+		m_processMsg = this.afectarDocumentosLineas(pagoLinList);
 		if (m_processMsg != null){
 			return DocAction.STATUS_Invalid;
 		}
@@ -537,6 +537,21 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and z_ordenpago_id is null ";
 			DB.executeUpdateEx(action, get_TrxName());
 
+			// Desasocio transferencias de saldo cuando es un pago sin ordenes de pago asociadas o cuando es un cobro
+			if ((this.isSOTrx()) || ((!this.isSOTrx()) && (!this.isTieneOrdenPago()))){
+				action = " update z_transfersaldo set ispaid ='N' where z_transfersaldo_id in " +
+						" (select z_transfersaldo_id from z_pagolin where z_pago_id =" + this.get_ID() + ")";
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+
+			// Elimino Afectacion de Transferencias de saldo
+			action = " update z_transferfectacion set z_pago_id = null where z_pago_id =" + this.get_ID() +
+					 " and z_ordenpago_id is not null ";
+			DB.executeUpdateEx(action, get_TrxName());
+
+			action = " delete from z_transferfectacion where z_pago_id =" + this.get_ID() +
+					" and z_ordenpago_id is null ";
+			DB.executeUpdateEx(action, get_TrxName());
 
 			List<MZPagoLin> pagoLinList = this.getSelectedLines();
 			for (MZPagoLin pagoLin: pagoLinList){
@@ -571,6 +586,27 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 							DB.executeUpdateEx(action, get_TrxName());
 						}
 					}
+				}
+				else if (pagoLin.getZ_TransferSaldo_ID() > 0){
+
+					// Desafecto estado de cuenta de esta transferencia de saldo cuando es cobro o es un pago que no esta referenciando ordenes de pago.
+					if (!this.isTieneOrdenPago()){
+
+						action = " update z_estadocuenta set referenciapago = null, z_pago_id = null " +
+								" where z_transfersaldo_id =" + pagoLin.getZ_TransferSaldo_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+					}
+					else{
+						MZOrdenPago ordenPago = (MZOrdenPago) pagoLin.getZ_OrdenPago();
+						if ((ordenPago != null) && (ordenPago.get_ID() > 0)){
+
+							action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "', " +
+									" z_ordenpago_id =" + ordenPago.get_ID() +
+									" where z_transfersaldo_id =" + pagoLin.getZ_TransferSaldo_ID();
+							DB.executeUpdateEx(action, get_TrxName());
+						}
+					}
+
 				}
 			}
 
@@ -777,6 +813,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				return message;
 			}
 
+			// Obtengo transferencias de saldos a considerar y genero lineas
+			message = this.getTransferSaldos(hashCurrency);
+			if (message != null){
+				return message;
+			}
+
 			// En caso de documentos de PAGO, obtengo resguardos a considerar y genero lineas
 			if (!this.isSOTrx()){
 				message = this.getResguardos(hashCurrency);
@@ -963,6 +1005,109 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			}
 
 
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Obtiene transferencias de saldos a considerar y genera lineas por cada uno de ellos.
+	 * Xpande. Created by Gabriel Vila on 3/14/19.
+	 * @return
+	 */
+	private String getTransferSaldos(HashMap<Integer, Integer> hashCurrency){
+
+		String message = null;
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			String whereClause = "";
+
+			// Filtros de fechas
+			if (this.getDateEmittedFrom() != null){
+				whereClause = " AND hdr.DateDoc >='" + this.getDateEmittedFrom() + "' ";
+			}
+			if (this.getDateEmittedTo() != null){
+				whereClause = " AND hdr.DateDoc <='" + this.getDateEmittedTo() + "' ";
+			}
+
+			// Filtros de monedas
+			String filtroMonedas = "";
+			if (this.getC_Currency_ID_To() > 0){
+				filtroMonedas = " AND hdr.c_currency_id =" + this.getC_Currency_ID_To();
+			}
+			whereClause += filtroMonedas;
+
+			// Query
+			sql = " select hdr.c_bpartner_id, hdr.z_transfersaldo_id, hdr.c_invoice_id, hdr.c_doctype_id, hdr.documentno, " +
+					" hdr.datedoc, hdr.c_currency_id, hdr.grandtotal, " +
+					" iop.amtopen, doc.docbasetype " +
+					" from z_transfersaldo hdr " +
+					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
+					" inner join c_doctype doc on hdr.c_doctype_id = doc.c_doctype_id " +
+					" inner join zv_financial_tsopen iop on hdr.z_transfersaldo_id = iop.z_transfersaldo_id " +
+					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
+					" and hdr.ad_org_id =" + this.getAD_Org_ID() +
+					" and hdr.c_bpartner_id =" + this.getC_BPartner_ID() +
+					" and hdr.issotrx='" + ((this.isSOTrx()) ? "Y":"N") + "' " +
+					" and hdr.docstatus='CO' " +
+					" and iop.amtopen > 0 " +
+					" and hdr.z_transfersaldo_id not in (select z_transfersaldo_id from z_pagolin " +
+					" where z_transfersaldo_id is not null " +
+					" and z_pago_id =" + this.get_ID() + ") " +
+					whereClause +
+					" order by hdr.datedoc ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				// Obtengo fecha de vencimiento de la invoice referenciada por este documento de transferencia de saldo
+				// Fecha de Vencimiento de esta invoice, directamente de termino de pago
+				sql = " select paymentTermDueDate(C_PaymentTerm_ID, DateInvoiced) as DueDate " +
+						" from c_invoice " +
+						" where c_invoice_id =" + rs.getInt("c_invoice_id");
+				Timestamp dueDate = DB.getSQLValueTSEx(get_TrxName(), sql);
+				if (dueDate == null){
+					dueDate = rs.getTimestamp("datedoc");
+				}
+
+				BigDecimal amtDocument = rs.getBigDecimal("grandtotal");
+				BigDecimal amtOpen = rs.getBigDecimal("amtopen");
+
+				MZPagoLin pagoLin = new MZPagoLin(getCtx(), 0, get_TrxName());
+				pagoLin.setZ_Pago_ID(this.get_ID());
+				pagoLin.setAmtDocument(amtDocument);
+				pagoLin.setAmtOpen(amtOpen);
+				pagoLin.setAmtAllocation(amtOpen);
+				pagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
+				pagoLin.setC_DocType_ID(rs.getInt("c_doctype_id"));
+				pagoLin.setDateDoc(rs.getTimestamp("datedoc"));
+				pagoLin.setDueDateDoc(dueDate);
+				pagoLin.setDocumentNoRef(rs.getString("documentno"));
+				pagoLin.setEstadoAprobacion("APROBADO");
+				pagoLin.setZ_TransferSaldo_ID(rs.getInt("z_transfersaldo_id"));
+				pagoLin.setResguardoEmitido(false);
+
+				pagoLin.saveEx();
+
+				// Guardo moneda en hash si aún no la tengo
+				if (!hashCurrency.containsKey(pagoLin.getC_Currency_ID())){
+					hashCurrency.put(pagoLin.getC_Currency_ID(), pagoLin.getC_Currency_ID());
+				}
+			}
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
@@ -1242,7 +1387,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				// Instancio modelo de orden de pago y cargo documentos afectados, medios de pago y resguardos contenidos en esta orden
 				MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
 
-				// Cargo documentos afectados por la orden
+				// Cargo documentos de invoices afectados por la orden
 				List<MZOrdenPagoLin> invList = ordenPago.getInvoices();
 				for (MZOrdenPagoLin ordenPagoLin: invList){
 					MZPagoLin pagoLin = new MZPagoLin(getCtx(), 0, get_TrxName());
@@ -1264,6 +1409,28 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					if (ordenPagoLin.getC_InvoicePaySchedule_ID() > 0){
 						pagoLin.setC_InvoicePaySchedule_ID(ordenPagoLin.getC_InvoicePaySchedule_ID());
 					}
+					pagoLin.saveEx();
+				}
+
+				// Cargo documentos de transferencias de saldos afectados por la orden
+				List<MZOrdenPagoLin> transferList = ordenPago.getTransferSaldos();
+				for (MZOrdenPagoLin ordenPagoLin: transferList){
+					MZPagoLin pagoLin = new MZPagoLin(getCtx(), 0, get_TrxName());
+					pagoLin.setZ_Pago_ID(this.get_ID());
+					pagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocationMT());
+					pagoLin.setAmtAllocation(ordenPagoLin.getAmtAllocation());
+					pagoLin.setMultiplyRate(ordenPagoLin.getMultiplyRate());
+					pagoLin.setAmtDocument(ordenPagoLin.getAmtDocument());
+					pagoLin.setAmtOpen(ordenPagoLin.getAmtOpen());
+					pagoLin.setC_Currency_ID(ordenPagoLin.getC_Currency_ID());
+					pagoLin.setC_DocType_ID(ordenPagoLin.getC_DocType_ID());
+					pagoLin.setZ_TransferSaldo_ID(ordenPagoLin.getZ_TransferSaldo_ID());
+					pagoLin.setDateDoc(ordenPagoLin.getDateDoc());
+					pagoLin.setDocumentNoRef(ordenPagoLin.getDocumentNoRef());
+					pagoLin.setDueDateDoc(ordenPagoLin.getDueDateDoc());
+					pagoLin.setEstadoAprobacion(X_Z_PagoLin.ESTADOAPROBACION_APROBADO);
+					pagoLin.setIsSelected(true);
+					pagoLin.setZ_OrdenPago_ID(ordenPago.get_ID());
 					pagoLin.saveEx();
 				}
 
@@ -1673,12 +1840,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 
 	/***
-	 * Afecta invoices asociadas a este documento de pago/cobro.
+	 * Afecta documentos asociadas a este documento de pago/cobro.
 	 * Xpande. Created by Gabriel Vila on 3/8/18.
 	 * @param pagoLinList
 	 * @return
 	 */
-	private String afectarInvoices(List<MZPagoLin> pagoLinList) {
+	private String afectarDocumentosLineas(List<MZPagoLin> pagoLinList) {
 
 		String message = null;
 		String action = "";
@@ -1694,6 +1861,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			for (MZPagoLin pagoLin: pagoLinList){
 
 				if (pagoLin.getC_Invoice_ID() > 0){
+
 					// Afecta cada comprobante por el monto de afectación
 					MZInvoiceAfectacion invoiceAfecta = null;
 
@@ -1752,6 +1920,55 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 									 " z_pago_id =" + this.get_ID() +
 									 " where c_invoice_id =" + pagoLin.getC_Invoice_ID();
 						}
+						DB.executeUpdateEx(action, get_TrxName());
+					}
+				}
+				else if (pagoLin.getZ_TransferSaldo_ID() > 0){
+
+					// Afecta cada comprobante por el monto de afectación
+					MZTransferAfectacion transferAfecta = null;
+
+					// Si tengo orden de pago asociada, busco afectación de la transferencia de saldo para esta orden de pago y le actualizo el campo ID de pago.
+					// Esto es porque ya esta afectado.
+					if (pagoLin.getZ_OrdenPago_ID() > 0){
+						transferAfecta = MZTransferAfectacion.getByTransferOrdenPago(getCtx(), pagoLin.getZ_TransferSaldo_ID(), pagoLin.getZ_OrdenPago_ID(), get_TrxName());
+					}
+
+					if (transferAfecta == null){
+
+						BigDecimal amtAllocation = pagoLin.getAmtAllocation();
+						if (amtAllocation.compareTo(Env.ZERO) < 0){
+							amtAllocation = amtAllocation.negate();
+						}
+
+						transferAfecta = new MZTransferAfectacion(getCtx(), 0, get_TrxName());
+						transferAfecta.setAD_Table_ID(this.get_Table_ID());
+						transferAfecta.setAmtAllocation(amtAllocation);
+						transferAfecta.setC_DocType_ID(this.getC_DocType_ID());
+						transferAfecta.setZ_TransferSaldo_ID(pagoLin.getZ_TransferSaldo_ID());
+						transferAfecta.setDateDoc(this.getDateDoc());
+						transferAfecta.setDocumentNoRef(documentNoRef);
+						transferAfecta.setDueDate(pagoLin.getDueDateDoc());
+						transferAfecta.setRecord_ID(this.get_ID());
+						transferAfecta.setC_Currency_ID(pagoLin.getC_Currency_ID());
+						transferAfecta.setAD_Org_ID(this.getAD_Org_ID());
+					}
+					transferAfecta.setZ_Pago_ID(this.get_ID());
+					transferAfecta.saveEx();
+
+					// Me aseguro marca de documento de transferencia de saldo como paga cuando no viene de ordenes de pago
+					if (!this.isTieneOrdenPago()){
+						MZTransferSaldo transferSaldo = (MZTransferSaldo) pagoLin.getZ_TransferSaldo();
+						transferSaldo.setIsPaid(true);
+						transferSaldo.saveEx();
+					}
+
+					// Afecto estado de cuenta de este documento de transferencia de saldo cuando es cobro o es un pago que no esta referenciando ordenes de pago.
+					if (!this.isTieneOrdenPago()){
+
+						action = " update z_estadocuenta set referenciapago ='RECIBO " + documentNoRef + "', " +
+								" z_pago_id =" + this.get_ID() +
+								" where z_transfersaldo_id =" + pagoLin.getZ_TransferSaldo_ID();
 						DB.executeUpdateEx(action, get_TrxName());
 					}
 				}
