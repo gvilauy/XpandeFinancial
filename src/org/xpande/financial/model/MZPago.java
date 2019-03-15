@@ -545,11 +545,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			}
 
 			// Elimino Afectacion de Transferencias de saldo
-			action = " update z_transferfectacion set z_pago_id = null where z_pago_id =" + this.get_ID() +
+			action = " update z_transferafectacion set z_pago_id = null where z_pago_id =" + this.get_ID() +
 					 " and z_ordenpago_id is not null ";
 			DB.executeUpdateEx(action, get_TrxName());
 
-			action = " delete from z_transferfectacion where z_pago_id =" + this.get_ID() +
+			action = " delete from z_transferafectacion where z_pago_id =" + this.get_ID() +
 					" and z_ordenpago_id is null ";
 			DB.executeUpdateEx(action, get_TrxName());
 
