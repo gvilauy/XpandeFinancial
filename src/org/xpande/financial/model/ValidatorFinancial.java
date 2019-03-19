@@ -81,38 +81,38 @@ public class ValidatorFinancial implements ModelValidator {
         if ((timing == TIMING_BEFORE_REACTIVATE) || (timing == TIMING_BEFORE_VOID)){
 
             // Antes de reactivar o anular valido que esta invoice no tengo movimientos posteriores
-            if (!model.isSOTrx()){
+            if (!model.isSOTrx()) {
 
                 // Para comprobantes de compra, valido que no este asociado a un resguardo.
                 message = this.validateInvoiceResguardo(model);
-                if (message != null){
+                if (message != null) {
                     return message;
                 }
 
                 // Para comprobantes de compra, valido que no este asociado a una orden de pago.
                 message = this.validateInvoiceOrdenPago(model);
-                if (message != null){
+                if (message != null) {
                     return message;
                 }
 
+            }
 
-                // Para comprobantes de compra, valido que no este asociado a un pago.
-                message = this.validateInvoicePago(model);
-                if (message != null){
-                    return message;
-                }
+            // Para comprobantes de compra o venta, valido que no este asociado a un pago / cobro.
+            message = this.validateInvoicePago(model);
+            if (message != null){
+                return message;
             }
 
         }
 
         else if ((timing == TIMING_AFTER_REACTIVATE) || (timing == TIMING_AFTER_VOID)){
 
+            // Elimino datos en el estado de cuenta
+            action = " delete from z_estadocuenta where c_invoice_id =" + model.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
+
             // Para comprobantes de compra
             if (!model.isSOTrx()){
-
-                // Elimino datos en el estado de cuenta
-                action = " delete from z_estadocuenta where c_invoice_id =" + model.get_ID();
-                DB.executeUpdateEx(action, model.get_TrxName());
 
                 // Si existe, anulo y elimino documento de Transferencia de Saldos asociado.
                 if (model.get_ValueAsBoolean("TransferSaldo")){

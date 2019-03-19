@@ -50,6 +50,9 @@ public class SaldoPendienteRP extends SvrProcess {
                         this.saldoPendProcessor.cCurrencyID = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
                 }
+                else if (name.trim().equalsIgnoreCase("TieneAcct")) {
+                    this.saldoPendProcessor.tieneAcct = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
+                }
                 else if (name.trim().equalsIgnoreCase("TipoFiltroFecha")){
                     this.saldoPendProcessor.tipoFecha = (String)para[i].getParameter();
                 }
@@ -59,8 +62,8 @@ public class SaldoPendienteRP extends SvrProcess {
                 else if (name.trim().equalsIgnoreCase("DateDoc")){
                     this.saldoPendProcessor.endDate = (Timestamp)para[i].getParameter();
                 }
-                else if (name.trim().equalsIgnoreCase("SinMovConSaldo")) {
-                    this.saldoPendProcessor.sinMovConSaldoIni = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
+                else if (name.trim().equalsIgnoreCase("TipoConceptoDoc")) {
+                    this.saldoPendProcessor.tipoConceptoDoc = (String)para[i].getParameter();
                 }
                 else if (name.trim().equalsIgnoreCase("RP_Titulo")){
                     paramTituloReporte = para[i];
