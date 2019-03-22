@@ -33,7 +33,7 @@ public class X_Z_OrdenPagoMedio extends PO implements I_Z_OrdenPagoMedio, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171006L;
+	private static final long serialVersionUID = 20190319L;
 
     /** Standard Constructor */
     public X_Z_OrdenPagoMedio (Properties ctx, int Z_OrdenPagoMedio_ID, String trxName)
@@ -43,6 +43,20 @@ public class X_Z_OrdenPagoMedio extends PO implements I_Z_OrdenPagoMedio, I_Pers
         {
 			setC_BankAccount_ID (0);
 			setC_Currency_ID (0);
+			setTieneBanco (false);
+// N
+			setTieneCaja (false);
+// N
+			setTieneCtaBco (true);
+// Y
+			setTieneFecEmi (false);
+// N
+			setTieneFecVenc (false);
+// N
+			setTieneFolio (false);
+// N
+			setTieneNroRef (false);
+// N
 			setTotalAmt (Env.ZERO);
 			setZ_MedioPago_ID (0);
 			setZ_OrdenPago_ID (0);
@@ -106,6 +120,34 @@ public class X_Z_OrdenPagoMedio extends PO implements I_Z_OrdenPagoMedio, I_Pers
 		return ii.intValue();
 	}
 
+	public I_C_Bank getC_Bank() throws RuntimeException
+    {
+		return (I_C_Bank)MTable.get(getCtx(), I_C_Bank.Table_Name)
+			.getPO(getC_Bank_ID(), get_TrxName());	}
+
+	/** Set Bank.
+		@param C_Bank_ID 
+		Bank
+	  */
+	public void setC_Bank_ID (int C_Bank_ID)
+	{
+		if (C_Bank_ID < 1) 
+			set_Value (COLUMNNAME_C_Bank_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Bank_ID, Integer.valueOf(C_Bank_ID));
+	}
+
+	/** Get Bank.
+		@return Bank
+	  */
+	public int getC_Bank_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Bank_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_C_BPartner getC_BPartner() throws RuntimeException
     {
 		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
@@ -129,6 +171,34 @@ public class X_Z_OrdenPagoMedio extends PO implements I_Z_OrdenPagoMedio, I_Pers
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_CashBook getC_CashBook() throws RuntimeException
+    {
+		return (I_C_CashBook)MTable.get(getCtx(), I_C_CashBook.Table_Name)
+			.getPO(getC_CashBook_ID(), get_TrxName());	}
+
+	/** Set Cash Book.
+		@param C_CashBook_ID 
+		Cash Book for recording petty cash transactions
+	  */
+	public void setC_CashBook_ID (int C_CashBook_ID)
+	{
+		if (C_CashBook_ID < 1) 
+			set_Value (COLUMNNAME_C_CashBook_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CashBook_ID, Integer.valueOf(C_CashBook_ID));
+	}
+
+	/** Get Cash Book.
+		@return Cash Book for recording petty cash transactions
+	  */
+	public int getC_CashBook_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_CashBook_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -211,6 +281,174 @@ public class X_Z_OrdenPagoMedio extends PO implements I_Z_OrdenPagoMedio, I_Pers
 	public Timestamp getDueDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DueDate);
+	}
+
+	/** Set TieneBanco.
+		@param TieneBanco 
+		Si requiere información de Banco o no
+	  */
+	public void setTieneBanco (boolean TieneBanco)
+	{
+		set_Value (COLUMNNAME_TieneBanco, Boolean.valueOf(TieneBanco));
+	}
+
+	/** Get TieneBanco.
+		@return Si requiere información de Banco o no
+	  */
+	public boolean isTieneBanco () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneBanco);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneCaja.
+		@param TieneCaja 
+		Si requiere o no una caja asociada
+	  */
+	public void setTieneCaja (boolean TieneCaja)
+	{
+		set_Value (COLUMNNAME_TieneCaja, Boolean.valueOf(TieneCaja));
+	}
+
+	/** Get TieneCaja.
+		@return Si requiere o no una caja asociada
+	  */
+	public boolean isTieneCaja () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneCaja);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneCtaBco.
+		@param TieneCtaBco 
+		Si requiere o no una cuenta bancaria asociada
+	  */
+	public void setTieneCtaBco (boolean TieneCtaBco)
+	{
+		set_Value (COLUMNNAME_TieneCtaBco, Boolean.valueOf(TieneCtaBco));
+	}
+
+	/** Get TieneCtaBco.
+		@return Si requiere o no una cuenta bancaria asociada
+	  */
+	public boolean isTieneCtaBco () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneCtaBco);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneFecEmi.
+		@param TieneFecEmi 
+		Si lleva o no Fecha de Emisión
+	  */
+	public void setTieneFecEmi (boolean TieneFecEmi)
+	{
+		set_Value (COLUMNNAME_TieneFecEmi, Boolean.valueOf(TieneFecEmi));
+	}
+
+	/** Get TieneFecEmi.
+		@return Si lleva o no Fecha de Emisión
+	  */
+	public boolean isTieneFecEmi () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneFecEmi);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneFecVenc.
+		@param TieneFecVenc 
+		Si lleva o no Fecha de Vencimiento
+	  */
+	public void setTieneFecVenc (boolean TieneFecVenc)
+	{
+		set_Value (COLUMNNAME_TieneFecVenc, Boolean.valueOf(TieneFecVenc));
+	}
+
+	/** Get TieneFecVenc.
+		@return Si lleva o no Fecha de Vencimiento
+	  */
+	public boolean isTieneFecVenc () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneFecVenc);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneFolio.
+		@param TieneFolio 
+		Si requiere o no un folio asociado de medios de pago
+	  */
+	public void setTieneFolio (boolean TieneFolio)
+	{
+		set_Value (COLUMNNAME_TieneFolio, Boolean.valueOf(TieneFolio));
+	}
+
+	/** Get TieneFolio.
+		@return Si requiere o no un folio asociado de medios de pago
+	  */
+	public boolean isTieneFolio () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneFolio);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneNroRef.
+		@param TieneNroRef 
+		Si requiere o no numero de referencia
+	  */
+	public void setTieneNroRef (boolean TieneNroRef)
+	{
+		set_Value (COLUMNNAME_TieneNroRef, Boolean.valueOf(TieneNroRef));
+	}
+
+	/** Get TieneNroRef.
+		@return Si requiere o no numero de referencia
+	  */
+	public boolean isTieneNroRef () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneNroRef);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Total Amount.

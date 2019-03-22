@@ -30,7 +30,7 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190122L;
+	private static final long serialVersionUID = 20190321L;
 
     /** Standard Constructor */
     public X_Z_FinancialConfig (Properties ctx, int Z_FinancialConfig_ID, String trxName)
@@ -38,6 +38,8 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
       super (ctx, Z_FinancialConfig_ID, trxName);
       /** if (Z_FinancialConfig_ID == 0)
         {
+			setControlaPagos (true);
+// Y
 			setValue (null);
 			setZ_FinancialConfig_ID (0);
         } */
@@ -70,6 +72,30 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set ControlaPagos.
+		@param ControlaPagos 
+		Si se controla o no pagos asociados a un determinado documento
+	  */
+	public void setControlaPagos (boolean ControlaPagos)
+	{
+		set_Value (COLUMNNAME_ControlaPagos, Boolean.valueOf(ControlaPagos));
+	}
+
+	/** Get ControlaPagos.
+		@return Si se controla o no pagos asociados a un determinado documento
+	  */
+	public boolean isControlaPagos () 
+	{
+		Object oo = get_Value(COLUMNNAME_ControlaPagos);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	public I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
     {

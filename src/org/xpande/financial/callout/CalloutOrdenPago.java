@@ -5,6 +5,7 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.MDocType;
 import org.compiere.util.Env;
+import org.xpande.financial.model.MZMedioPago;
 import org.xpande.financial.model.MZOrdenPago;
 import org.xpande.financial.model.X_Z_OrdenPagoMedio;
 import org.xpande.financial.model.X_Z_ResguardoSocio;
@@ -53,6 +54,40 @@ public class CalloutOrdenPago extends CalloutEngine {
 
                 mTab.setValue(X_Z_OrdenPagoMedio.COLUMNNAME_TotalAmt, amtMedioPago);
             }
+        }
+
+        return "";
+    }
+
+    /***
+     * Setea atributos asociados al medio de pago seleccionado en una orden de pago.
+     * Xpande. Created by Gabriel Vila on 3/19/19.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setOrdenPagoMPagoInfo(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        int zMedioPagoID = (Integer) value;
+
+        if (zMedioPagoID <= 0) return "";
+
+        MZMedioPago medioPago = new MZMedioPago(ctx, zMedioPagoID, null);
+
+        if ((medioPago != null) && (medioPago.get_ID() > 0)) {
+
+            mTab.setValue(X_Z_OrdenPagoMedio.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmi());
+            mTab.setValue(X_Z_OrdenPagoMedio.COLUMNNAME_TieneFecVenc, medioPago.isTieneFecVenc());
+            mTab.setValue(X_Z_OrdenPagoMedio.COLUMNNAME_TieneCtaBco, medioPago.isTieneCtaBco());
+            mTab.setValue(X_Z_OrdenPagoMedio.COLUMNNAME_TieneCaja, medioPago.isTieneCaja());
+            mTab.setValue(X_Z_OrdenPagoMedio.COLUMNNAME_TieneFolio, medioPago.isTieneFolio());
+            mTab.setValue(X_Z_OrdenPagoMedio.COLUMNNAME_TieneBanco, medioPago.isTieneBanco());
+            mTab.setValue(X_Z_OrdenPagoMedio.COLUMNNAME_TieneNroRef, medioPago.isTieneNroRef());
         }
 
         return "";

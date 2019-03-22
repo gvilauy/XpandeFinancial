@@ -1333,6 +1333,15 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                         ordenPagoMedio.setZ_MedioPago_ID(entry.getKey());
                         ordenPagoMedio.setZ_MedioPagoFolio_ID(this.getZ_MedioPagoFolio_ID());
                         ordenPagoMedio.setC_BPartner_ID(ordenPago.getC_BPartner_ID());
+
+                        MZMedioPago medioPago = (MZMedioPago) ordenPagoMedio.getZ_MedioPago();
+                        ordenPagoMedio.setTieneBanco(medioPago.isTieneBanco());
+                        ordenPagoMedio.setTieneCaja(medioPago.isTieneCaja());
+                        ordenPagoMedio.setTieneCtaBco(medioPago.isTieneCtaBco());
+                        ordenPagoMedio.setTieneFecEmi(medioPago.isTieneFecEmi());
+                        ordenPagoMedio.setTieneFecVenc(medioPago.isTieneFecVenc());
+                        ordenPagoMedio.setTieneFolio(medioPago.isTieneFolio());
+                        ordenPagoMedio.setTieneNroRef(medioPago.isTieneNroRef());
                         ordenPagoMedio.saveEx();
                     }
                 }

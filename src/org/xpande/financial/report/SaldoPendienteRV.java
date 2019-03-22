@@ -1,8 +1,5 @@
 package org.xpande.financial.report;
 
-import org.compiere.model.MClient;
-import org.compiere.model.MOrg;
-import org.compiere.model.MUser;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 
@@ -10,20 +7,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
- * Reporte de Saldos Pendientes con salida para JasperReports.
+ * Reporte de Saldos Pendientes con salida para ReportView.
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
- * Xpande. Created by Gabriel Vila on 3/15/19.
+ * Xpande. Created by Gabriel Vila on 3/19/19.
  */
-public class SaldoPendienteRP extends SvrProcess {
+public class SaldoPendienteRV extends SvrProcess {
 
     private SaldoPendiente saldoPendProcessor = new SaldoPendiente();
-
-    private ProcessInfoParameter paramTituloReporte = null;
-    private ProcessInfoParameter paramCompania = null;
-    private ProcessInfoParameter paramOrganizacion = null;
-    private ProcessInfoParameter paramMonedaReporte = null;
-    private ProcessInfoParameter paramFechaFin = null;
-    private ProcessInfoParameter paramUsuario = null;
 
     @Override
     protected void prepare() {
@@ -66,29 +56,10 @@ public class SaldoPendienteRP extends SvrProcess {
                 else if (name.trim().equalsIgnoreCase("TipoConceptoDoc")) {
                     this.saldoPendProcessor.tipoConceptoDoc = (String)para[i].getParameter();
                 }
-                else if (name.trim().equalsIgnoreCase("RP_Titulo")){
-                    paramTituloReporte = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_Compania")){
-                    paramCompania = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_Organizacion")){
-                    paramOrganizacion = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_Usuario")){
-                    paramUsuario = para[i];
-                }
-                else if (name.trim().equalsIgnoreCase("RP_EndDate")){
-                    paramFechaFin = para[i];
-                }
             }
         }
 
         this.saldoPendProcessor.adUserID = this.getAD_User_ID();
-
-        // Seteo parametros fijos del reporte Jasper
-        this.setParametrosRP();
-
     }
 
     @Override
@@ -101,45 +72,6 @@ public class SaldoPendienteRP extends SvrProcess {
         }
 
         return "OK";
-    }
-
-
-    /***
-     * Setea parametros del reporte.
-     * Xpande. Created by Gabriel Vila on 3/27/18.
-     */
-    private void setParametrosRP(){
-
-        if (paramTituloReporte != null){
-            if (this.saldoPendProcessor.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
-                paramTituloReporte.setParameter("Estado De Cuenta de Proveedores");
-            }
-            else if (this.saldoPendProcessor.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
-                paramTituloReporte.setParameter("Estado De Cuenta de Clientes");
-            }
-            else if (this.saldoPendProcessor.tipoSocioNegocio.equalsIgnoreCase("TODOS")){
-                paramTituloReporte.setParameter("Estado De Cuenta de Proveedores/Clientes");
-            }
-        }
-
-        if (paramCompania != null){
-            MClient client = new MClient(getCtx(), this.saldoPendProcessor.adClientID, null);
-            paramCompania.setParameter(client.getDescription());
-        }
-
-        if (paramOrganizacion != null){
-            MOrg org = new MOrg(getCtx(), this.saldoPendProcessor.adOrgID, null);
-            paramOrganizacion.setParameter(org.getName());
-        }
-
-        if (paramUsuario != null){
-            MUser user = new MUser(getCtx(), this.saldoPendProcessor.adUserID, null);
-            paramUsuario.setParameter(user.getName());
-        }
-
-        if (paramFechaFin != null){
-            paramFechaFin.setParameter(this.saldoPendProcessor.endDate);
-        }
     }
 
 }

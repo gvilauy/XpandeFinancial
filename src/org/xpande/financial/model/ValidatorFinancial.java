@@ -80,6 +80,11 @@ public class ValidatorFinancial implements ModelValidator {
 
         if ((timing == TIMING_BEFORE_REACTIVATE) || (timing == TIMING_BEFORE_VOID)){
 
+            MZFinancialConfig financialConfig = MZFinancialConfig.getDefault(model.getCtx(), null);
+            if (financialConfig == null){
+                return "Falta información de Configuración Financiera.";
+            }
+
             // Antes de reactivar o anular valido que esta invoice no tengo movimientos posteriores
             if (!model.isSOTrx()) {
 
@@ -90,19 +95,22 @@ public class ValidatorFinancial implements ModelValidator {
                 }
 
                 // Para comprobantes de compra, valido que no este asociado a una orden de pago.
-                message = this.validateInvoiceOrdenPago(model);
-                if (message != null) {
-                    return message;
+                if (financialConfig.isControlaPagos()){
+                    message = this.validateInvoiceOrdenPago(model);
+                    if (message != null) {
+                        return message;
+                    }
                 }
 
             }
 
             // Para comprobantes de compra o venta, valido que no este asociado a un pago / cobro.
-            message = this.validateInvoicePago(model);
-            if (message != null){
-                return message;
+            if (financialConfig.isControlaPagos()){
+                message = this.validateInvoicePago(model);
+                if (message != null){
+                    return message;
+                }
             }
-
         }
 
         else if ((timing == TIMING_AFTER_REACTIVATE) || (timing == TIMING_AFTER_VOID)){
