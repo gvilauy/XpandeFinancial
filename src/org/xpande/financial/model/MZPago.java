@@ -1232,23 +1232,26 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				}
 			}
 
-			// Verifico que la diferencia entre total del documento y medios a pagar este dentro de la tolerancia permitida
-			BigDecimal diferencia = this.getPayAmt().subtract(this.getTotalMediosPago());
-			if (diferencia.compareTo(Env.ZERO) != 0){
-				return "Hay diferencias entre el Total del Documento y el Total de Medios de Pago.";
-			}
+			// Cuando no es un documento de anticipo
+			if (!this.isAnticipo()){
+				// Verifico que la diferencia entre total del documento y medios a pagar este dentro de la tolerancia permitida
+				// Si no es anticipo.
+				BigDecimal diferencia = this.getPayAmt().subtract(this.getTotalMediosPago());
+				if (diferencia.compareTo(Env.ZERO) != 0){
+					return "Hay diferencias entre el Total del Documento y el Total de Medios de Pago.";
+				}
 
-			// Verifico que tenga lineas seleccionadas
-			if (pagoLinList.size() <= 0){
-				return "No hay Documentos seleccionados para afectar.";
+				// Verifico que tenga lineas seleccionadas
+				if (pagoLinList.size() <= 0){
+					return "No hay Documentos seleccionados para afectar.";
+				}
+
 			}
 
 			// Verifico que tenga medios de pago
 			if (medioPagoList.size() <= 0){
 				return "Debe indicar al menos un medio de pago.";
 			}
-
-
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);

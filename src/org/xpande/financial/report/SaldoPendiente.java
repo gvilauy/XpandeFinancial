@@ -94,7 +94,7 @@ public class SaldoPendiente {
                 this.getDataInvoices();
 
                 // Incluyo transferencias de saldo
-
+                this.getDataTransfSaldos();
 
                 // Incluyo anticipos a socios de negocio
 
@@ -194,6 +194,88 @@ public class SaldoPendiente {
         }
     }
 
+
+    /***
+     * Obtiene información de documentos de Transferencia de Saldo para el reporte.
+     * Xpande. Created by Gabriel Vila on 3/19/19.
+     */
+    private void getDataTransfSaldos(){
+
+        String sql = "", action = "";
+
+        try{
+
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, z_transfersaldo_id, c_invoicepayschedule_id, " +
+                    " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
+                    " amtdocument, amtopen, amtallocated,  " +
+                    " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, enddate, " +
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference) ";
+
+            String whereClauseAfecta = "";
+
+            String whereClause = " and a.ad_client_id =" + this.adClientID;
+
+            if (this.adOrgID > 0){
+                whereClause += " and a.ad_org_id =" + this.adOrgID;
+            }
+
+            if (this.cBPartnerID > 0){
+                whereClause += " and a.c_bpartner_id =" + this.cBPartnerID;
+            }
+
+            if (this.cCurrencyID > 0){
+                whereClause += " and a.c_currency_id =" + this.cCurrencyID;
+            }
+
+            if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+                whereClause += " and a.datedoc <='" + this.endDate + "'";
+                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
+            }
+            else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+                whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(inv.C_PaymentTerm_ID, inv.DateInvoiced)), a.datedoc) <='" + this.endDate + "' ";
+                whereClauseAfecta += " duedate <='" + this.endDate + "' ";
+            }
+            else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+                whereClause += " and a.datedoc <='" + this.endDate + "'";
+                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
+            }
+
+            if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
+                whereClause += " and a.issotrx ='Y'";
+            }
+            else if (this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
+                whereClause += " and a.issotrx ='N'";
+            }
+
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_transfersaldo_id, ips.c_invoicepayschedule_id, a.c_doctype_id, " +
+                    " a.documentno, a.c_currency_id, a.datedoc, " +
+                    " coalesce(coalesce(ips.duedate, paymentTermDueDate(inv.C_PaymentTerm_ID, inv.DateInvoiced)), a.datedoc)::timestamp without time zone as duedate, " +
+                    " a.datedoc, a.issotrx, doc.docbasetype, " +
+                    " coalesce(ips.dueamt, a.grandtotal) as amtdocument, coalesce(ips.dueamt, a.grandtotal) as amtopen, " +
+                    " case when ips.c_invoicepayschedule_id > 0 then " +
+                    " (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_transferafectacion " +
+                    " where " + whereClauseAfecta + " and c_invoicepayschedule_id = ips.c_invoicepayschedule_id) " +
+                    " else (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_transferfectacion " +
+                    " where " + whereClauseAfecta + " and z_transfersaldo_id = a.z_transfersaldo_id) end as amtallocated, " +
+                    this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
+                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
+                    this.adOrgID + ", 0, 'ABIERTA' " +
+                    " from z_transfersaldo a " +
+                    " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
+                    " inner join c_invoice inv on a.c_invoice_id = inv.c_invoice_id " +
+                    " left outer join c_invoicepayschedule ips on inv.c_invoice_id = ips.c_invoice_id " +
+                    " where a.docstatus ='CO' " + whereClause +
+                    " order by a.datedoc, a.c_bpartner_id ";
+
+            DB.executeUpdateEx(action + sql, null);
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+
     /***
      * Obtiene información de medios de pago emitidos pero no entregados para el reporte.
      * Xpande. Created by Gabriel Vila on 3/19/19.
@@ -204,7 +286,7 @@ public class SaldoPendiente {
 
         try{
 
-            // Incluyo invoices
+            // Incluyo medios de pago emitidos
             action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, " +
                     " z_mediopago_id, nromediopago, z_mediopagoitem_id, z_emisionmediopago_id, " +
                     " c_bankaccount_id, c_currency_id, datedoc, duedate, dateacct, issotrx, " +
@@ -342,95 +424,6 @@ public class SaldoPendiente {
             throw new AdempiereException(e);
         }
     }
-
-
-    private void updateData2(){
-
-        String sql = "", action = "";
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-
-        try{
-            sql = " select a.* " +
-                    " from " + TABLA_REPORTE + " a " +
-                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
-                    " where a.ad_user_id =" + this.adUserID +
-                    " order by a.issotrx, a.ad_org_id, a.c_currency_id, bp.name, a.tipoconceptodoc, a.datedoc, a.c_doctype_id ";
-
-            pstmt = DB.prepareStatement(sql, null);
-            rs = pstmt.executeQuery();
-
-            int cCurrencyIDAux = 0, cBpartnerIDAux = 0, adOrgIDAux= 0;
-            String isSOTrxAux = "-", tipoConceptoDoc = "-";
-
-            BigDecimal amtAcumulado = Env.ZERO;
-
-            while(rs.next()){
-
-                // Corte por issotrx, moneda y socio de negocio
-                if ((!rs.getString("issotrx").equalsIgnoreCase(isSOTrxAux))
-                        || (rs.getInt("ad_org_id") != adOrgIDAux)
-                        || (rs.getInt("c_currency_id") != cCurrencyIDAux)
-                        || (rs.getInt("c_bpartner_id") != cBpartnerIDAux)
-                        || (!rs.getString("tipoConceptoDoc").equalsIgnoreCase(tipoConceptoDoc))){
-
-                    cCurrencyIDAux = rs.getInt("c_currency_id");
-                    cBpartnerIDAux = rs.getInt("c_bpartner_id");
-                    adOrgIDAux = rs.getInt("ad_org_id");
-                    isSOTrxAux = rs.getString("issotrx");
-                    tipoConceptoDoc = rs.getString("tipoconceptodoc");
-
-                    amtAcumulado = Env.ZERO;
-                }
-
-                // Calculo y seto acumulado de esta linea en Tabla del Reporte para este ID
-                BigDecimal amtOpen = rs.getBigDecimal("amtOpen");
-                if (amtOpen == null) amtOpen = rs.getBigDecimal("amtDocument");
-
-                BigDecimal amtAllocated = rs.getBigDecimal("amtAllocated");
-                if (amtAllocated == null) amtAllocated = Env.ZERO;
-
-                BigDecimal amtSaldo = amtOpen.subtract(amtAllocated);
-
-                amtAcumulado = amtAcumulado.add(amtSaldo);
-
-                action = " update " + TABLA_REPORTE +
-                        " set amtOpen =" + amtSaldo + ", " +
-                        " amtacumulado =" + amtAcumulado +
-                        " where ad_user_id =" + this.adUserID;
-
-                if (rs.getInt("c_invoice_id") > 0){
-                    action = action + " and c_invoice_id =" + rs.getInt("c_invoice_id");
-                }
-                else if (rs.getInt("z_transfersaldo_id") > 0){
-                    action = action + " and z_transfersaldo_id =" + rs.getInt("z_transfersaldo_id");
-                }
-                else if (rs.getInt("z_pago_id") > 0){
-                    action = action + " and z_pago_id =" + rs.getInt("z_pago_id");
-                }
-                else if (rs.getInt("z_mediopagoitem_id") > 0){
-                    action = action + " and z_mediopagoitem_id =" + rs.getInt("z_mediopagoitem_id");
-                }
-
-                DB.executeUpdateEx(action, null);
-            }
-
-            // Elimino registros sin saldo pendiente
-            action = " delete from " + TABLA_REPORTE + " where ad_user_id =" + this.adUserID +
-                     " and amtopen = 0 ";
-            DB.executeUpdateEx(action, null);
-
-        }
-        catch (Exception e){
-            throw new AdempiereException(e);
-        }
-        finally {
-            DB.close(rs, pstmt);
-            rs = null; pstmt = null;
-        }
-
-    }
-
 
 
 }
