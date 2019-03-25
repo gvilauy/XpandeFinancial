@@ -362,6 +362,17 @@ public interface I_Z_GeneraOrdenPagoLin
 
 	public I_Z_MedioPago getZ_MedioPago() throws RuntimeException;
 
+    /** Column name Z_Pago_ID */
+    public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
+
+	/** Set Z_Pago ID	  */
+	public void setZ_Pago_ID(int Z_Pago_ID);
+
+	/** Get Z_Pago ID	  */
+	public int getZ_Pago_ID();
+
+	public I_Z_Pago getZ_Pago() throws RuntimeException;
+
     /** Column name Z_ResguardoSocio_ID */
     public static final String COLUMNNAME_Z_ResguardoSocio_ID = "Z_ResguardoSocio_ID";
 

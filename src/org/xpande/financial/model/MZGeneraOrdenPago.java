@@ -475,6 +475,12 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                 return message;
             }
 
+            // Obtengo anticipos a proveedores a considerar y genero lineas
+            message = this.getAnticipos();
+            if (message != null){
+                return message;
+            }
+
             // Obtengo resguardos a considerar y genero lineas
             message = this.getResguardos();
             if (message != null){
@@ -626,6 +632,164 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
         return message;
 
     }
+
+
+    /***
+     * Obtiene anticipos a proveedores a considerar y genera lineas por cada uno de ellos.
+     * Xpande. Created by Gabriel Vila on 3/24/19.
+     * @return
+     */
+    private String getAnticipos() {
+
+        String message = null;
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            // Medio de pago por defecto en caso que el socio no tengo medio de pago predeterminado.
+            MZMedioPago medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
+
+            String whereClause = "";
+
+            // Filtros de fechas
+            if (this.getDateEmittedFrom() != null){
+                whereClause = " AND hdr.DateDoc >='" + this.getDateEmittedFrom() + "' ";
+            }
+            if (this.getDateEmittedTo() != null){
+                whereClause += " AND hdr.DateDoc <='" + this.getDateEmittedTo() + "' ";
+            }
+
+            // Filtros de monedas
+            String filtroMonedas = " AND hdr.c_currency_id =" + this.getC_Currency_ID();
+            if (this.getC_Currency_2_ID() > 0){
+                filtroMonedas = " AND hdr.c_currency_id IN (" + this.getC_Currency_ID() + ", " + this.getC_Currency_2_ID() + ") ";
+            }
+            whereClause += filtroMonedas;
+
+            // Filtro de socios de negocio
+            String filtroSocios = this.getFiltroSocios();
+            if (filtroSocios != null){
+                whereClause += " AND " + filtroSocios;
+            }
+
+            // Filtro de Medio de Pago
+            if (this.getPaymentRulePO() != null){
+                whereClause += " AND bp.PaymentRulePo ='" + this.getPaymentRulePO() + "' ";
+            }
+
+            // Query
+            sql = " select hdr.c_bpartner_id, hdr.z_pago_id, hdr.c_doctype_id, hdr.documentno, " +
+                    " hdr.datedoc, hdr.c_currency_id, hdr.payamt, iop.amtopen, doc.docbasetype, bp.PaymentRulePo " +
+                    " from z_pago hdr " +
+                    " inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
+                    " inner join c_doctype doc on hdr.c_doctype_id = doc.c_doctype_id " +
+                    " inner join zv_financial_pagoopen iop on hdr.z_pago_id = iop.z_pago_id " +
+                    " where hdr.ad_client_id =" + this.getAD_Client_ID() +
+                    " and hdr.ad_org_id =" + this.getAD_Org_ID() +
+                    " and hdr.anticipo ='Y' " +
+                    " and hdr.issotrx ='N' " +
+                    " and hdr.docstatus='CO' " +
+                    " and iop.amtopen > 0 " +
+                    " and hdr.z_pago_id not in (select z_pago_id from z_generaordenpagolin " +
+                    " where z_pago_id is not null " +
+                    " and z_generaordenpago_id =" + this.get_ID() + ") " +
+                    " and hdr.z_pago_id not in (select z_pago_id from z_ordenpagolin a " +
+                    " inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
+                    " where z_pago_id is not null and b.docstatus='CO') " +
+                    whereClause +
+                    " order by hdr.c_bpartner_id ";
+
+            int cBPartnerIDAux = 0;
+            MZGeneraOrdenPagoSocio ordenPagoSocio = null;
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                // Corte por socio de negocio
+                if (rs.getInt("c_bpartner_id") != cBPartnerIDAux){
+
+                    cBPartnerIDAux = rs.getInt("c_bpartner_id");
+
+                    // Obtengo modelo de socio a considerar en esta generación, si ya existe
+                    ordenPagoSocio = this.getOrdenPagoSocio(cBPartnerIDAux);
+                    if ((ordenPagoSocio == null) || (ordenPagoSocio.get_ID() <= 0)){
+                        MBPartner partner = new MBPartner(getCtx(), cBPartnerIDAux, null);
+                        ordenPagoSocio = new MZGeneraOrdenPagoSocio(getCtx(), 0, get_TrxName());
+                        ordenPagoSocio.setZ_GeneraOrdenPago_ID(this.get_ID());
+                        ordenPagoSocio.setC_BPartner_ID(cBPartnerIDAux);
+                        ordenPagoSocio.setTaxID(partner.getTaxID());
+                        ordenPagoSocio.setC_Currency_ID(this.getC_Currency_ID());
+                        ordenPagoSocio.setTotalAmt(Env.ZERO);
+                        ordenPagoSocio.saveEx();
+                    }
+                }
+
+                BigDecimal amtDocument = rs.getBigDecimal("payamt");
+                BigDecimal amtOpen = rs.getBigDecimal("amtopen");
+
+                amtDocument = amtDocument.negate();
+                amtOpen = amtOpen.negate();
+
+                MZGeneraOrdenPagoLin ordenPagoLin = new MZGeneraOrdenPagoLin(getCtx(), 0, get_TrxName());
+                ordenPagoLin.setZ_GeneraOrdenPago_ID(this.get_ID());
+                ordenPagoLin.setZ_GeneraOrdenPagoSocio_ID(ordenPagoSocio.get_ID());
+
+                // Seteo medio de pago según el socio de negocio en caso de tener uno asociado.
+                ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
+                if (rs.getString("PaymentRulePO") != null){
+                    medioPago = MZMedioPago.getByValue(getCtx(), rs.getString("PaymentRulePO"), null);
+                    if ((medioPago != null) && (medioPago.get_ID() > 0)){
+                        ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
+                    }
+                }
+
+                ordenPagoLin.setZ_Pago_ID(rs.getInt("z_pago_id"));
+                ordenPagoLin.setAmtDocument(amtDocument);
+                ordenPagoLin.setAmtAllocation(amtOpen);
+                ordenPagoLin.setAmtOpen(amtOpen);
+                ordenPagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
+                ordenPagoLin.setC_DocType_ID(rs.getInt("c_doctype_id"));
+                ordenPagoLin.setDateDoc(rs.getTimestamp("datedoc"));
+                ordenPagoLin.setDueDateDoc(rs.getTimestamp("datedoc"));
+                ordenPagoLin.setDocumentNoRef(rs.getString("documentno"));
+                ordenPagoLin.setDueDateMedioPago(ordenPagoLin.getDueDateDoc());
+                ordenPagoLin.setEstadoAprobacion("APROBADO");
+
+                // Seteo medio de pago según el socio de negocio en caso de tener uno asociado.
+                if (rs.getString("PaymentRulePO") != null){
+                    medioPago = MZMedioPago.getByValue(getCtx(), rs.getString("PaymentRulePO"), null);
+                    if ((medioPago == null) || (medioPago.get_ID() <= 0)){
+                        medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
+                    }
+                }
+                else{
+                    medioPago = MZMedioPago.getByValue(getCtx(), "S", null);
+                }
+                ordenPagoLin.setZ_MedioPago_ID(medioPago.get_ID());
+
+                ordenPagoLin.setTieneDtosNC(false);
+                ordenPagoLin.setResguardoEmitido(false);
+                ordenPagoLin.saveEx();
+
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+        return message;
+
+    }
+
 
     /***
      * Obtiene y retorna modelo de socio a considerar en este proceso según id de socio recibido.
@@ -1250,6 +1414,9 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     }
                     if (generaLin.getZ_TransferSaldo_ID() > 0){
                         ordenPagoLin.setZ_TransferSaldo_ID(generaLin.getZ_TransferSaldo_ID());
+                    }
+                    if (generaLin.getZ_Pago_ID() > 0){
+                        ordenPagoLin.setZ_Pago_ID(generaLin.getZ_Pago_ID());
                     }
 
                     // Pagos multimoneda.

@@ -33,7 +33,7 @@ public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190314L;
+	private static final long serialVersionUID = 20190324L;
 
     /** Standard Constructor */
     public X_Z_GeneraOrdenPagoLin (Properties ctx, int Z_GeneraOrdenPagoLin_ID, String trxName)
@@ -530,6 +530,31 @@ public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin
 	public int getZ_MedioPago_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_Pago getZ_Pago() throws RuntimeException
+    {
+		return (I_Z_Pago)MTable.get(getCtx(), I_Z_Pago.Table_Name)
+			.getPO(getZ_Pago_ID(), get_TrxName());	}
+
+	/** Set Z_Pago ID.
+		@param Z_Pago_ID Z_Pago ID	  */
+	public void setZ_Pago_ID (int Z_Pago_ID)
+	{
+		if (Z_Pago_ID < 1) 
+			set_Value (COLUMNNAME_Z_Pago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_Pago_ID, Integer.valueOf(Z_Pago_ID));
+	}
+
+	/** Get Z_Pago ID.
+		@return Z_Pago ID	  */
+	public int getZ_Pago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_Pago_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
