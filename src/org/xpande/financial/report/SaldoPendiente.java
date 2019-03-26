@@ -81,8 +81,6 @@ public class SaldoPendiente {
      */
     private void getData(){
 
-
-
         try{
 
             String whereClause = "";
@@ -97,7 +95,7 @@ public class SaldoPendiente {
                 this.getDataTransfSaldos();
 
                 // Incluyo anticipos a socios de negocio
-
+                this.getDataAnticipos();
             }
 
             // Si el usuario indica incluír todos los documentos o solamente cuenta documentada
@@ -275,6 +273,81 @@ public class SaldoPendiente {
         }
     }
 
+    /***
+     * Obtiene información de Anticipos para el reporte.
+     * Xpande. Created by Gabriel Vila on 3/25/19.
+     */
+    private void getDataAnticipos(){
+
+        String sql = "", action = "";
+
+        try{
+
+            // Incluyo invoices
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, z_pago_id, " +
+                    " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
+                    " amtdocument, amtopen, amtallocated,  " +
+                    " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, enddate, " +
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference) ";
+
+            String whereClauseAfecta = "";
+
+            String whereClause = " and a.ad_client_id =" + this.adClientID;
+
+            if (this.adOrgID > 0){
+                whereClause += " and a.ad_org_id =" + this.adOrgID;
+            }
+
+            if (this.cBPartnerID > 0){
+                whereClause += " and a.c_bpartner_id =" + this.cBPartnerID;
+            }
+
+            if (this.cCurrencyID > 0){
+                whereClause += " and a.c_currency_id =" + this.cCurrencyID;
+            }
+
+            if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+                whereClause += " and a.datedoc <='" + this.endDate + "'";
+                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
+            }
+            else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+                whereClause += " and a.datedoc <='" + this.endDate + "'";
+                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
+            }
+            else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+                whereClause += " and a.datedoc <='" + this.endDate + "'";
+                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
+            }
+
+            if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
+                whereClause += " and a.issotrx ='Y'";
+            }
+            else if (this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
+                whereClause += " and a.issotrx ='N'";
+            }
+
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_pago_id, a.c_doctype_id, " +
+                    " a.documentno, a.c_currency_id, a.datedoc, a.issotrx, doc.docbasetype, " +
+                    " a.payamt as amtdocument, a.payamt as amtopen, " +
+                    " (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_pagoafectacion " +
+                    " where " + whereClauseAfecta + " and z_pago_id = a.z_pago_id) end as amtallocated, " +
+                    this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
+                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
+                    this.adOrgID + ", 0, 'ABIERTA' " +
+                    " from z_pago a " +
+                    " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
+                    " where a.docstatus ='CO' " +
+                    " and anticipo ='Y' " +whereClause +
+                    " order by a.datedoc, a.c_bpartner_id ";
+
+            DB.executeUpdateEx(action + sql, null);
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
 
     /***
      * Obtiene información de medios de pago emitidos pero no entregados para el reporte.
@@ -416,7 +489,7 @@ public class SaldoPendiente {
             action = " update " + TABLA_REPORTE +
                     " set amtopen = (amtopen * -1), amtdocument = (amtdocument * -1), amtallocated = (amtallocated * -1) " +
                     " where ad_user_id =" + this.adUserID +
-                    " and docbasetype in ('APC', 'ARC') ";
+                    " and docbasetype in ('APC', 'ARC', 'PPA', 'CCA') ";
             DB.executeUpdateEx(action, null);
 
         }
@@ -424,6 +497,5 @@ public class SaldoPendiente {
             throw new AdempiereException(e);
         }
     }
-
 
 }

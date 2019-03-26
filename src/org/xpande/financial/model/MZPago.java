@@ -553,6 +553,15 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and z_ordenpago_id is null ";
 			DB.executeUpdateEx(action, get_TrxName());
 
+			// Elimino Afectacion de Anticipos
+			action = " update z_pagoafectacion set ref_pago_id = null where ref_pago_id =" + this.get_ID() +
+					" and z_ordenpago_id is not null ";
+			DB.executeUpdateEx(action, get_TrxName());
+
+			action = " delete from z_pagoafectacion where ref_pago_id =" + this.get_ID() +
+					" and z_ordenpago_id is null ";
+			DB.executeUpdateEx(action, get_TrxName());
+
 			List<MZPagoLin> pagoLinList = this.getSelectedLines();
 			for (MZPagoLin pagoLin: pagoLinList){
 
@@ -607,6 +616,26 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						}
 					}
 
+				}
+				else if (pagoLin.getRef_Pago_ID() > 0){
+
+					// Desafecto estado de cuenta de este Anticipo cuando es cobro o es un pago que no esta referenciando ordenes de pago.
+					if (!this.isTieneOrdenPago()){
+
+						action = " update z_estadocuenta set referenciapago = null, ref_pago_id = null " +
+								" where z_pago_id =" + pagoLin.getRef_Pago_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+					}
+					else{
+						MZOrdenPago ordenPago = (MZOrdenPago) pagoLin.getZ_OrdenPago();
+						if ((ordenPago != null) && (ordenPago.get_ID() > 0)){
+
+							action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + ordenPago.getDocumentNo() + "', " +
+									" z_ordenpago_id =" + ordenPago.get_ID() +
+									" where z_pago_id =" + pagoLin.getRef_Pago_ID();
+							DB.executeUpdateEx(action, get_TrxName());
+						}
+					}
 				}
 			}
 
@@ -819,6 +848,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				return message;
 			}
 
+			// Obtengo anticipos a considerar y genero lineas
+			message = this.getAnticipos(hashCurrency);
+			if (message != null){
+				return message;
+			}
+
 			// En caso de documentos de PAGO, obtengo resguardos a considerar y genero lineas
 			if (!this.isSOTrx()){
 				message = this.getResguardos(hashCurrency);
@@ -909,13 +944,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				whereClause = " AND hdr.DateInvoiced >='" + this.getDateEmittedFrom() + "' ";
 			}
 			if (this.getDateEmittedTo() != null){
-				whereClause = " AND hdr.DateInvoiced <='" + this.getDateEmittedTo() + "' ";
+				whereClause += " AND hdr.DateInvoiced <='" + this.getDateEmittedTo() + "' ";
 			}
 			if (this.getDueDateFrom() != null){
-				whereClause = " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced) >='" + this.getDueDateFrom() + "' ";
+				whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced) >='" + this.getDueDateFrom() + "' ";
 			}
 			if (this.getDueDateTo() != null){
-				whereClause = " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced) <='" + this.getDueDateTo() + "' ";
+				whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced) <='" + this.getDueDateTo() + "' ";
 			}
 
 			// Filtros de monedas
@@ -945,6 +980,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and hdr.c_invoice_id not in (select c_invoice_id from z_pagolin " +
 					" where c_invoice_id is not null " +
 					" and z_pago_id =" + this.get_ID() + ") " +
+					" and hdr.c_invoice_id not in (select a.c_invoice_id from z_ordenpagolin a " +
+					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
+					" where a.c_invoice_id is not null and b.docstatus='CO') " +
 					whereClause +
 					" order by hdr.dateinvoiced ";
 
@@ -1039,7 +1077,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				whereClause = " AND hdr.DateDoc >='" + this.getDateEmittedFrom() + "' ";
 			}
 			if (this.getDateEmittedTo() != null){
-				whereClause = " AND hdr.DateDoc <='" + this.getDateEmittedTo() + "' ";
+				whereClause += " AND hdr.DateDoc <='" + this.getDateEmittedTo() + "' ";
 			}
 
 			// Filtros de monedas
@@ -1066,6 +1104,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and hdr.z_transfersaldo_id not in (select z_transfersaldo_id from z_pagolin " +
 					" where z_transfersaldo_id is not null " +
 					" and z_pago_id =" + this.get_ID() + ") " +
+					" and hdr.z_transfersaldo_id not in (select a.z_transfersaldo_id from z_ordenpagolin a " +
+					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
+					" where a.z_transfersaldo_id is not null and b.docstatus='CO') " +
 					whereClause +
 					" order by hdr.datedoc ";
 
@@ -1107,6 +1148,113 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				if (!hashCurrency.containsKey(pagoLin.getC_Currency_ID())){
 					hashCurrency.put(pagoLin.getC_Currency_ID(), pagoLin.getC_Currency_ID());
 				}
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
+
+
+	/***
+	 * Obtiene Anticipos a considerar y genera lineas por cada uno de ellos.
+	 * Xpande. Created by Gabriel Vila on 8/16/17.
+	 * @return
+	 */
+	private String getAnticipos(HashMap<Integer, Integer> hashCurrency){
+
+		String message = null;
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			String whereClause = "";
+
+			// Filtros de fechas
+			if (this.getDateEmittedFrom() != null){
+				whereClause = " AND hdr.DateDoc >='" + this.getDateEmittedFrom() + "' ";
+			}
+			if (this.getDateEmittedTo() != null){
+				whereClause += " AND hdr.DateDoc <='" + this.getDateEmittedTo() + "' ";
+			}
+			if (this.getDueDateFrom() != null){
+				whereClause += " AND hdr.DateDoc >='" + this.getDueDateFrom() + "' ";
+			}
+			if (this.getDueDateTo() != null){
+				whereClause += " AND hdr.DateDoc <='" + this.getDueDateTo() + "' ";
+			}
+
+			// Filtros de monedas
+			String filtroMonedas = "";
+			if (this.getC_Currency_ID_To() > 0){
+				filtroMonedas = " AND hdr.c_currency_id =" + this.getC_Currency_ID_To();
+			}
+			whereClause += filtroMonedas;
+
+			// Query
+			sql = " select hdr.c_bpartner_id, hdr.z_pago_id, hdr.c_doctype_id, hdr.documentno, " +
+					" hdr.datedoc, hdr.c_currency_id, hdr.payamt, iop.amtopen, " +
+					" doc.docbasetype " +
+					" from z_pago hdr " +
+					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
+					" inner join c_doctype doc on hdr.c_doctype_id = doc.c_doctype_id " +
+					" inner join zv_financial_pagoopen iop on hdr.z_pago_id = iop.z_pago_id " +
+					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
+					" and hdr.ad_org_id =" + this.getAD_Org_ID() +
+					" and hdr.anticipo ='Y' " +
+					" and hdr.c_bpartner_id =" + this.getC_BPartner_ID() +
+					" and hdr.issotrx='" + ((this.isSOTrx()) ? "Y":"N") + "' " +
+					" and hdr.docstatus='CO' " +
+					" and iop.amtopen > 0 " +
+					" and hdr.z_pago_id not in (select z_pago_id from z_pagolin " +
+					" where z_pago_id is not null " +
+					" and z_pago_id =" + this.get_ID() + ") " +
+					" and hdr.z_pago_id not in (select a.z_pago_id from z_ordenpagolin a " +
+					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
+					" where a.z_pago_id is not null and b.docstatus='CO') " +
+					whereClause +
+					" order by hdr.datedoc ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				BigDecimal amtDocument = rs.getBigDecimal("payamt");
+				BigDecimal amtOpen = rs.getBigDecimal("amtopen");
+
+				amtDocument = amtDocument.negate();
+				amtOpen = amtOpen.negate();
+
+				MZPagoLin pagoLin = new MZPagoLin(getCtx(), 0, get_TrxName());
+				pagoLin.setZ_Pago_ID(this.get_ID());
+				pagoLin.setAmtDocument(amtDocument);
+				pagoLin.setAmtOpen(amtOpen);
+				pagoLin.setAmtAllocation(amtOpen);
+				pagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
+				pagoLin.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
+				pagoLin.setDateDoc(rs.getTimestamp("dateinvoiced"));
+				pagoLin.setDueDateDoc(rs.getTimestamp("duedate"));
+				pagoLin.setDocumentNoRef(rs.getString("documentno"));
+				pagoLin.setEstadoAprobacion("APROBADO");
+
+				pagoLin.setRef_Pago_ID(rs.getInt("z_pago_id"));
+
+				pagoLin.saveEx();
+
+				// Guardo moneda en hash si aún no la tengo
+				if (!hashCurrency.containsKey(pagoLin.getC_Currency_ID())){
+					hashCurrency.put(pagoLin.getC_Currency_ID(), pagoLin.getC_Currency_ID());
+				}
+
 			}
 		}
 		catch (Exception e){
@@ -1282,7 +1430,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				whereClause = " AND hdr.DateDoc >='" + this.getDateEmittedFrom() + "' ";
 			}
 			if (this.getDateEmittedTo() != null){
-				whereClause = " AND hdr.DateDoc <='" + this.getDateEmittedTo() + "' ";
+				whereClause += " AND hdr.DateDoc <='" + this.getDateEmittedTo() + "' ";
 			}
 
 			// Filtros de monedas
@@ -1308,6 +1456,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and hdr.z_resguardosocio_id not in (select z_resguardosocio_id from z_pagoresguardo " +
 					" where z_resguardosocio_id is not null " +
 					" and z_pago_id =" + this.get_ID() + ") "  +
+					" and hdr.z_resguardosocio_id not in (select a.z_resguardosocio_id from z_ordenpagolin a " +
+					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
+					" where a.z_resguardosocio_id is not null and b.docstatus='CO') " +
 					whereClause +
 					" order by hdr.datedoc ";
 
@@ -1973,6 +2124,45 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 								" z_pago_id =" + this.get_ID() +
 								" where z_transfersaldo_id =" + pagoLin.getZ_TransferSaldo_ID();
 						DB.executeUpdateEx(action, get_TrxName());
+					}
+				}
+				else if (pagoLin.getRef_Pago_ID() > 0){
+
+					// Afecta cada comprobante por el monto de afectación
+					MZPagoAfectacion pagoAfectacion = null;
+
+					// Si tengo orden de pago asociada, busco afectación del anticipo, para esta orden de pago y le actualizo el campo ID de pago.
+					// Esto es porque ya esta afectado.
+					if (pagoLin.getZ_OrdenPago_ID() > 0){
+						pagoAfectacion = MZPagoAfectacion.getByPagoOrdenPago(getCtx(), pagoLin.getRef_Pago_ID(), pagoLin.getZ_OrdenPago_ID(), get_TrxName());
+					}
+					if (pagoAfectacion == null){
+
+						BigDecimal amtAllocation = pagoLin.getAmtAllocation();
+						if (amtAllocation.compareTo(Env.ZERO) < 0){
+							amtAllocation = amtAllocation.negate();
+						}
+
+						pagoAfectacion = new MZPagoAfectacion(getCtx(), 0, get_TrxName());
+						pagoAfectacion.setAD_Table_ID(this.get_Table_ID());
+						pagoAfectacion.setAmtAllocation(amtAllocation);
+						pagoAfectacion.setC_DocType_ID(this.getC_DocType_ID());
+						pagoAfectacion.setRef_Pago_ID(this.get_ID());
+						pagoAfectacion.setDateDoc(this.getDateDoc());
+						pagoAfectacion.setDocumentNoRef(documentNoRef);
+						pagoAfectacion.setDueDate(pagoLin.getDueDateDoc());
+						pagoAfectacion.setRecord_ID(this.get_ID());
+						pagoAfectacion.setC_Currency_ID(pagoLin.getC_Currency_ID());
+						pagoAfectacion.setAD_Org_ID(this.getAD_Org_ID());
+					}
+					pagoAfectacion.setZ_Pago_ID(pagoLin.getRef_Pago_ID());
+					pagoAfectacion.saveEx();
+
+					// Afecto estado de cuenta de esta anticipo cuando es cobro o es un pago que no esta referenciando ordenes de pago.
+					if (!this.isTieneOrdenPago()){
+						action = " update z_estadocuenta set referenciapago ='RECIBO " + documentNoRef + "', " +
+								" ref_pago_id =" + this.get_ID() +
+								" where z_pago_id =" + pagoLin.getRef_Pago_ID();
 					}
 				}
 			}

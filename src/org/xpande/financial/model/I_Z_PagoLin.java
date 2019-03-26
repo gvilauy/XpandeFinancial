@@ -278,6 +278,19 @@ public interface I_Z_PagoLin
 	  */
 	public BigDecimal getMultiplyRate();
 
+    /** Column name Ref_Pago_ID */
+    public static final String COLUMNNAME_Ref_Pago_ID = "Ref_Pago_ID";
+
+	/** Set Ref_Pago_ID.
+	  * ID de Pago Referenciado
+	  */
+	public void setRef_Pago_ID(int Ref_Pago_ID);
+
+	/** Get Ref_Pago_ID.
+	  * ID de Pago Referenciado
+	  */
+	public int getRef_Pago_ID();
+
     /** Column name ResguardoEmitido */
     public static final String COLUMNNAME_ResguardoEmitido = "ResguardoEmitido";
 

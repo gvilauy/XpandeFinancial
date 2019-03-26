@@ -33,7 +33,7 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190314L;
+	private static final long serialVersionUID = 20190325L;
 
     /** Standard Constructor */
     public X_Z_PagoLin (Properties ctx, int Z_PagoLin_ID, String trxName)
@@ -384,6 +384,29 @@ public class X_Z_PagoLin extends PO implements I_Z_PagoLin, I_Persistent
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set Ref_Pago_ID.
+		@param Ref_Pago_ID 
+		ID de Pago Referenciado
+	  */
+	public void setRef_Pago_ID (int Ref_Pago_ID)
+	{
+		if (Ref_Pago_ID < 1) 
+			set_Value (COLUMNNAME_Ref_Pago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Ref_Pago_ID, Integer.valueOf(Ref_Pago_ID));
+	}
+
+	/** Get Ref_Pago_ID.
+		@return ID de Pago Referenciado
+	  */
+	public int getRef_Pago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_Pago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set ResguardoEmitido.
