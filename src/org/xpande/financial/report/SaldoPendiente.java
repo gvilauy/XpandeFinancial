@@ -253,7 +253,7 @@ public class SaldoPendiente {
                     " case when ips.c_invoicepayschedule_id > 0 then " +
                     " (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_transferafectacion " +
                     " where " + whereClauseAfecta + " and c_invoicepayschedule_id = ips.c_invoicepayschedule_id) " +
-                    " else (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_transferfectacion " +
+                    " else (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_transferafectacion " +
                     " where " + whereClauseAfecta + " and z_transfersaldo_id = a.z_transfersaldo_id) end as amtallocated, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
@@ -327,15 +327,15 @@ public class SaldoPendiente {
             }
 
             sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_pago_id, a.c_doctype_id, " +
-                    " a.documentno, a.c_currency_id, a.datedoc, a.issotrx, doc.docbasetype, " +
+                    " a.documentno, a.c_currency_id, a.datedoc, a.datedoc, a.datedoc, a.issotrx, doc.docbasetype, " +
                     " a.payamt as amtdocument, a.payamt as amtopen, " +
                     " (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_pagoafectacion " +
-                    " where " + whereClauseAfecta + " and z_pago_id = a.z_pago_id) end as amtallocated, " +
+                    " where " + whereClauseAfecta + " and z_pago_id = a.z_pago_id) as amtallocated, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA' " +
                     " from z_pago a " +
-                    " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
+                    " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
                     " where a.docstatus ='CO' " +
                     " and anticipo ='Y' " +whereClause +
                     " order by a.datedoc, a.c_bpartner_id ";
@@ -491,6 +491,62 @@ public class SaldoPendiente {
                     " where ad_user_id =" + this.adUserID +
                     " and docbasetype in ('APC', 'ARC', 'PPA', 'CCA') ";
             DB.executeUpdateEx(action, null);
+
+
+            if (this.tieneAcct){
+
+                // Cuenta contable proveedores
+                action = " update " + TABLA_REPORTE +
+                        " set c_elementvalue_id = (" +
+                        " select account_id from fact_acct " +
+                        " where ad_table_id = 318 " +
+                        " and m_product_id is null and c_tax_id is null " +
+                        " and amtacctcr != 0 " +
+                        " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and c_invoice_id > 0 " +
+                        " and docbasetype in ('API', 'APC') ";
+                DB.executeUpdateEx(action, null);
+
+                // Cuenta contable deudores
+                action = " update " + TABLA_REPORTE +
+                        " set c_elementvalue_id = (" +
+                        " select account_id from fact_acct " +
+                        " where ad_table_id = 318 " +
+                        " and m_product_id is null and c_tax_id is null " +
+                        " and amtacctdr != 0 " +
+                        " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and c_invoice_id > 0 " +
+                        " and docbasetype in ('ARI', 'ARC') ";
+                DB.executeUpdateEx(action, null);
+
+                // Cuenta contable transferencias de saldos
+                action = " update " + TABLA_REPORTE +
+                        " set c_elementvalue_id = (" +
+                        " select account_id from fact_acct " +
+                        " where ad_table_id = 318 " +
+                        " and m_product_id is null and c_tax_id is null " +
+                        " and amtacctcr != 0 " +
+                        " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and z_transfersaldo_id > 0 " +
+                        " and docbasetype in ('TSP') ";
+                DB.executeUpdateEx(action, null);
+
+                // Cuenta contable anticipos proveedores
+                action = " update " + TABLA_REPORTE +
+                        " set c_elementvalue_id = (" +
+                        " select account_id from fact_acct " +
+                        " where ad_table_id = 318 " +
+                        " and m_product_id is null and c_tax_id is null " +
+                        " and amtacctcr != 0 " +
+                        " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and z_pago_id > 0 " +
+                        " and docbasetype in ('PPA') ";
+                //DB.executeUpdateEx(action, null);
+            }
 
         }
         catch (Exception e){
