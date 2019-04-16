@@ -36,6 +36,10 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
             return false;
         }
 
+        // Me aseguro de tener la organización correcta
+        MZPago pago = (MZPago) this.getZ_Pago();
+        this.setAD_Org_ID(pago.getAD_Org_ID());
+
         MAcctSchema schema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
 
         // Cuando es nuevo registro, por callout obtuve el monto MT y tengo entonces que calcular alreves el monto en moneda de medio de pago

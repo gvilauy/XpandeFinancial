@@ -465,6 +465,31 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
         // Elimino asientos contables
         MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
+        // Si es un pago y no tiene asociado ordenes de pago
+        if (!this.isSOTrx()){
+			if (!this.isTieneOrdenPago()){
+				// Anulo medios de pago emitidos en este pago/anticipo
+				List<MZPagoMedioPago> pagoMedioPagoList = this.getMediosPago();
+				for (MZPagoMedioPago pagoMedioPago: pagoMedioPagoList){
+					if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+						MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+						if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
+							MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+							if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
+								this.m_processMsg = emisionMedioPago.getProcessMsg();
+								return false;
+							}
+							emisionMedioPago.saveEx();
+						}
+						else{
+							medioPagoItem.setAnulado(true);
+							medioPagoItem.saveEx();
+						}
+					}
+				}
+			}
+		}
+
 		// Desafecto documentos asociados a este documento de pago/cobro
 		m_processMsg = this.desafectarDocumentos();
 		if (m_processMsg != null)
@@ -1769,9 +1794,17 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			BigDecimal sumMedios = DB.getSQLValueBDEx(get_TrxName(), sql);
 			if (sumMedios == null) sumMedios = Env.ZERO;
 
-			action = " update z_pago set payamt =" + sumLines + ", " +
-					" totalmediospago =" + sumMedios.add(sumResguardos) +
-					" where z_pago_id =" + this.get_ID();
+			// Actualizo segun este documento sea o no un anticipo
+			if (!this.isAnticipo()){
+				action = " update z_pago set payamt =" + sumLines + ", " +
+						" totalmediospago =" + sumMedios.add(sumResguardos) +
+						" where z_pago_id =" + this.get_ID();
+			}
+			else{
+				action = " update z_pago set payamt =" + sumMedios + ", " +
+						" totalmediospago =" + sumMedios +
+						" where z_pago_id =" + this.get_ID();
+			}
 
 			DB.executeUpdateEx(action, get_TrxName());
 
@@ -1841,6 +1874,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						if ((medioPagoItem == null) || (medioPagoItem.get_ID() <= 0)){
 							return "Libreta no tiene medios de pago disponibles para utilizar.";
 						}
+						medioPagoItem.setAD_Org_ID(this.getAD_Org_ID());
 						pagoMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
 					}
 					else{
@@ -1893,7 +1927,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				if (!medioPagoItem.isEmitido()){
 					MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
 					emisionMedioPago.setZ_MedioPago_ID(pagoMedioPago.getZ_MedioPago_ID());
-					emisionMedioPago.setAD_Org_ID(pagoMedioPago.getAD_Org_ID());
+					emisionMedioPago.setAD_Org_ID(this.getAD_Org_ID());
 
 					if (pagoMedioPago.getZ_MedioPagoFolio_ID() > 0){
 						emisionMedioPago.setZ_MedioPagoFolio_ID(pagoMedioPago.getZ_MedioPagoFolio_ID());
