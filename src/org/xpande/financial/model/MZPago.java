@@ -1408,7 +1408,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			// Cuando no es un documento de anticipo
 			if (!this.isAnticipo()){
 				// Verifico que la diferencia entre total del documento y medios a pagar este dentro de la tolerancia permitida
-				// Si no es anticipo.
 				BigDecimal diferencia = this.getPayAmt().subtract(this.getTotalMediosPago());
 				if (diferencia.compareTo(Env.ZERO) != 0){
 					return "Hay diferencias entre el Total del Documento y el Total de Medios de Pago.";
