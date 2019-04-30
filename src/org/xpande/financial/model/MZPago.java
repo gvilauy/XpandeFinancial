@@ -179,7 +179,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		//	Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateDoc(), dt.getDocBaseType(), getAD_Org_ID()))
 		{
-			m_processMsg = "@PeriodClosed@";
+			m_processMsg = dt.getName() + " - " +  "@PeriodClosed@";
 			return DocAction.STATUS_Invalid;
 		}
 		//	Add up Amounts
@@ -1914,6 +1914,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
 					}
 					medioPagoItem.saveEx();
+					pagoMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
 				}
 				else{
 					medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
