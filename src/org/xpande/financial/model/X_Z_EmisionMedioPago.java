@@ -33,7 +33,7 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190122L;
+	private static final long serialVersionUID = 20190502L;
 
     /** Standard Constructor */
     public X_Z_EmisionMedioPago (Properties ctx, int Z_EmisionMedioPago_ID, String trxName)
@@ -41,12 +41,12 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
       super (ctx, Z_EmisionMedioPago_ID, trxName);
       /** if (Z_EmisionMedioPago_ID == 0)
         {
-			setC_BankAccount_ID (0);
 			setC_BPartner_ID (0);
 			setC_Currency_ID (0);
 			setC_DocType_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
+			setDateEmitted (new Timestamp( System.currentTimeMillis() ));
 			setDocAction (null);
 // CO
 			setDocStatus (null);
@@ -462,8 +462,8 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	public static final String PAYMENTRULE_Cash = "B";
 	/** Credit Card = K */
 	public static final String PAYMENTRULE_CreditCard = "K";
-	/** Direct Deposit = T */
-	public static final String PAYMENTRULE_DirectDeposit = "T";
+	/** DEPOSITO DIRECTO = T */
+	public static final String PAYMENTRULE_DEPOSITODIRECTO = "T";
 	/** Check = S */
 	public static final String PAYMENTRULE_Check = "S";
 	/** On Credit = P */
@@ -474,6 +474,12 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** TARJETA CORPORATIVA = C */
 	public static final String PAYMENTRULE_TARJETACORPORATIVA = "C";
+	/** FONDO FIJO = F */
+	public static final String PAYMENTRULE_FONDOFIJO = "F";
+	/** CANJE = J */
+	public static final String PAYMENTRULE_CANJE = "J";
+	/** TRANSFERENCIA BANCARIA = R */
+	public static final String PAYMENTRULE_TRANSFERENCIABANCARIA = "R";
 	/** Set Payment Rule.
 		@param PaymentRule 
 		How you pay the invoice
@@ -633,6 +639,31 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	public int getZ_EmisionMedioPago_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_EmisionMedioPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_LoadMedioPago getZ_LoadMedioPago() throws RuntimeException
+    {
+		return (I_Z_LoadMedioPago)MTable.get(getCtx(), I_Z_LoadMedioPago.Table_Name)
+			.getPO(getZ_LoadMedioPago_ID(), get_TrxName());	}
+
+	/** Set Z_LoadMedioPago ID.
+		@param Z_LoadMedioPago_ID Z_LoadMedioPago ID	  */
+	public void setZ_LoadMedioPago_ID (int Z_LoadMedioPago_ID)
+	{
+		if (Z_LoadMedioPago_ID < 1) 
+			set_Value (COLUMNNAME_Z_LoadMedioPago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_LoadMedioPago_ID, Integer.valueOf(Z_LoadMedioPago_ID));
+	}
+
+	/** Get Z_LoadMedioPago ID.
+		@return Z_LoadMedioPago ID	  */
+	public int getZ_LoadMedioPago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_LoadMedioPago_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

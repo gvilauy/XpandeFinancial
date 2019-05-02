@@ -296,6 +296,7 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 			// Creo item de medio de pago
 			MZMedioPagoItem medioPagoItem = new MZMedioPagoItem(getCtx(), 0, get_TrxName());
 			medioPagoItem.setZ_MedioPago_ID(medioPago.get_ID());
+			medioPagoItem.setAD_Org_ID(medioPagoFolio.getAD_Org_ID());
 			medioPagoItem.setZ_MedioPagoFolio_ID(medioPagoFolio.get_ID());
 			medioPagoItem.setEntregado(false);
 			medioPagoItem.setAnulado(false);
@@ -318,7 +319,7 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 			// Creo documento de Emision de medio de pago y lo completo.
 			MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
 			emisionMedioPago.setZ_MedioPago_ID(medioPago.get_ID());
-			emisionMedioPago.setAD_Org_ID(loadMedioPagoFile.getAD_Org_ID());
+			emisionMedioPago.setAD_Org_ID(medioPagoFolio.getAD_Org_ID());
 			emisionMedioPago.setZ_MedioPagoFolio_ID(medioPagoFolio.get_ID());
 			emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
 			emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
@@ -329,6 +330,7 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 			emisionMedioPago.setDueDate(medioPagoItem.getDueDate());
 			emisionMedioPago.setTotalAmt(medioPagoItem.getTotalAmt());
 			emisionMedioPago.setDescription(loadMedioPagoFile.getDescription());
+			emisionMedioPago.setZ_LoadMedioPago_ID(this.get_ID());
 			emisionMedioPago.saveEx();
 
 			// Completo documento de emisión de medio de pago
@@ -337,6 +339,8 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 				return DocAction.STATUS_Invalid;
 			}
 			emisionMedioPago.saveEx();
+
+
 
 		}
 
@@ -651,6 +655,8 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 
 				loadMedioPagoFile.setIsConfirmed(true);
 
+				int adOrgIDAux = 0;
+
 				if (loadMedioPagoFile.getAD_OrgTrx_ID() <= 0){
 					loadMedioPagoFile.setIsConfirmed(false);
 					loadMedioPagoFile.setErrorMsg("No existe Organización con ese Número o la misma debe ser distinta de CERO.");
@@ -661,6 +667,7 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 						loadMedioPagoFile.setIsConfirmed(false);
 						loadMedioPagoFile.setErrorMsg("No existe Organización con ese Número");
 					}
+					adOrgIDAux = orgTrx.get_ID();
 				}
 
 				if ((loadMedioPagoFile.getTaxID() == null) || (loadMedioPagoFile.getTaxID().trim().equalsIgnoreCase(""))){
@@ -678,6 +685,8 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 					}
 				}
 
+				int cCurrencyIDBankAccount = 0;
+
 				if (loadMedioPagoFile.getC_BankAccount_ID() <= 0){
 					loadMedioPagoFile.setIsConfirmed(false);
 					loadMedioPagoFile.setErrorMsg("Debe indicar Cuenta Bancaria");
@@ -689,7 +698,14 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 						loadMedioPagoFile.setErrorMsg("No existe Cuenta Bancaria definida en el sistema con ese ID : " + loadMedioPagoFile.getC_BankAccount_ID());
 					}
 					else {
-						loadMedioPagoFile.setC_Currency_ID(bankAccount.getC_Currency_ID());
+						if (bankAccount.getAD_Org_ID() != adOrgIDAux){
+							loadMedioPagoFile.setIsConfirmed(false);
+							loadMedioPagoFile.setErrorMsg("La organización recibida tiene que ser igual a la Organización de la Cuenta Bancaria");
+						}
+						else{
+							loadMedioPagoFile.setC_Currency_ID(bankAccount.getC_Currency_ID());
+							cCurrencyIDBankAccount = bankAccount.getC_Currency_ID();
+						}
 					}
 				}
 
@@ -740,6 +756,25 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 				if ((loadMedioPagoFile.getTotalAmt() == null) || (loadMedioPagoFile.getTotalAmt().compareTo(Env.ZERO) <= 0)){
 					loadMedioPagoFile.setIsConfirmed(false);
 					loadMedioPagoFile.setErrorMsg("Debe indicar Importe");
+				}
+
+				if (loadMedioPagoFile.getC_Currency_ID() <= 0){
+					loadMedioPagoFile.setIsConfirmed(false);
+					loadMedioPagoFile.setErrorMsg("Debe indicar ID de Moneda");
+				}
+				else{
+					MCurrency currency = new MCurrency(getCtx(), loadMedioPagoFile.getC_Currency_ID(), null);
+					if ((currency == null) || (currency.get_ID() <= 0)){
+						loadMedioPagoFile.setIsConfirmed(false);
+						loadMedioPagoFile.setErrorMsg("No existe Moneda definida en el sistema con ese número : " + loadMedioPagoFile.getC_Currency_ID());
+					}
+					else{
+						if (currency.get_ID() != cCurrencyIDBankAccount){
+							loadMedioPagoFile.setIsConfirmed(false);
+							loadMedioPagoFile.setErrorMsg("Moneda recibida tiene que ser igual a la moneda de la cuenta bancaria : " +
+									loadMedioPagoFile.getC_Currency_ID() + " <> " + cCurrencyIDBankAccount);
+						}
+					}
 				}
 
 				if (loadMedioPagoFile.isConfirmed()){
