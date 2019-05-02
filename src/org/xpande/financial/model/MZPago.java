@@ -19,9 +19,11 @@ package org.xpande.financial.model;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -256,11 +258,24 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			return DocAction.STATUS_Invalid;
 		}
 
+		// Si no tengo monto en medios de pago, y tengo total del documento en negativo, doy vuelta el signo.
+		// Esto es para recibos hechos por anticipos, que me quedaba el signo negativo en el total.
+		if ((this.getTotalMediosPago() == null) || (this.getTotalMediosPago().compareTo(Env.ZERO) == 0)){
+			if (this.getPayAmt().compareTo(Env.ZERO) < 0){
+				this.setPayAmt(this.getPayAmt().negate());
+			}
+		}
+
 		if (!this.isSOTrx()){
-			// Emite medios de pago cuando es un Pago y no esta referenciando ordenes de pago
-			// (siempre y cuando los medios de pago no fueron emitidos previamente a mano).
+			// Si no tengo ordenes de pago
 			if (!this.isTieneOrdenPago()){
+
+				// Emite medios de pago cuando es un Pago y no esta referenciando ordenes de pago
+				// (siempre y cuando los medios de pago no fueron emitidos previamente a mano).
 				m_processMsg = this.emitirMediosPago(medioPagoList);
+
+				// Marco medios de pago incluídos en anticipos asociados a este documennto, como entregados.
+				m_processMsg = this.entregarMediosPagoAnticipos();
 			}
 			else{
 				// Marca medios de pago que ya fueron emitidos en ordenes de pago, como entregados.
@@ -530,11 +545,16 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			// Para pagos, desasocio ordenes de pago
 			if (!this.isSOTrx()){
+
+				List<MZPagoOrdenPago> pagoOrdenPagoList = this.getOrdenesPagoReferenciadas();
+				if (pagoOrdenPagoList.size() <= 0){
+					this.setTieneOrdenPago(false);
+				}
+
 				if (this.isTieneOrdenPago()){
 					action = " update z_ordenpago set ispaid='N', z_pago_id = null where z_pago_id =" + this.get_ID();
 					DB.executeUpdateEx(action, get_TrxName());
 
-					List<MZPagoOrdenPago> pagoOrdenPagoList = this.getOrdenesPagoReferenciadas();
 					for (MZPagoOrdenPago pagoOrdenPago: pagoOrdenPagoList){
 
 						MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
@@ -1265,9 +1285,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				pagoLin.setAmtOpen(amtOpen);
 				pagoLin.setAmtAllocation(amtOpen);
 				pagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
-				pagoLin.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
-				pagoLin.setDateDoc(rs.getTimestamp("dateinvoiced"));
-				pagoLin.setDueDateDoc(rs.getTimestamp("duedate"));
+				pagoLin.setC_DocType_ID(rs.getInt("c_doctype_id"));
+				pagoLin.setDateDoc(rs.getTimestamp("datedoc"));
+				pagoLin.setDueDateDoc(rs.getTimestamp("datedoc"));
 				pagoLin.setDocumentNoRef(rs.getString("documentno"));
 				pagoLin.setEstadoAprobacion("APROBADO");
 
@@ -1384,6 +1404,55 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	}
 
 	/***
+	 * Obtiene y retorna lista con modelos de medios de pago asociados a anticipos incluídos en este documento.
+	 * Xpande. Created by Gabriel Vila on 5/2/19.
+	 * @return
+	 */
+	public List<MZPagoMedioPago> getMediosPagoAnticipos(){
+
+		List<MZPagoMedioPago> lines = new ArrayList<MZPagoMedioPago>();
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			sql = " select ref_pago_id " +
+					" from z_pagolin " +
+					" where z_pago_id =" + this.get_ID() +
+					" and ref_pago_id is not null ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				int idAnticipo = rs.getInt("ref_pago_id");
+				if (idAnticipo > 0){
+					MZPago anticipo =  new MZPago(getCtx(), idAnticipo, get_TrxName());
+					if ((anticipo != null) && (anticipo.get_ID() > 0)){
+						List<MZPagoMedioPago> linesAux = anticipo.getMediosPago();
+						for (MZPagoMedioPago medioPago: linesAux){
+							lines.add(medioPago);
+						}
+					}
+				}
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return lines;
+
+	}
+
+
+	/***
 	 * Validaciones del documento al momento de completar.
 	 * Xpande. Created by Gabriel Vila on 1/10/18.
 	 * @param pagoLinList
@@ -1407,23 +1476,28 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			// Cuando no es un documento de anticipo
 			if (!this.isAnticipo()){
-				// Verifico que la diferencia entre total del documento y medios a pagar este dentro de la tolerancia permitida
-				BigDecimal diferencia = this.getPayAmt().subtract(this.getTotalMediosPago());
-				if (diferencia.compareTo(Env.ZERO) != 0){
-					return "Hay diferencias entre el Total del Documento y el Total de Medios de Pago.";
+				// Si tengo monto de medios de pago
+				if ((this.getTotalMediosPago() != null) && (this.getTotalMediosPago().compareTo(Env.ZERO) != 0)){
+					// Verifico que la diferencia entre total del documento y medios a pagar este dentro de la tolerancia permitida
+					BigDecimal diferencia = this.getPayAmt().subtract(this.getTotalMediosPago());
+					if (diferencia.compareTo(Env.ZERO) != 0){
+						return "Hay diferencias entre el Total del Documento y el Total de Medios de Pago.";
+					}
 				}
 
 				// Verifico que tenga lineas seleccionadas
 				if (pagoLinList.size() <= 0){
 					return "No hay Documentos seleccionados para afectar.";
 				}
-
 			}
 
+			/*
 			// Verifico que tenga medios de pago
 			if (medioPagoList.size() <= 0){
 				return "Debe indicar al menos un medio de pago.";
 			}
+			*/
+
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
@@ -1973,13 +2047,19 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					emisionMedioPago.saveEx();
 				}
 
-				// Marco medio de pago como entregado en este documento de pago
+
 				// Si es un medio de pago recibido de terceros, me aseguro de no perder la referencia con el documento de cobro
 				if (medioPagoItem.isReceipt()){
 					medioPagoItem.setRef_Cobro_ID(medioPagoItem.getZ_Pago_ID());
 				}
 				medioPagoItem.setZ_Pago_ID(this.get_ID());
-				medioPagoItem.setEntregado(true);
+
+				// Marco medio de pago como entregado en este documento de pago cuando no es un anticipo.
+				// Si es un anticipo, este medio de pago se marcará como entregado al momento de ingresar el recibo correspondiente al anticipo.
+				if (!this.isAnticipo()){
+					medioPagoItem.setEntregado(true);
+				}
+
 				medioPagoItem.saveEx();
 			}
 		}
@@ -2026,6 +2106,53 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		return message;
 	}
 
+
+	/***
+	 * Proceso que marca los medios de pago incluídos en anticipos asociados a este documento de pago como entregados.
+	 * Xpande. Created by Gabriel Vila on 5/2/19.
+	 * @return
+	 */
+	private String entregarMediosPagoAnticipos(){
+
+		String message = null;
+
+		String sql = "", action = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+		    sql = " select ref_pago_id " +
+					" from z_pagolin " +
+					" where z_pago_id =" + this.get_ID() +
+					" and ref_pago_id is not null ";
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				int idAnticipo = rs.getInt("ref_pago_id");
+				if (idAnticipo > 0){
+
+					action = " update z_mediopagoitem set entregado ='Y', z_pago_id =" + this.get_ID() +
+							" where z_mediopagoitem_id in " +
+							" (select z_mediopagoitem_id from z_pagomediopago where z_pago_id =" + idAnticipo +
+							" and z_mediopagoitem_id is not null) ";
+
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+			}
+		}
+
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
 
 	/***
 	 * Afecta documentos asociadas a este documento de pago/cobro.
@@ -2284,6 +2411,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			}
 
 			List<MZPagoOrdenPago> pagoOrdenPagoList = this.getOrdenesPagoReferenciadas();
+
+			if (pagoOrdenPagoList.size() <= 0){
+				this.setTieneOrdenPago(false);
+			}
+
 			for (MZPagoOrdenPago pagoOrdenPago: pagoOrdenPagoList){
 				MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
 				ordenPago.setZ_Pago_ID(this.get_ID());
@@ -2338,12 +2470,24 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			estadoCuenta.setIsSOTrx(this.isSOTrx());
 
 			if (!this.isSOTrx()){
-				estadoCuenta.setAmtSourceCr(Env.ZERO);
-				estadoCuenta.setAmtSourceDr(this.getPayAmt());
+				if (!this.isAnticipo()){
+					estadoCuenta.setAmtSourceCr(Env.ZERO);
+					estadoCuenta.setAmtSourceDr(this.getPayAmt());
+				}
+				else{
+					estadoCuenta.setAmtSourceDr(Env.ZERO);
+					estadoCuenta.setAmtSourceCr(this.getPayAmt());
+				}
 			}
 			else{
-				estadoCuenta.setAmtSourceCr(this.getPayAmt());
-				estadoCuenta.setAmtSourceDr(Env.ZERO);
+				if (!this.isAnticipo()){
+					estadoCuenta.setAmtSourceCr(this.getPayAmt());
+					estadoCuenta.setAmtSourceDr(Env.ZERO);
+				}
+				else{
+					estadoCuenta.setAmtSourceDr(this.getPayAmt());
+					estadoCuenta.setAmtSourceCr(Env.ZERO);
+				}
 			}
 
 			estadoCuenta.setRecord_ID(this.get_ID());
