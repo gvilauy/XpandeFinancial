@@ -63,6 +63,19 @@ public interface I_Z_Pago
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AmtAnticipo */
+    public static final String COLUMNNAME_AmtAnticipo = "AmtAnticipo";
+
+	/** Set AmtAnticipo.
+	  * Monto de Anticipos
+	  */
+	public void setAmtAnticipo(BigDecimal AmtAnticipo);
+
+	/** Get AmtAnticipo.
+	  * Monto de Anticipos
+	  */
+	public BigDecimal getAmtAnticipo();
+
     /** Column name Anticipo */
     public static final String COLUMNNAME_Anticipo = "Anticipo";
 
@@ -151,6 +164,19 @@ public interface I_Z_Pago
 	  * User who created this records
 	  */
 	public int getCreatedBy();
+
+    /** Column name DateAcct */
+    public static final String COLUMNNAME_DateAcct = "DateAcct";
+
+	/** Set Account Date.
+	  * Accounting Date
+	  */
+	public void setDateAcct(Timestamp DateAcct);
+
+	/** Get Account Date.
+	  * Accounting Date
+	  */
+	public Timestamp getDateAcct();
 
     /** Column name DateDoc */
     public static final String COLUMNNAME_DateDoc = "DateDoc";
@@ -394,6 +420,45 @@ public interface I_Z_Pago
 	  * Botón para proceso
 	  */
 	public String getProcessButton3();
+
+    /** Column name ProcessButton4 */
+    public static final String COLUMNNAME_ProcessButton4 = "ProcessButton4";
+
+	/** Set ProcessButton4.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton4(String ProcessButton4);
+
+	/** Get ProcessButton4.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton4();
+
+    /** Column name ProcessButton5 */
+    public static final String COLUMNNAME_ProcessButton5 = "ProcessButton5";
+
+	/** Set ProcessButton5.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton5(String ProcessButton5);
+
+	/** Get ProcessButton5.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton5();
+
+    /** Column name ProcessButton6 */
+    public static final String COLUMNNAME_ProcessButton6 = "ProcessButton6";
+
+	/** Set ProcessButton6.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton6(String ProcessButton6);
+
+	/** Get ProcessButton6.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton6();
 
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";

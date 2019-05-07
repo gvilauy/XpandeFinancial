@@ -33,7 +33,7 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180312L;
+	private static final long serialVersionUID = 20190505L;
 
     /** Standard Constructor */
     public X_Z_Pago (Properties ctx, int Z_Pago_ID, String trxName)
@@ -100,6 +100,26 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set AmtAnticipo.
+		@param AmtAnticipo 
+		Monto de Anticipos
+	  */
+	public void setAmtAnticipo (BigDecimal AmtAnticipo)
+	{
+		set_Value (COLUMNNAME_AmtAnticipo, AmtAnticipo);
+	}
+
+	/** Get AmtAnticipo.
+		@return Monto de Anticipos
+	  */
+	public BigDecimal getAmtAnticipo () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAnticipo);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
 
 	/** Set Anticipo.
 		@param Anticipo 
@@ -232,6 +252,23 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Account Date.
+		@param DateAcct 
+		Accounting Date
+	  */
+	public void setDateAcct (Timestamp DateAcct)
+	{
+		set_Value (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	/** Get Account Date.
+		@return Accounting Date
+	  */
+	public Timestamp getDateAcct () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
 	/** Set Document Date.
@@ -619,6 +656,57 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	public String getProcessButton3 () 
 	{
 		return (String)get_Value(COLUMNNAME_ProcessButton3);
+	}
+
+	/** Set ProcessButton4.
+		@param ProcessButton4 
+		Botón de Proceso
+	  */
+	public void setProcessButton4 (String ProcessButton4)
+	{
+		set_Value (COLUMNNAME_ProcessButton4, ProcessButton4);
+	}
+
+	/** Get ProcessButton4.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton4 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton4);
+	}
+
+	/** Set ProcessButton5.
+		@param ProcessButton5 
+		Botón de Proceso
+	  */
+	public void setProcessButton5 (String ProcessButton5)
+	{
+		set_Value (COLUMNNAME_ProcessButton5, ProcessButton5);
+	}
+
+	/** Get ProcessButton5.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton5 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton5);
+	}
+
+	/** Set ProcessButton6.
+		@param ProcessButton6 
+		Botón de Proceso
+	  */
+	public void setProcessButton6 (String ProcessButton6)
+	{
+		set_Value (COLUMNNAME_ProcessButton6, ProcessButton6);
+	}
+
+	/** Get ProcessButton6.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton6 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton6);
 	}
 
 	/** Set Processed.

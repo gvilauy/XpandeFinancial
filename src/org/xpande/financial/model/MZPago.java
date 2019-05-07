@@ -312,6 +312,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			}
 		}
 
+		// Obtengo importe total de anticipos afectados en este recibo
+		if (!this.isAnticipo()){
+			this.setTotalAnticiposAfectados();
+		}
+
 		// Impactos en estado de cuenta del socio de negocio
 		this.setEstadoCuenta();
 
@@ -329,6 +334,41 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
+
+
+	private void setTotalAnticiposAfectados() {
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+		    sql = " select coalesce(sum(a.AmtAllocationMT),0) as total " +
+					" from z_pagolin a " +
+					" inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
+					" where a.z_pago_id =" + this.get_ID() +
+					" and a.isselected ='Y' " +
+					" and doc.docbasetype in ('PPA','CCA') ";
+
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			if (rs.next()){
+				this.setAmtAnticipo(rs.getBigDecimal("total"));
+				if (this.getAmtAnticipo().compareTo(Env.ZERO) < 0){
+					this.setAmtAnticipo(this.getAmtAnticipo().negate());
+				}
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+	}
 
 
 	/***
@@ -1686,6 +1726,28 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					pagoLin.saveEx();
 				}
 
+				// Cargo documentos de anticipos afectados por la orden
+				List<MZOrdenPagoLin> antList = ordenPago.getAnticipos();
+				for (MZOrdenPagoLin ordenPagoLin: antList){
+					MZPagoLin pagoLin = new MZPagoLin(getCtx(), 0, get_TrxName());
+					pagoLin.setZ_Pago_ID(this.get_ID());
+					pagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocationMT());
+					pagoLin.setAmtAllocation(ordenPagoLin.getAmtAllocation());
+					pagoLin.setMultiplyRate(ordenPagoLin.getMultiplyRate());
+					pagoLin.setAmtDocument(ordenPagoLin.getAmtDocument());
+					pagoLin.setAmtOpen(ordenPagoLin.getAmtOpen());
+					pagoLin.setC_Currency_ID(ordenPagoLin.getC_Currency_ID());
+					pagoLin.setC_DocType_ID(ordenPagoLin.getC_DocType_ID());
+					pagoLin.setRef_Pago_ID(ordenPagoLin.getZ_Pago_ID());
+					pagoLin.setDateDoc(ordenPagoLin.getDateDoc());
+					pagoLin.setDocumentNoRef(ordenPagoLin.getDocumentNoRef());
+					pagoLin.setDueDateDoc(ordenPagoLin.getDueDateDoc());
+					pagoLin.setEstadoAprobacion(X_Z_PagoLin.ESTADOAPROBACION_APROBADO);
+					pagoLin.setIsSelected(true);
+					pagoLin.setZ_OrdenPago_ID(ordenPago.get_ID());
+					pagoLin.saveEx();
+				}
+
 				// Cargo medios de pago afectados por la orden y ya emitidos
 				List<MZOrdenPagoMedio> medioList = ordenPago.getMediosPago();
 				for (MZOrdenPagoMedio ordenPagoMedio: medioList){
@@ -2289,35 +2351,37 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				}
 				else if (pagoLin.getRef_Pago_ID() > 0){
 
-					// Afecta cada comprobante por el monto de afectación
-					MZPagoAfectacion pagoAfectacion = null;
+					// Afecta cada comprobante por el monto de afectación, cuando no es el recibo del anticipo
+					if ((this.getTotalMediosPago() != null) && (this.getTotalMediosPago().compareTo(Env.ZERO) != 0)){
+						MZPagoAfectacion pagoAfectacion = null;
 
-					// Si tengo orden de pago asociada, busco afectación del anticipo, para esta orden de pago y le actualizo el campo ID de pago.
-					// Esto es porque ya esta afectado.
-					if (pagoLin.getZ_OrdenPago_ID() > 0){
-						pagoAfectacion = MZPagoAfectacion.getByPagoOrdenPago(getCtx(), pagoLin.getRef_Pago_ID(), pagoLin.getZ_OrdenPago_ID(), get_TrxName());
-					}
-					if (pagoAfectacion == null){
-
-						BigDecimal amtAllocation = pagoLin.getAmtAllocation();
-						if (amtAllocation.compareTo(Env.ZERO) < 0){
-							amtAllocation = amtAllocation.negate();
+						// Si tengo orden de pago asociada, busco afectación del anticipo, para esta orden de pago y le actualizo el campo ID de pago.
+						// Esto es porque ya esta afectado.
+						if (pagoLin.getZ_OrdenPago_ID() > 0){
+							pagoAfectacion = MZPagoAfectacion.getByPagoOrdenPago(getCtx(), pagoLin.getRef_Pago_ID(), pagoLin.getZ_OrdenPago_ID(), get_TrxName());
 						}
+						if (pagoAfectacion == null){
 
-						pagoAfectacion = new MZPagoAfectacion(getCtx(), 0, get_TrxName());
-						pagoAfectacion.setAD_Table_ID(this.get_Table_ID());
-						pagoAfectacion.setAmtAllocation(amtAllocation);
-						pagoAfectacion.setC_DocType_ID(this.getC_DocType_ID());
-						pagoAfectacion.setRef_Pago_ID(this.get_ID());
-						pagoAfectacion.setDateDoc(this.getDateDoc());
-						pagoAfectacion.setDocumentNoRef(documentNoRef);
-						pagoAfectacion.setDueDate(pagoLin.getDueDateDoc());
-						pagoAfectacion.setRecord_ID(this.get_ID());
-						pagoAfectacion.setC_Currency_ID(pagoLin.getC_Currency_ID());
-						pagoAfectacion.setAD_Org_ID(this.getAD_Org_ID());
+							BigDecimal amtAllocation = pagoLin.getAmtAllocation();
+							if (amtAllocation.compareTo(Env.ZERO) < 0){
+								amtAllocation = amtAllocation.negate();
+							}
+
+							pagoAfectacion = new MZPagoAfectacion(getCtx(), 0, get_TrxName());
+							pagoAfectacion.setAD_Table_ID(this.get_Table_ID());
+							pagoAfectacion.setAmtAllocation(amtAllocation);
+							pagoAfectacion.setC_DocType_ID(this.getC_DocType_ID());
+							pagoAfectacion.setRef_Pago_ID(this.get_ID());
+							pagoAfectacion.setDateDoc(this.getDateDoc());
+							pagoAfectacion.setDocumentNoRef(documentNoRef);
+							pagoAfectacion.setDueDate(pagoLin.getDueDateDoc());
+							pagoAfectacion.setRecord_ID(this.get_ID());
+							pagoAfectacion.setC_Currency_ID(pagoLin.getC_Currency_ID());
+							pagoAfectacion.setAD_Org_ID(this.getAD_Org_ID());
+						}
+						pagoAfectacion.setZ_Pago_ID(pagoLin.getRef_Pago_ID());
+						pagoAfectacion.saveEx();
 					}
-					pagoAfectacion.setZ_Pago_ID(pagoLin.getRef_Pago_ID());
-					pagoAfectacion.saveEx();
 
 					// Afecto estado de cuenta de esta anticipo cuando es cobro o es un pago que no esta referenciando ordenes de pago.
 					if (!this.isTieneOrdenPago()){
