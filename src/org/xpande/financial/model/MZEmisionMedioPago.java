@@ -391,6 +391,7 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 
 		// Marco item de medio de pago como Anulado
 		MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
+		medioPagoItem.setEntregado(false);
 		medioPagoItem.setAnulado(true);
 		medioPagoItem.saveEx();
 

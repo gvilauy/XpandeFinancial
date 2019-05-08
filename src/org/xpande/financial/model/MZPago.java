@@ -314,7 +314,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		// Obtengo importe total de anticipos afectados en este recibo
 		if (!this.isAnticipo()){
-			this.setTotalAnticiposAfectados();
+			if ((this.getTotalMediosPago() != null) && (this.getTotalMediosPago().compareTo(Env.ZERO) != 0)){
+				this.setTotalAnticiposAfectados();
+			}
 		}
 
 		// Impactos en estado de cuenta del socio de negocio

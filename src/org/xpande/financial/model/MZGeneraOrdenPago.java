@@ -256,6 +256,12 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
         // Obtiene y recorre lista de ordenes de compra a generar
         List<MZOrdenPago> ordenesPagos = this.getOrdenesPago();
+
+        if (ordenesPagos.size() <= 0){
+            m_processMsg = "No hay Ordenes de Pago Generadas. Debe generar al menos una para poder Completar este Documento.";
+            return DocAction.STATUS_Invalid;
+        }
+
         for (MZOrdenPago ordenPago: ordenesPagos){
 
             // Completo orden de pago
