@@ -1,9 +1,11 @@
 package org.xpande.financial.model;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.pdf.Document;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
+import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.comercial.model.MZInvoiceRef;
@@ -111,6 +113,18 @@ public class ValidatorFinancial implements ModelValidator {
                     return message;
                 }
             }
+
+            // Para comprobantes de compra
+            if (!model.isSOTrx()){
+                // Para comprobantes de proveedores con medio de pago EFECTIVO, tengo que anular el pago que se generó de manera automática.
+                if (X_C_Invoice.PAYMENTRULE_Cash.equals(model.getPaymentRule())){
+                    message = this.anularPagosInvoice(model);
+                    if (message != null){
+                        return message;
+                    }
+                }
+            }
+
         }
 
         else if ((timing == TIMING_AFTER_REACTIVATE) || (timing == TIMING_AFTER_VOID)){
@@ -337,6 +351,49 @@ public class ValidatorFinancial implements ModelValidator {
         }
 
         return null;
+    }
+
+
+    /***
+     * Anulo pagos que esten afectando a una determinada invoice.
+     * Xpande. Created by Gabriel Vila on 5/9/19.
+     * @param model
+     * @return
+     */
+    private String anularPagosInvoice(MInvoice model) {
+
+        String message = null;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = "select z_pago_id from z_invoiceafectacion where C_Invoice_ID =" + model.get_ID();
+
+        	pstmt = DB.prepareStatement(sql, model.get_TrxName());
+        	rs = pstmt.executeQuery();
+
+        	while(rs.next()){
+                MZPago pago = new MZPago(model.getCtx(), rs.getInt("z_pago_id"), model.get_TrxName());
+                if ((pago != null) && (pago.get_ID() > 0)){
+                    if (pago.getDocStatus().equalsIgnoreCase(DocumentEngine.STATUS_Completed)){
+                        if (!pago.processIt(DocAction.ACTION_Void)){
+                            return pago.getProcessMsg();
+                        }
+                    }
+                }
+        	}
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+
+        return message;
     }
 
 
