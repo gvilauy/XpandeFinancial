@@ -269,6 +269,9 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 			if (this.getZ_OrdenPago_ID() > 0){
 				medioPagoItem.setZ_OrdenPago_ID(this.getZ_OrdenPago_ID());
 			}
+			if (this.getZ_Pago_ID() > 0){
+				medioPagoItem.setZ_Pago_ID(this.getZ_Pago_ID());
+			}
 			if (this.getZ_MedioPagoReplace_ID() > 0){
 				medioPagoItem.setZ_MedioPagoReplace_ID(this.getZ_MedioPagoReplace_ID());
 			}

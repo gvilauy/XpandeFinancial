@@ -722,6 +722,22 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 	}
 
 	/***
+	 * Obtiene medios de pago de esta orden de pago para un determinado item de medio de pago.
+	 * Xpande. Created by Gabriel Vila on 5/10/19.
+	 * @return
+	 */
+	public MZOrdenPagoMedio getMedioPagoByItem(int zMedioPagoItemID) {
+
+		String whereClause = X_Z_OrdenPagoMedio.COLUMNNAME_Z_OrdenPago_ID + " =" + this.get_ID() +
+				" AND " + X_Z_OrdenPagoMedio.COLUMNNAME_Z_MedioPagoItem_ID + " =" + zMedioPagoItemID;
+
+		MZOrdenPagoMedio model = new Query(getCtx(), I_Z_OrdenPagoMedio.Table_Name, whereClause, get_TrxName()).first();
+
+		return model;
+	}
+
+
+	/***
 	 * Obtiene y retorna lineas de orden de pago que se corresponden a resguardos.
 	 * Xpande. Created by Gabriel Vila on 3/12/18.
 	 * @return

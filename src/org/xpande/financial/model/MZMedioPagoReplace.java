@@ -310,6 +310,50 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 				emisionMedioPago.saveEx();
 				NEW_medioPagoItem.saveEx();
 
+				// Asocio orden de pago y pago a nuevo item de medio de pago
+				if (OLD_medioPagoItem.getZ_OrdenPago_ID() > 0){
+					MZOrdenPago ordenPago = (MZOrdenPago) OLD_medioPagoItem.getZ_OrdenPago();
+					MZOrdenPagoMedio ordenPagoMedio = ordenPago.getMedioPagoByItem(OLD_medioPagoItem.get_ID());
+					if ((ordenPagoMedio == null) || (ordenPagoMedio.get_ID() <= 0)){
+						ordenPagoMedio = new MZOrdenPagoMedio(getCtx(), 0, get_TrxName());
+						ordenPagoMedio.setZ_OrdenPago_ID(ordenPago.get_ID());
+						ordenPagoMedio.setAD_Org_ID(ordenPago.getAD_Org_ID());
+						ordenPagoMedio.setZ_GeneraOrdenPago_ID(ordenPago.getZ_GeneraOrdenPago_ID());
+						ordenPagoMedio.setC_BPartner_ID(NEW_medioPagoItem.getC_BPartner_ID());
+					}
+					ordenPagoMedio.setZ_MedioPagoItem_ID(NEW_medioPagoItem.get_ID());
+					ordenPagoMedio.setZ_MedioPagoFolio_ID(NEW_medioPagoItem.getZ_MedioPagoFolio_ID());
+					ordenPagoMedio.setZ_MedioPago_ID(NEW_medioPagoItem.getZ_MedioPago_ID());
+					ordenPagoMedio.setC_BankAccount_ID(NEW_medioPagoItem.getC_BankAccount_ID());
+					ordenPagoMedio.setDateEmitted(NEW_medioPagoItem.getDateEmitted());
+					ordenPagoMedio.setDueDate(NEW_medioPagoItem.getDueDate());
+					ordenPagoMedio.setC_Currency_ID(NEW_medioPagoItem.getC_Currency_ID());
+					ordenPagoMedio.setTotalAmt(NEW_medioPagoItem.getTotalAmt());
+					ordenPagoMedio.saveEx();
+				}
+				if (OLD_medioPagoItem.getZ_Pago_ID() > 0){
+					MZPago pago = (MZPago) OLD_medioPagoItem.getZ_Pago();
+					MZPagoMedioPago pagoMedioPago = pago.getMedioPagoByItem(OLD_medioPagoItem.get_ID());
+					if ((pagoMedioPago == null) || (pagoMedioPago.get_ID() <= 0)){
+						pagoMedioPago = new MZPagoMedioPago(getCtx(), 0, get_TrxName());
+						pagoMedioPago.setZ_Pago_ID(pago.get_ID());
+						if (NEW_medioPagoItem.getZ_OrdenPago_ID() > 0){
+							pagoMedioPago.setZ_OrdenPago_ID(NEW_medioPagoItem.getZ_OrdenPago_ID());
+						}
+						pagoMedioPago.setAD_Org_ID(pago.getAD_Org_ID());
+						pagoMedioPago.setIsReceipt(false);
+					}
+					pagoMedioPago.setZ_MedioPagoItem_ID(NEW_medioPagoItem.get_ID());
+					pagoMedioPago.setZ_MedioPagoFolio_ID(NEW_medioPagoItem.getZ_MedioPagoFolio_ID());
+					pagoMedioPago.setZ_MedioPago_ID(NEW_medioPagoItem.getZ_MedioPago_ID());
+					pagoMedioPago.setC_BankAccount_ID(NEW_medioPagoItem.getC_BankAccount_ID());
+					pagoMedioPago.setDateEmitted(NEW_medioPagoItem.getDateEmitted());
+					pagoMedioPago.setDueDate(NEW_medioPagoItem.getDueDate());
+					pagoMedioPago.setC_Currency_ID(NEW_medioPagoItem.getC_Currency_ID());
+					pagoMedioPago.setTotalAmt(NEW_medioPagoItem.getTotalAmt());
+					pagoMedioPago.saveEx();
+				}
+
 				// Genero auditoría para este documento
 				MZMedioPagoReplaceAud replaceAud = new MZMedioPagoReplaceAud(getCtx(), 0, get_TrxName());
 				replaceAud.setZ_MedioPago_ID(NEW_medioPagoItem.getZ_MedioPago_ID());

@@ -1464,6 +1464,23 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		return lines;
 	}
 
+
+	/***
+	 * Obtiene medios de pago de esta documento para un determinado item de medio de pago.
+	 * Xpande. Created by Gabriel Vila on 5/10/19.
+	 * @return
+	 */
+	public MZPagoMedioPago getMedioPagoByItem(int zMedioPagoItemID) {
+
+		String whereClause = X_Z_PagoMedioPago.COLUMNNAME_Z_Pago_ID + " =" + this.get_ID() +
+				" AND " + X_Z_PagoMedioPago.COLUMNNAME_Z_MedioPagoItem_ID + " =" + zMedioPagoItemID;
+
+		MZPagoMedioPago model = new Query(getCtx(), I_Z_PagoMedioPago.Table_Name, whereClause, get_TrxName()).first();
+
+		return model;
+	}
+
+
 	/***
 	 * Obtiene y retorna lista con modelos de medios de pago asociados a anticipos incluídos en este documento.
 	 * Xpande. Created by Gabriel Vila on 5/2/19.
