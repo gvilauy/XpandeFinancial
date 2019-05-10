@@ -18,8 +18,6 @@ package org.xpande.financial.model;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -37,7 +35,6 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.xpande.core.utils.AcctUtils;
 
 /** Generated Model for Z_Pago
  *  @author Adempiere (generated) 
@@ -240,6 +237,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		log.info(toString());
 		//
 
+		String action = "";
+
 		// Me aseguro que la fecha del documento no sea mayor a hoy
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 		if (this.getDateDoc().after(fechaHoy)){
@@ -251,6 +250,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		// Obtengo medios de pago a procesar
 		List<MZPagoMedioPago> medioPagoList = this.getMediosPago();
+
+		// Obtengo ordenes de pago asociadas a este documento (si existen)
+		List<MZPagoOrdenPago> ordenPagoList = this.getOrdenesPagoReferenciadas();
+		if (ordenPagoList.size() <= 0){
+			this.setTieneOrdenPago(false);
+		}
 
 		// Validaciones del documento
 		m_processMsg = this.validateDocument(pagoLinList, medioPagoList);
@@ -292,7 +297,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		// Afecta ordendes de pago asociados a este pago, si este pago referencia ordenes de pago
 		if (!this.isSOTrx()){
-			m_processMsg = this.afectarOrdenesPago();
+			m_processMsg = this.afectarOrdenesPago(ordenPagoList);
 			if (m_processMsg != null){
 				return DocAction.STATUS_Invalid;
 			}
@@ -321,6 +326,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		// Impactos en estado de cuenta del socio de negocio
 		this.setEstadoCuenta();
+
+		// Elimino lineas no seleccionadas
+		action = " delete from z_pagolin " +
+				 " where z_pago_id =" + this.get_ID() +
+				 " and isselected ='N' ";
+		DB.executeUpdateEx(action, get_TrxName());
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -522,7 +533,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
         // Elimino asientos contables
         MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
-        // Si es un pago y no tiene asociado ordenes de pago
+		// Obtengo ordenes de pago asociadas a este documento (si existen)
+		List<MZPagoOrdenPago> ordenPagoList = this.getOrdenesPagoReferenciadas();
+		if (ordenPagoList.size() <= 0){
+			this.setTieneOrdenPago(false);
+		}
+
+		// Si es un pago y no tiene asociado ordenes de pago
         if (!this.isSOTrx()){
 			if (!this.isTieneOrdenPago()){
 				// Anulo medios de pago emitidos en este pago/anticipo
@@ -548,7 +565,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		}
 
 		// Desafecto documentos asociados a este documento de pago/cobro
-		m_processMsg = this.desafectarDocumentos();
+		m_processMsg = this.desafectarDocumentos(ordenPagoList);
 		if (m_processMsg != null)
 			return false;
 
@@ -570,8 +587,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 * Al anular o reactivar un documento de pago/cobro, debo desasociar los documentos que contenidos en el mismo.
 	 * Xpande. Created by Gabriel Vila on 5/28/18.
 	 * @return
+	 * @param ordenPagoList
 	 */
-	private String desafectarDocumentos() {
+	private String desafectarDocumentos(List<MZPagoOrdenPago> ordenPagoList) {
 
 		String message = null;
 		String action = "";
@@ -588,16 +606,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			// Para pagos, desasocio ordenes de pago
 			if (!this.isSOTrx()){
 
-				List<MZPagoOrdenPago> pagoOrdenPagoList = this.getOrdenesPagoReferenciadas();
-				if (pagoOrdenPagoList.size() <= 0){
-					this.setTieneOrdenPago(false);
-				}
-
-				if (this.isTieneOrdenPago()){
+				if (ordenPagoList.size() > 0){
 					action = " update z_ordenpago set ispaid='N', z_pago_id = null where z_pago_id =" + this.get_ID();
 					DB.executeUpdateEx(action, get_TrxName());
 
-					for (MZPagoOrdenPago pagoOrdenPago: pagoOrdenPagoList){
+					for (MZPagoOrdenPago pagoOrdenPago: ordenPagoList){
 
 						MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
 
@@ -814,8 +827,14 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
         // Elimino asientos contables
         MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
-        // Desafecto documentos asociados a este documento de pago/cobro
-		m_processMsg = this.desafectarDocumentos();
+		// Obtengo ordenes de pago asociadas a este documento (si existen)
+		List<MZPagoOrdenPago> ordenPagoList = this.getOrdenesPagoReferenciadas();
+		if (ordenPagoList.size() <= 0){
+			this.setTieneOrdenPago(false);
+		}
+
+		// Desafecto documentos asociados a este documento de pago/cobro
+		m_processMsg = this.desafectarDocumentos(ordenPagoList);
 		if (m_processMsg != null)
 			return false;
 
@@ -2458,8 +2477,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 * Afecta ordenes de pago utilizados en este pago
 	 * Xpande. Created by Gabriel Vila on 3/12/18.
 	 * @return
+	 * @param ordenPagoList
 	 */
-	private String afectarOrdenesPago() {
+	private String afectarOrdenesPago(List<MZPagoOrdenPago> ordenPagoList) {
 
 		String message = null;
 		String action = "";
@@ -2471,18 +2491,18 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				return null;
 			}
 
+			// No hago nada si no tengo ordenes de pago referenciadas en este pago
+			if (ordenPagoList.size() <= 0){
+				return null;
+			}
+
 			String documentNoRef = this.getDocumentNo();
 			if ((this.getNroRecibo() != null) && (!this.getNroRecibo().trim().equalsIgnoreCase(""))){
 				documentNoRef = this.getNroRecibo();
 			}
 
-			List<MZPagoOrdenPago> pagoOrdenPagoList = this.getOrdenesPagoReferenciadas();
 
-			if (pagoOrdenPagoList.size() <= 0){
-				this.setTieneOrdenPago(false);
-			}
-
-			for (MZPagoOrdenPago pagoOrdenPago: pagoOrdenPagoList){
+			for (MZPagoOrdenPago pagoOrdenPago: ordenPagoList){
 				MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
 				ordenPago.setZ_Pago_ID(this.get_ID());
 				ordenPago.setIsPaid(true);
