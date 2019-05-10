@@ -33,7 +33,7 @@ public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190324L;
+	private static final long serialVersionUID = 20190510L;
 
     /** Standard Constructor */
     public X_Z_GeneraOrdenPagoLin (Properties ctx, int Z_GeneraOrdenPagoLin_ID, String trxName)
@@ -141,6 +141,34 @@ public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	public I_C_BPartner getC_BPartnerRelation() throws RuntimeException
+    {
+		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
+			.getPO(getC_BPartnerRelation_ID(), get_TrxName());	}
+
+	/** Set Related Partner.
+		@param C_BPartnerRelation_ID 
+		Related Business Partner
+	  */
+	public void setC_BPartnerRelation_ID (int C_BPartnerRelation_ID)
+	{
+		if (C_BPartnerRelation_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartnerRelation_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartnerRelation_ID, Integer.valueOf(C_BPartnerRelation_ID));
+	}
+
+	/** Get Related Partner.
+		@return Related Business Partner
+	  */
+	public int getC_BPartnerRelation_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartnerRelation_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_C_Currency getC_Currency() throws RuntimeException

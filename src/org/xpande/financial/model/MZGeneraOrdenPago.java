@@ -1080,7 +1080,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
             // Query
             sql = " select hdr.c_bpartner_id, hdr.z_transfersaldo_id, hdr.c_invoice_id, hdr.c_doctype_id, hdr.documentno, " +
-                    " hdr.datedoc, hdr.c_currency_id, hdr.grandtotal, " +
+                    " hdr.datedoc, hdr.c_currency_id, hdr.grandtotal, hdr.C_BPartnerRelation_ID, " +
                     " iop.amtopen, bp.PaymentRulePO, doc.docbasetype " +
                     " from z_transfersaldo hdr " +
                     " inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
@@ -1165,6 +1165,9 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                 ordenPagoLin.setDueDateMedioPago(ordenPagoLin.getDueDateDoc());
                 ordenPagoLin.setEstadoAprobacion("APROBADO");
                 ordenPagoLin.setZ_TransferSaldo_ID(rs.getInt("z_transfersaldo_id"));
+                if (rs.getInt("C_BPartnerRelation_ID") > 0){
+                    ordenPagoLin.setC_BPartnerRelation_ID(rs.getInt("C_BPartnerRelation_ID"));
+                }
 
                 // Seteo medio de pago según el socio de negocio en caso de tener uno asociado.
                 if (rs.getString("PaymentRulePO") != null){
