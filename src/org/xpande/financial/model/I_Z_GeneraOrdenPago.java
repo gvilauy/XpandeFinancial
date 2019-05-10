@@ -308,6 +308,19 @@ public interface I_Z_GeneraOrdenPago
 	  */
 	public String getPaymentRulePO();
 
+    /** Column name ProcesaCargaMasiva */
+    public static final String COLUMNNAME_ProcesaCargaMasiva = "ProcesaCargaMasiva";
+
+	/** Set ProcesaCargaMasiva.
+	  * Si considera procesos de carga masiva o no
+	  */
+	public void setProcesaCargaMasiva(boolean ProcesaCargaMasiva);
+
+	/** Get ProcesaCargaMasiva.
+	  * Si considera procesos de carga masiva o no
+	  */
+	public boolean isProcesaCargaMasiva();
+
     /** Column name ProcessButton */
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 

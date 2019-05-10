@@ -1492,37 +1492,122 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                 ordenPago.setTotalAmt(totalPago);
                 ordenPago.saveEx();
 
-                // Creo lineas para cada medio de pago a considerarse al completar la orden de pago
-                if (hashMediosPago != null){
-                    for (HashMap.Entry<Integer, BigDecimal> entry : hashMediosPago.entrySet()){
-                        MZOrdenPagoMedio ordenPagoMedio = new MZOrdenPagoMedio(getCtx(), 0, get_TrxName());
-                        ordenPagoMedio.setZ_GeneraOrdenPago_ID(this.get_ID());
-                        ordenPagoMedio.setAD_Org_ID(ordenPago.getAD_Org_ID());
-                        ordenPagoMedio.setZ_OrdenPago_ID(ordenPago.get_ID());
-                        ordenPagoMedio.setC_BankAccount_ID(this.getC_BankAccount_ID());
-                        ordenPagoMedio.setDueDate(maxDueDate);
-                        ordenPagoMedio.setC_Currency_ID(ordenPago.getC_Currency_ID());
-                        ordenPagoMedio.setTotalAmt(entry.getValue());
-                        ordenPagoMedio.setZ_MedioPago_ID(entry.getKey());
-                        ordenPagoMedio.setZ_MedioPagoFolio_ID(this.getZ_MedioPagoFolio_ID());
-                        ordenPagoMedio.setC_BPartner_ID(ordenPago.getC_BPartner_ID());
+                // Si no tengo marca de sugerir medios de pago emitidos y cargados al sistema de manera masiva por interface
+                if (!this.isProcesaCargaMasiva()){
+                    // Creo lineas para cada medio de pago a considerarse al completar la orden de pago
+                    if (hashMediosPago != null){
+                        for (HashMap.Entry<Integer, BigDecimal> entry : hashMediosPago.entrySet()){
+                            MZOrdenPagoMedio ordenPagoMedio = new MZOrdenPagoMedio(getCtx(), 0, get_TrxName());
+                            ordenPagoMedio.setZ_GeneraOrdenPago_ID(this.get_ID());
+                            ordenPagoMedio.setAD_Org_ID(ordenPago.getAD_Org_ID());
+                            ordenPagoMedio.setZ_OrdenPago_ID(ordenPago.get_ID());
+                            ordenPagoMedio.setC_BankAccount_ID(this.getC_BankAccount_ID());
+                            ordenPagoMedio.setDueDate(maxDueDate);
+                            ordenPagoMedio.setC_Currency_ID(ordenPago.getC_Currency_ID());
+                            ordenPagoMedio.setTotalAmt(entry.getValue());
+                            ordenPagoMedio.setZ_MedioPago_ID(entry.getKey());
+                            ordenPagoMedio.setZ_MedioPagoFolio_ID(this.getZ_MedioPagoFolio_ID());
+                            ordenPagoMedio.setC_BPartner_ID(ordenPago.getC_BPartner_ID());
 
-                        MZMedioPago medioPago = (MZMedioPago) ordenPagoMedio.getZ_MedioPago();
-                        ordenPagoMedio.setTieneBanco(medioPago.isTieneBanco());
-                        ordenPagoMedio.setTieneCaja(medioPago.isTieneCaja());
-                        ordenPagoMedio.setTieneCtaBco(medioPago.isTieneCtaBco());
-                        ordenPagoMedio.setTieneFecEmi(medioPago.isTieneFecEmi());
-                        ordenPagoMedio.setTieneFecVenc(medioPago.isTieneFecVenc());
-                        ordenPagoMedio.setTieneFolio(medioPago.isTieneFolio());
-                        ordenPagoMedio.setTieneNroRef(medioPago.isTieneNroRef());
-                        ordenPagoMedio.saveEx();
+                            MZMedioPago medioPago = (MZMedioPago) ordenPagoMedio.getZ_MedioPago();
+                            ordenPagoMedio.setTieneBanco(medioPago.isTieneBanco());
+                            ordenPagoMedio.setTieneCaja(medioPago.isTieneCaja());
+                            ordenPagoMedio.setTieneCtaBco(medioPago.isTieneCtaBco());
+                            ordenPagoMedio.setTieneFecEmi(medioPago.isTieneFecEmi());
+                            ordenPagoMedio.setTieneFecVenc(medioPago.isTieneFecVenc());
+                            ordenPagoMedio.setTieneFolio(medioPago.isTieneFolio());
+                            ordenPagoMedio.setTieneNroRef(medioPago.isTieneNroRef());
+                            ordenPagoMedio.saveEx();
+                        }
                     }
                 }
+                else{
+                    // Cargo medios de pago emitidos para este socio de negocio y que fueron cargados masivamente por interface.
+                    message = this.setOrdenMediosPagoCargaMasiva(ordenPago);
+                    if (message != null){
+                        return message;
+                    }
+
+                }
+
             }
 
         }
         catch (Exception e){
             throw new AdempiereException(e);
+        }
+
+        return message;
+    }
+
+
+    /***
+     * Obtiene y carga medios de pago provenientes de cargas masivas por interface. Los deja asociados a la orden
+     * de pago recibida.
+     * Xpande. Created by Gabriel Vila on 5/10/19.
+     * @param ordenPago
+     * @return
+     */
+    private String setOrdenMediosPagoCargaMasiva(MZOrdenPago ordenPago) {
+
+        String message = null;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.z_mediopagoitem_id, a.dateemitted, a.duedate, a.c_currency_id, a.totalamt, " +
+                    " a.z_mediopago_id, a.z_mediopagofolio_id " +
+                    " from z_mediopagoitem a " +
+                    " inner join z_emisionmediopago b on a.z_emisionmediopago_id = b.z_emisionmediopago_id " +
+                    " where a.c_bpartner_id =" + ordenPago.getC_BPartner_ID() +
+                    " and a.ad_org_id =" + ordenPago.getAD_Org_ID() +
+                    " and a.c_bankaccount_id =" + this.getC_BankAccount_ID() +
+                    " and a.emitido ='Y' and a.entregado ='N' and a.anulado ='N' " +
+                    " and b.docstatus ='CO' and b.z_loadmediopago_id > 0 " +
+                    " order by a.dateemitted ";
+
+        	pstmt = DB.prepareStatement(sql, get_TrxName());
+        	rs = pstmt.executeQuery();
+
+        	while(rs.next()){
+
+                MZOrdenPagoMedio ordenPagoMedio = new MZOrdenPagoMedio(getCtx(), 0, get_TrxName());
+                ordenPagoMedio.setZ_GeneraOrdenPago_ID(this.get_ID());
+                ordenPagoMedio.setAD_Org_ID(ordenPago.getAD_Org_ID());
+                ordenPagoMedio.setZ_OrdenPago_ID(ordenPago.get_ID());
+                ordenPagoMedio.setC_BankAccount_ID(this.getC_BankAccount_ID());
+                ordenPagoMedio.setDueDate(rs.getTimestamp("duedate"));
+                ordenPagoMedio.setC_Currency_ID(ordenPago.getC_Currency_ID());
+                ordenPagoMedio.setTotalAmt(rs.getBigDecimal("totalamt"));
+                ordenPagoMedio.setZ_MedioPago_ID(rs.getInt("z_mediopago_id"));
+                ordenPagoMedio.setZ_MedioPagoItem_ID(rs.getInt("z_mediopagoitem_id"));
+
+                if (rs.getInt("z_mediopagofolio_id") > 0){
+                    ordenPagoMedio.setZ_MedioPagoFolio_ID(rs.getInt("z_mediopagofolio_id"));
+                }
+
+                ordenPagoMedio.setC_BPartner_ID(ordenPago.getC_BPartner_ID());
+
+                MZMedioPago medioPago = (MZMedioPago) ordenPagoMedio.getZ_MedioPago();
+                ordenPagoMedio.setTieneBanco(medioPago.isTieneBanco());
+                ordenPagoMedio.setTieneCaja(medioPago.isTieneCaja());
+                ordenPagoMedio.setTieneCtaBco(medioPago.isTieneCtaBco());
+                ordenPagoMedio.setTieneFecEmi(medioPago.isTieneFecEmi());
+                ordenPagoMedio.setTieneFecVenc(medioPago.isTieneFecVenc());
+                ordenPagoMedio.setTieneFolio(medioPago.isTieneFolio());
+                ordenPagoMedio.setTieneNroRef(medioPago.isTieneNroRef());
+                ordenPagoMedio.saveEx();
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
         }
 
         return message;
@@ -1622,7 +1707,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
             // Si alguno de los distintos medios de pago a utilizarse para las ordenes, requiere folio
             boolean mediosPagoRequiereFolio = this.mediospagoRequiereFolio();
 
-            if (mediosPagoRequiereFolio){
+            if ((mediosPagoRequiereFolio) && (!this.isProcesaCargaMasiva())){
                 if (this.getZ_MedioPagoFolio_ID() <= 0){
                     message = "Debe indicar Libreta para Cheques Diferidos.";
                     return message;

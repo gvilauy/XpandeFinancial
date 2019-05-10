@@ -31,7 +31,7 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181128L;
+	private static final long serialVersionUID = 20190510L;
 
     /** Standard Constructor */
     public X_Z_GeneraOrdenPago (Properties ctx, int Z_GeneraOrdenPago_ID, String trxName)
@@ -52,6 +52,8 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 			setGroupLastDue (true);
 // Y
 			setIsApproved (false);
+// N
+			setProcesaCargaMasiva (false);
 // N
 			setProcessed (false);
 // N
@@ -466,8 +468,8 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 	public static final String PAYMENTRULEPO_Cash = "B";
 	/** Credit Card = K */
 	public static final String PAYMENTRULEPO_CreditCard = "K";
-	/** Direct Deposit = T */
-	public static final String PAYMENTRULEPO_DirectDeposit = "T";
+	/** DEPOSITO DIRECTO = T */
+	public static final String PAYMENTRULEPO_DEPOSITODIRECTO = "T";
 	/** Check = S */
 	public static final String PAYMENTRULEPO_Check = "S";
 	/** On Credit = P */
@@ -482,6 +484,8 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 	public static final String PAYMENTRULEPO_FONDOFIJO = "F";
 	/** CANJE = J */
 	public static final String PAYMENTRULEPO_CANJE = "J";
+	/** TRANSFERENCIA BANCARIA = R */
+	public static final String PAYMENTRULEPO_TRANSFERENCIABANCARIA = "R";
 	/** Set Payment Rule.
 		@param PaymentRulePO 
 		Purchase payment option
@@ -498,6 +502,30 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 	public String getPaymentRulePO () 
 	{
 		return (String)get_Value(COLUMNNAME_PaymentRulePO);
+	}
+
+	/** Set ProcesaCargaMasiva.
+		@param ProcesaCargaMasiva 
+		Si considera procesos de carga masiva o no
+	  */
+	public void setProcesaCargaMasiva (boolean ProcesaCargaMasiva)
+	{
+		set_Value (COLUMNNAME_ProcesaCargaMasiva, Boolean.valueOf(ProcesaCargaMasiva));
+	}
+
+	/** Get ProcesaCargaMasiva.
+		@return Si considera procesos de carga masiva o no
+	  */
+	public boolean isProcesaCargaMasiva () 
+	{
+		Object oo = get_Value(COLUMNNAME_ProcesaCargaMasiva);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set ProcessButton.
