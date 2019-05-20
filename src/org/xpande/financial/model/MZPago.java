@@ -763,7 +763,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			}
 
 			// Desasocio info en estado de cuenta para este documento de pago/cobro
-			action = " delete from z_estadocuenta where z_pago_id =" + this.get_ID();
+			action = " delete from z_estadocuenta where z_pago_id =" + this.get_ID() +
+					" and ad_table_id =" + this.get_Table_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
 		}

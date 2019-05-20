@@ -45,6 +45,7 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.X_C_TaxGroup;
+import org.xpande.cfe.model.MZCFEConfig;
 import org.xpande.cfe.model.MZCFERespuestaProvider;
 import org.xpande.cfe.utils.ProcesadorCFE;
 import org.xpande.core.utils.CurrencyUtils;
@@ -95,8 +96,8 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		}
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
-			options[newIndex++] = DocumentEngine.ACTION_None;
-			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
+			//options[newIndex++] = DocumentEngine.ACTION_None;
+			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
 			//options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
@@ -320,8 +321,6 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
 		estadoCuenta.saveEx();
 
-		// CFE
-		//this.cfe();
 		ProcesadorCFE procesadorCFE = new ProcesadorCFE(getCtx(), get_TrxName());
 		m_processMsg = procesadorCFE.executeCFE(this, this.getAD_Org_ID(), this.getC_DocType_ID());
 		if (m_processMsg != null){
@@ -453,14 +452,80 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 	 */
 	public boolean reActivateIt()
 	{
+		String action = "";
+
 		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
-	}	//	reActivateIt
-	
-	
+
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Valido que este documento pueda reactivarse en caso que no se tenga que enviar como CFE.
+		MZCFEConfig cfeConfig = MZCFEConfig.getDefault(getCtx(), get_TrxName());
+		if ((cfeConfig != null) && (cfeConfig.get_ID() > 0)){
+			boolean docsendCFE = cfeConfig.isDocSendCFE(this.getAD_Org_ID(), this.getC_DocType_ID());
+			if (docsendCFE){
+				m_processMsg = "No es posible reactivar este Documento ya que esta asociado a un Comprobante Electrónico CFE.";
+				return false;
+			}
+		}
+
+		// Control de período contable
+		MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
+
+		// Elimino asientos contables
+		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+		// Desafecto documentos asociados a este documento de pago/cobro
+		m_processMsg = this.desafectarDocumentos();
+		if (m_processMsg != null)
+			return false;
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+
+		this.setProcessed(false);
+		this.setPosted(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
+	}
+
+	/***
+	 * Desafecto documentos asociados a este.
+	 * Xpande. Created by Gabriel Vila on 5/20/19.
+	 * @return
+	 */
+	private String desafectarDocumentos() {
+
+		String message = null;
+		String action = "";
+
+		try{
+
+			// Desafecto documentos asociadas con este resguardo en el estado de cuenta
+			action = " update z_estadocuenta set z_resguardosocio_to_id = null " +
+					" where z_resguardosocio_to_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+			// Desafecto info en estado de cuenta para este documento de pago/cobro
+			action = " delete from z_estadocuenta where z_resguardosocio_id =" + this.get_ID() +
+					" and ad_table_id =" + this.get_Table_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
 	/*************************************************************************
 	 * 	Get Summary
 	 *	@return Summary of Document
@@ -787,611 +852,6 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		return true;
 	}
 
-	private void cfe() {
-
-		try{
-			CFEEmpresasType objECfe = new CFEEmpresasType();
-			CFEDefType objCfe = new CFEDefType();
-			objECfe.setCFE(objCfe);
-
-			//setObjCFE(objECfe);
-			objCfe.setEResg(new CFEDefType.EResg());
-
-			loadEncabezado_eResguardo(objECfe);
-			loadDetalleProductosOServicios_eResguardo(objECfe);
-
-			loadReferencia();
-
-			loadCAE(objECfe);
-			loadAdenda(objECfe);
-
-			// Sigo
-			if (objCfe.getEResg().getEncabezado() != null) {
-				objCfe.getEResg().getEncabezado().setEmisor(null);
-			}
-			objCfe.getEResg().setTmstFirma(null);
-
-			// Sigooo
-			this.SendCfe(objCfe);
-
-
-
-		}
-		catch (Exception e){
-			throw new AdempiereException(e);
-		}
-	}
-
-	private void loadEncabezado_eResguardo(CFEEmpresasType objECfe) {
-		CFEDefType objCfe = objECfe.getCFE();
-
-		CFEDefType.EResg.Encabezado encabezado = new CFEDefType.EResg.Encabezado();
-		objCfe.getEResg().setEncabezado(encabezado);
-
-		IdDocResg idDocResg = new IdDocResg();
-		TotalesResg totales = new TotalesResg();
-
-		encabezado.setIdDoc(idDocResg);
-		encabezado.setTotales(totales);
-
-		/*   1 */ objCfe.setVersion("1.0");
-
-		//  AREA: Identificacion del Comprobante
-		/*   2 */ idDocResg.setTipoCFE(BigInteger.valueOf(182));
-		MDocType doc = (MDocType) this.getC_DocType();
-		MSequence sec = new MSequence(getCtx(), doc.getDefiniteSequence_ID(), get_TrxName());
-		if(sec.getPrefix() != null) {
-			/*   3 */ idDocResg.setSerie(sec.getPrefix());
-		} else {
-			throw new AdempiereException("CFEMessages.IDDOC_003");
-		}
-		if(this.getDocumentNo() != null){ // Se obtiene nro de cae directamente del documentNo
-			// Se quita serie del n�mero para enviar
-			String documentNo = this.getDocumentNo();
-			documentNo = documentNo.replaceAll("[^0-9]", ""); // Expresi�n regular para quitar todo lo que no es n�mero
-
-			String docno = org.apache.commons.lang.StringUtils.leftPad(String.valueOf(documentNo), 7, "0");
-			BigInteger numero = new BigInteger(docno);
-			/*   4 */ idDocResg.setNro(numero);
-		}
-		else throw new AdempiereException("CFEMessages.IDDOC_004");
-		if (this.getDateDoc() != null){
-			/*   5 */ idDocResg.setFchEmis(Timestamp_to_XmlGregorianCalendar_OnlyDate(this.getDateDoc(), false));
-		} else {
-			throw new AdempiereException("CFEMessages.IDDOC_005");
-		}
-		/*   6-15 - Tipo de obligatoriedad 0 (No corresponde)*/
-
-		//  AREA: Emisor
-		MOrgInfo orgInfo = MOrgInfo.get(getCtx(), this.getAD_Org_ID(), get_TrxName());
-		encabezado.setEmisor(loadEmisor(orgInfo, getCtx()));
-
-		//  Area: Receptor
-		MBPartner partner =  MBPartner.get(getCtx(), this.getC_BPartner_ID());
-		encabezado.setReceptor(loadResguardoReceptor(partner, this.getDocumentNo(), getCtx()));
-
-		// AREA: Totales Encabezado
-		MCurrency mCurrency = (MCurrency) this.getC_Currency();
-		if (mCurrency.getISO_Code() == null) throw new AdempiereException("CFEMessages.TOTALES_110");
-		try {
-			/* 110 */ totales.setTpoMoneda(TipMonType.valueOf(mCurrency.getISO_Code()));
-			if (mCurrency.getC_Currency_ID() != 142) {
-
-				BigDecimal currRate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0, this.getC_Currency_ID(), 142, 0, this.getDateDoc(), null);
-
-				if (currRate.equals(Env.ZERO)) throw new AdempiereException("CFEMessages.TOTALES_111");
-				/* 111 */ totales.setTpoCambio(currRate.setScale(3, BigDecimal.ROUND_HALF_UP));
-			}
-		} catch (AdempiereException ex){
-			throw ex;
-		} catch (Exception ex){
-			throw new AdempiereException("CFEMessages.TOTALES_110_2");
-		}
-
-		// Totales por tipo de retencion / percepcion
-
-		String sqlReten = " SELECT ret.Z_RetencionSocio_ID, ret.codigodgi, ret.emitiedgi, SUM(resl.amtretencion) total"
-				+ " FROM Z_ResguardoSocio res"
-				+ " INNER JOIN Z_ResguardoSocioRet resl ON res.Z_ResguardoSocio_ID = resl.Z_ResguardoSocio_ID"
-				+ " INNER JOIN Z_RetencionSocio ret ON resl.Z_RetencionSocio_ID = ret.Z_RetencionSocio_ID"
-				+ " WHERE res.Z_ResguardoSocio_ID = " + this.get_ID()
-				+ " GROUP BY ret.Z_RetencionSocio_ID, ret.codigodgi, ret.emitiedgi";
-
-		PreparedStatement pstmt = DB.prepareStatement (sqlReten, get_TrxName());
-		ResultSet rs;
-
-		BigDecimal totalSum = Env.ZERO;
-		List<TotalesResg.RetencPercep> listRetPerc = totales.getRetencPercep();
-
-		try {
-			rs = pstmt.executeQuery();
-			while (rs.next()){
-
-				boolean isDgi = false;
-				String codigo = rs.getString("codigodgi");
-				try {
-					isDgi = rs.getString("emitieDGI").equalsIgnoreCase("Y") ? true : false;
-				} catch (Exception e) {}
-				BigDecimal montoSum = rs.getBigDecimal("total");
-
-				if (montoSum != null) {
-					montoSum = montoSum.setScale(2, RoundingMode.HALF_UP);
-				}
-
-				// Valido que si no es una retenci�n de DGI, el codigo de retenci�n debe estar entre 9999001 y 9999999
-				if (!isDgi) {
-					int intCod = 0;
-					try {
-						intCod = Integer.valueOf(codigo);
-					} catch (Exception e) { /* Si lanza excepci�n, queda en 0 */ }
-					if (intCod < 9999001 || intCod > 9999999) {
-						throw new AdempiereException("CFEMessages.TOTALES_127_OUTOFRANGE");
-					}
-				}
-				TotalesResg.RetencPercep retPerc = new TotalesResg.RetencPercep();
-
-				// Contra-Resguardo, doy vuelta el signo.
-				if (doc.getDocBaseType().equalsIgnoreCase("RGC")) {
-					montoSum = montoSum.negate();
-				}
-				/* 127 */ retPerc.setCodRet(codigo);
-				/* 128 */ retPerc.setValRetPerc(montoSum);
-				totalSum = totalSum.add(montoSum);
-
-				listRetPerc.add(retPerc);
-
-			}
-		} catch (SQLException e) {
-			throw new AdempiereException(e);
-		}
-
-		if (listRetPerc.size() == 0) {
-			throw new AdempiereException("CFEMessages.TOTALES_125");
-		}
-
-		/* 125 */ totales.setMntTotRetenido(totalSum);
-		/* 126 */ totales.setCantLinDet(listRetPerc.size());
-	}
-
-
-	public XMLGregorianCalendar Timestamp_to_XmlGregorianCalendar_OnlyDate(Timestamp timestamp, boolean withTime) {
-		try {
-			GregorianCalendar cal = (GregorianCalendar) GregorianCalendar.getInstance();
-			cal.setTime(timestamp);
-			XMLGregorianCalendar xgcal;
-			if (!withTime){
-				xgcal = DatatypeFactory.newInstance().newXMLGregorianCalendarDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), DatatypeConstants.FIELD_UNDEFINED);
-			} else {
-				xgcal = DatatypeFactory.newInstance().newXMLGregorianCalendarDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), DatatypeConstants.FIELD_UNDEFINED );
-				xgcal.setHour(cal.get(Calendar.HOUR_OF_DAY));
-				xgcal.setMinute(cal.get(Calendar.MINUTE));
-				xgcal.setSecond(cal.get(Calendar.SECOND));
-				xgcal.setMillisecond(cal.get(Calendar.MILLISECOND));
-				xgcal.setTimezone(-3*60); // GTM -3 en minutos
-
-			}
-			return xgcal;
-		} catch (DatatypeConfigurationException e) {
-			throw new AdempiereException(e);
-		}
-	}
-
-
-	public Emisor loadEmisor(MOrgInfo orgInfo, Properties ctx) {
-		Emisor emisor = new Emisor();
-
-		if (orgInfo == null) throw new AdempiereException("CFEMessages.EMISOR_ORG");
-
-		//if (orgInfo.getDUNS() == null) throw new AdempiereException("CFEMessages.EMISOR_040");
-		///* 40  */ emisor.setRUCEmisor(orgInfo.getDUNS());
-
-		//if (orgInfo.getrznsoc() == null) throw new AdempiereException(CFEMessages.EMISOR_041);
-		///* 41  */ emisor.setRznSoc(orgInfo.getrznsoc());
-
-		emisor.setRUCEmisor("212334750012");
-		emisor.setRznSoc("212334750012");
-
-		MOrg mOrg = MOrg.get(ctx, orgInfo.getAD_Org_ID());
-		if (mOrg != null && mOrg.getName() != null) {
-			/* 42  */ emisor.setNomComercial(MOrg.get(ctx, orgInfo.getAD_Org_ID()).getName());
-		}
-		///* 43  */ emisor.setGiroEmis(orgInfo.getgirotype());
-		/* 44   - Tipo de obligatoriedad 3 (dato opcional) */
-		///* 45  */ emisor.setCorreoEmisor(orgInfo.getEMail());
-
-		emisor.setNomComercial("Supermercado Covadonga S.A.");
-		//emisor.setGiroEmis(orgInfo.getgirotype()	);
-		//emisor.setCorreoEmisor(orgInfo.getEMail());
-
-
-		//MWarehouse casa = MWarehouse.get(ctx, orgInfo.getDropShip_Warehouse_ID());
-		///* 46  */ emisor.setEmiSucursal(casa.getName());
-		emisor.setEmiSucursal("Covadonga");
-
-
-		//try {
-			///* 47  */ emisor.setCdgDGISucur(BigInteger.valueOf(Long.valueOf(orgInfo.get_ValueAsString("TaxNo"))));
-//		}catch(Exception ex){
-			//throw new AdempiereException(CFEMessages.EMISOR_047);
-//		}
-
-		emisor.setCdgDGISucur(new BigInteger("1"));
-
-		MLocation mLocation = (MLocation) orgInfo.getC_Location();
-
-		//if (mLocation == null || mLocation.getAddress1() == null) throw new AdempiereException(CFEMessages.EMISOR_048);
-		///* 48  */ emisor.setDomFiscal(mLocation.getAddress1());
-		emisor.setDomFiscal("Progreso");
-
-		//MLocalidades mLocalidades = (MLocalidades) mLocation.getUY_Localidades();
-		//if (mLocalidades == null || mLocalidades.getName() == null) throw new AdempiereException(CFEMessages.EMISOR_049);
-		///* 49  */ emisor.setCiudad(mLocalidades.getName());
-		emisor.setCiudad("PROGRESO");
-
-		//MDepartamentos mDepartamentos = (MDepartamentos) mLocation.getUY_Departamentos();
-		//if (mDepartamentos == null || mDepartamentos.getName() == null) throw new AdempiereException(CFEMessages.EMISOR_050);
-		///* 50  */ emisor.setDepartamento(mDepartamentos.getName());
-
-		emisor.setDepartamento("CANELONES");
-
-		return emisor;
-	}
-
-	public ReceptorResg loadResguardoReceptor(MBPartner partner, String documentNo, Properties ctx) {
-		ReceptorResg receptor = new ReceptorResg();
-
-		// Cargo C_BPartnerLocation marcada para remito
-		MBPartnerLocation partnerLocation = null;
-		MBPartnerLocation[] locations = partner.getLocations(false);
-		if (locations == null) throw new AdempiereException("CFEMessages.RECEPTOR_REM_NOLOCATIONDEF");
-		for (MBPartnerLocation mbpl : locations) {
-			if (mbpl.isRemitTo()) {
-
-				if (partnerLocation == null) {
-					partnerLocation = mbpl;
-				} else {
-					if (mbpl.getUpdated().compareTo(partnerLocation.getUpdated()) > 0) {
-						partnerLocation = mbpl;
-					}
-				}
-			}
-		}
-		if (partnerLocation == null) throw new AdempiereException("CFEMessages.RECEPTOR_REM_NOLOCATIONDEF");
-
-		//  Area: Receptor
-
-		int tipoDocRecep = 2;
-
-		X_C_TaxGroup taxGroup = (X_C_TaxGroup) partner.getC_TaxGroup();
-		if (taxGroup.getValue() != null){
-			if (taxGroup.getValue().equalsIgnoreCase("CI")){
-				tipoDocRecep = 3;
-			}
-		}
-
-		String docRecep = partner.getTaxID();
-
-		/* 60  */ receptor.setTipoDocRecep(tipoDocRecep);
-		MCountry mCountry = null;
-		mCountry = MCountry.get(getCtx(), 336);
-
-		if (mCountry == null) throw new AdempiereException("CFEMessages.RECEPTOR_61");
-		/* 61  */ receptor.setCodPaisRecep(mCountry.getCountryCode());
-
-		if (tipoDocRecep == 2 || tipoDocRecep == 3) {
-			/* 62  */ receptor.setDocRecep(docRecep);
-		} else if (tipoDocRecep == 4 || tipoDocRecep == 5 || tipoDocRecep == 6) {
-			/* 62.1*/ receptor.setDocRecepExt(docRecep);
-		}
-
-		/* 63  */ receptor.setRznSocRecep(partner.getName());String dirRecep = null;
-		MLocation location = (MLocation) partnerLocation.getC_Location();
-		String add1 = location.getAddress1();
-		if (add1 != null) {
-			if (add1.length() <= 70)
-				dirRecep = add1;
-			else
-				dirRecep = add1.substring(0, 70);
-		}
-		/* 64  */ receptor.setDirRecep(dirRecep);
-		/* 65  */ receptor.setCiudadRecep(location.getCity());
-		/* 66  */ receptor.setDeptoRecep(location.getRegionName());
-		/* 66.1*/ receptor.setPaisRecep("Uruguay");
-		try {
-			///* 67  */ receptor.setCP(Integer.valueOf(partnerLocation.getUY_Localidades().getzipcode()));
-		} catch (Exception ex) { }
-
-
-
-		return receptor;
-	}
-
-	private void loadDetalleProductosOServicios_eResguardo(CFEEmpresasType objECfe) {
-		CFEDefType objCfe = objECfe.getCFE();
-		objCfe.getEResg().setDetalle(new CFEDefType.EResg.Detalle());
-		List<ItemResg> itemResgs = objCfe.getEResg().getDetalle().getItem();
-		List<MZResguardoSocioRet> mResguardoLines = this.getResguardoRets();
-
-		if (mResguardoLines.size() > 200) {
-			throw new AdempiereException("CFEMessages.TOTALES_126_2");
-		}
-
-		int position = 1;
-
-		for (MZResguardoSocioRet mResguardoLine : mResguardoLines) {
-			MZRetencionSocio mRetention = (MZRetencionSocio) mResguardoLine.getZ_RetencionSocio();
-			if (mRetention == null) {
-				throw new AdempiereException("CFEMessages.DETALLE_NORETENTION");
-			}
-
-
-			ItemResg itemResg = new ItemResg();
-
-			/*   1 */ itemResg.setNroLinDet(position ++);
-
-			MDocType docType = (MDocType) this.getC_DocType();
-
-			// Contra-Resguardo
-			if (docType.getDocBaseType().equalsIgnoreCase("RGC")) {
-				itemResg.setIndFact(BigInteger.valueOf(9));
-			}
-
-
-			List<RetPercResg> listRetPercs = itemResg.getRetencPercep();
-			RetPercResg retPersc = new RetPercResg();
-			listRetPercs.add(retPersc);
-
-			/*  20 */ retPersc.setCodRet(mRetention.getCodigoDGI());
-			/*  21    Dato condicional, opcional, no se carga */
-
-			/*  22 */ retPersc.setMntSujetoaRet(mResguardoLine.getAmtBase().setScale(2, RoundingMode.HALF_UP));
-			/*  23 */ retPersc.setValRetPerc(mResguardoLine.getAmtRetencion().setScale(2, RoundingMode.HALF_UP));
-
-			itemResgs.add(itemResg);
-		}
-
-	}
-
-	private void loadCAE(CFEEmpresasType objECfe) {
-		CFEDefType objCfe = objECfe.getCFE();
-
-		CAEDataType caeDataType = new CAEDataType();
-		objCfe.getEResg().setCAEData(caeDataType);
-
-		/*
-		caeDataType.setCAEID(new BigDecimal(90160202170.0).toBigInteger());
-		caeDataType.setDNro(new BigDecimal(1).toBigInteger());
-		caeDataType.setHNro(new BigDecimal(12000).toBigInteger());
-		caeDataType.setFecVenc(Timestamp_to_XmlGregorianCalendar_OnlyDate(Timestamp.valueOf("2018-10-27 00:00:00"), false));//mDgiCae.getfechaVencimiento() Emi
-		*/
-
-
-		// Cambios de CAE al 15/03/1018 en Covadonga
-		caeDataType.setCAEID(new BigDecimal(90180136300.0).toBigInteger());
-		caeDataType.setDNro(new BigDecimal(12001).toBigInteger());
-		caeDataType.setHNro(new BigDecimal(111999).toBigInteger());
-		caeDataType.setFecVenc(Timestamp_to_XmlGregorianCalendar_OnlyDate(Timestamp.valueOf("2020-03-14 00:00:00"), false));//mDgiCae.getfechaVencimiento() Emi
-
-
-
-	}
-
-	protected void loadAdenda(CFEEmpresasType objECfe) {
-
-		MDocType docType = (MDocType) this.getC_DocType();
-
-		objECfe.setAdenda(this.getDescription());
-
-		// Contra-Resguardo
-		if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
-			objECfe.setAdenda("Corrección de e-Resguardo");
-		}
-
-	}
-
-
-	private void SendCfe(CFEDefType cfeDefType) {
-
-		try {
-
-			CFEEmpresasType cfeEmpresasType = new CFEEmpresasType();
-			cfeEmpresasType.setCFE(cfeDefType);
-
-			File file = File.createTempFile("SistecoXMLCFE", ".xml");
-			file.deleteOnExit();
-			JAXBContext jaxbContext = JAXBContext.newInstance(CFEEmpresasType.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-
-
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-			jaxbMarshaller.marshal(cfeEmpresasType, file);
-
-			FileReader fr = new FileReader(file);
-			BufferedReader br = new BufferedReader(fr);
-
-			String linea;
-			String xml = "";
-			while((linea=br.readLine())!=null) {
-				xml += linea + "\n";
-			}
-
-
-//			// Quito namespaces
-			xml = xml
-//					//.replaceAll("xmlns:ns2=\"[a-zA-Z1-90:/.#]*\"", "")
-//					//.replaceAll("xmlns:ns3=\"[a-zA-Z1-90:/.#]*\"", "")
-//					//.replace("<CFE_Adenda  >", "<CFE_Adenda>")
-//					//.replace("standalone=\"yes\"", "")
-					.replace("<CFE xmlns:ns0=\"http://cfe.dgi.gub.uy\" version=\"1.0\">", "<ns0:CFE version=\"1.0\">")
-					.replace("</CFE>","</ns0:CFE>")
-					.replace("<CFE_Adenda ", "<ns0:CFE_Adenda xmlns:ns0=\"http://cfe.dgi.gub.uy\"")
-					.replace("</CFE_Adenda>", "</ns0:CFE_Adenda>")
-					.replace("xmlns:ns0=\"http://cfe.dgi.gub.uy\"xmlns:ns2=\"http://www.w3.org/2000/09/xmldsig#\"", "xmlns:ns0=\"http://cfe.dgi.gub.uy\" xmlns:ns2=\"http://www.w3.org/2000/09/xmldsig#\"");
-
-			// Guardo XML sin los namespace
-			PrintWriter pw = new PrintWriter(file);
-			pw.println(xml);
-			pw.close();
-
-
-			Service service = new Service();
-			Call call = (Call) service.createCall();
-			// Establecemos la dirección en la que está activado el WebService
-			call.setTargetEndpointAddress(new java.net.URL("http://10.0.0.130/ws_efactura/ws_efactura.php"));
-
-			//call.setOperationName(new QName("efac", "http://www.objetos.com.uy/efactura/"));
-			// Establecemos el nombre del método a invocar
-			call.setOperationName(new QName("http://www.objetos.com.uy/efactura/", "recepcionDocumento"));
-			call.setSOAPActionURI("http://www.objetos.com.uy/efactura/recepcionDocumento");
-
-			// Establecemos los parámetros que necesita el método
-			// Observe que se deben especidicar correctamente tanto el nómbre como el tipo de datos. Esta información se puede obtener viendo el WSDL del servicio Web
-			call.addParameter(new QName("entrada"), XMLType.XSD_STRING, ParameterMode.IN);
-
-			// Especificamos el tipo de datos que devuelve el método.
-			call.setReturnType(XMLType.XSD_STRING);
-
-			// Invocamos el método
-			String result = (String) call.invoke("http://www.objetos.com.uy/efactura/", "recepcionDocumento", new Object[] { "<![CDATA[" + xml + "]]>" });
-
-			// Quitamos el CDATA, solo al comienzo y al final si estan en el string
-			result = result.replaceAll("^<!\\[CDATA\\[", "").replaceAll("]]>$", "");
-
-
-			// Guardo la respuesta de Sisteco
-			File response = File.createTempFile("SistecoXMLCFEResponse", ".xml");
-			response.deleteOnExit();
-			FileWriter fichero = new FileWriter(response);
-			PrintWriter pwResponse = new PrintWriter(fichero);
-			pwResponse.print(result);
-			pwResponse.close();
-
-			SistecoResponseDTO cfeDtoSisteco = SistecoConvertResponse.getObjSistecoResponseDTO(result);
-
-			// Si la respuesta contiene errores, lanzo una excepci�n
-			if (cfeDtoSisteco.getStatus() != 0) {
-				throw new AdempiereException("CFEMessages.CFE_ERROR_PROVEEDOR : " + cfeDtoSisteco.getDescripcion());
-			}
-
-
-			/*
-			MCFEDataEnvelope mCfeDataEnvelope = new MCFEDataEnvelope(getCtx(), 0, get_TrxName());
-			mCfeDataEnvelope.setProviderAgent(MCFEDataEnvelope.PROVIDERAGENT_Sisteco);
-			mCfeDataEnvelope.saveEx();
-
-			PO docPo = (PO) cfeDto;
-			MCFEDocCFE docCfe = new MCFEDocCFE(getCtx(), 0, get_TrxName());
-			docCfe.setAD_Table_ID(docPo.get_Table_ID());
-			docCfe.setRecord_ID(docPo.get_ID());
-			docCfe.setUY_CFE_DataEnvelope_ID(mCfeDataEnvelope.get_ID());
-			try {
-				docCfe.setC_DocType_ID(BigDecimal.valueOf(docPo.get_ValueAsInt("C_DocTypeTarget_ID")));
-				docCfe.setDocumentNo(docPo.get_ValueAsString("documentNo"));
-			} catch (Exception e2) {}
-			docCfe.saveEx();
-
-
-			MCFESistecoSRspCFE sistecoCfeResp = new MCFESistecoSRspCFE(getCtx(), 0, get_TrxName());
-			sistecoCfeResp.setCFEStatus(String.valueOf(cfeDtoSisteco.getStatus()));
-			sistecoCfeResp.setCFEDescripcion(cfeDtoSisteco.getDescripcion());
-			if (sistecoCfeResp.getCFEStatus().equalsIgnoreCase("0")) {
-				sistecoCfeResp.setCFETipo(BigDecimal.valueOf(cfeDtoSisteco.getTipoCFE()));
-				sistecoCfeResp.setCFESerie(cfeDtoSisteco.getSerie());
-				sistecoCfeResp.setCFEMro(cfeDtoSisteco.getMro());
-				//sistecoCfeResp.setCFETmstFirma(cfeDtoSisteco.getTmstFirma());
-				sistecoCfeResp.setCFEDigestValue(cfeDtoSisteco.getDigestValue());
-				sistecoCfeResp.setCFEResolucion(String.valueOf(cfeDtoSisteco.getResolucion()));
-				sistecoCfeResp.setCFEAnioResolucion(BigDecimal.valueOf(cfeDtoSisteco.getAnioResolucion()));
-				sistecoCfeResp.setCFEUrlDocumentoDGI(cfeDtoSisteco.getUrlDocumentoDGI());
-				sistecoCfeResp.setCFECAEID(cfeDtoSisteco.getCaeId());
-				sistecoCfeResp.setCFEDNro(cfeDtoSisteco.getdNro());
-				sistecoCfeResp.setCFEHNro(cfeDtoSisteco.gethNro());
-				//sistecoCfeResp.setCFEFecVenc(cfeDtoSisteco.getFecVenc());
-			}
-			sistecoCfeResp.setUY_CFE_DocCFE_ID(docCfe.get_ID());
-			sistecoCfeResp.saveEx();
-			*/
-
-			MZCFERespuestaProvider cfeRespuesta = new MZCFERespuestaProvider(getCtx(), 0, get_TrxName());
-			cfeRespuesta.setAD_Table_ID(I_Z_ResguardoSocio.Table_ID);
-			cfeRespuesta.setRecord_ID(this.get_ID());
-			cfeRespuesta.setC_DocType_ID(this.getC_DocType_ID());
-			cfeRespuesta.setDocumentNoRef(this.getDocumentNo());
-			cfeRespuesta.setCFE_Status(String.valueOf(cfeDtoSisteco.getStatus()));
-			cfeRespuesta.setCFE_Descripcion(cfeDtoSisteco.getDescripcion());
-			if (cfeRespuesta.getCFE_Status().equalsIgnoreCase("0")){
-				cfeRespuesta.setCFE_Tipo(BigDecimal.valueOf(cfeDtoSisteco.getTipoCFE()));
-				cfeRespuesta.setCFE_Serie(cfeDtoSisteco.getSerie());
-				cfeRespuesta.setCFE_Numero(cfeDtoSisteco.getMro());
-				cfeRespuesta.setCFE_DigitoVerificador(cfeDtoSisteco.getDigestValue());
-				cfeRespuesta.setCFE_Resolucion(String.valueOf(cfeDtoSisteco.getResolucion()));
-				cfeRespuesta.setCFE_AnioResolucion(cfeDtoSisteco.getAnioResolucion());
-				cfeRespuesta.setCFE_URL_DGI(cfeDtoSisteco.getUrlDocumentoDGI());
-				cfeRespuesta.setCFE_CAE_ID(cfeDtoSisteco.getCaeId());
-				cfeRespuesta.setCFE_NroInicial_CAE(cfeDtoSisteco.getdNro());
-				cfeRespuesta.setCFE_NroFinal_CAE(cfeDtoSisteco.gethNro());
-			}
-			cfeRespuesta.saveEx();
-
-		} catch (Exception e) {
-			throw new AdempiereException(e);
-		}
-
-	}
-
-	private void loadReferencia() {
-
-		MDocType docType = (MDocType) this.getC_DocType();
-
-		// Si no es Contra-Resguardo, no hago nada.
-		if (!docType.getDocBaseType().equalsIgnoreCase("RGC")) {
-			return;
-		}
-
-		// Obtengo resguardo asociado a este contra-resguardo
-		MZResguardoSocio resguardoSocioRef = (MZResguardoSocio) this.getZ_ResguardoSocio_Ref();
-		if ((resguardoSocioRef == null) || (resguardoSocioRef.get_ID() <= 0)) {
-			throw new AdempiereException("CFEMessages.INFOREF_NOREF_182");
-		}
-
-		Referencia referencias = new Referencia();
-		Referencia.Referencia1 referencia = new Referencia.Referencia1();
-		referencias.getReferencia1().add(referencia);
-
-		/*   1 */ referencia.setNroLinRef(1);
-
-		///*   2    Siempre se referencia un resguardo a anular en el documento contraresguardo, no se debe indicar en este caso */
-		//CfeType cfeTypeRef = getCFETypeFromInvoice(mResguardoRef);
-		//if ((cfeTypeRef == CfeType.eTicket_NC || cfeTypeRef == CfeType.eTicket_NC) && cfeTypeRef != CfeType.eTicket)
-//			throw new AdempiereException(CFEMessages.INFOREF_003_ASOCETICKET);
-//		if ((cfeTypeRef == CfeType.eFactura_NC || cfeTypeRef == CfeType.eFactura_NC) && cfeTypeRef != CfeType.eFactura)
-			//throw new AdempiereException(CFEMessages.INFOREF_003_ASOCEFACTURA);
-		//try {
-//			/*   3 */ referencia.setTpoDocRef(BigInteger.valueOf(Long.valueOf(CfeUtils.getCfeTypes().inverse().get(cfeTypeRef))));
-		//} catch(Exception ex){
-//			throw new AdempiereException(CFEMessages.INFOREF_003_PARSEERROR);
-		//}
-
-		referencia.setTpoDocRef(BigInteger.valueOf(182));
-
-		MSequence sec = new MSequence(getCtx(), docType.getDefiniteSequence_ID(), null);
-		if(sec.getPrefix() != null){
-			/*   4 */ referencia.setSerie(sec.getPrefix());
-		} else throw new AdempiereException("CFEMessages.INFOREF_004_NODEF");
-
-		if (resguardoSocioRef.getDocumentNo() != null) {
-			String documentNo = resguardoSocioRef.getDocumentNo();
-			documentNo = documentNo.replaceAll("[^0-9]", ""); // Expresión regular para quitar todo lo que no es número
-			String docno = org.apache.commons.lang.StringUtils.leftPad(String.valueOf(documentNo), 7, "0");
-
-			/*   5 */ referencia.setNroCFERef(new BigInteger(docno));
-		} else throw new AdempiereException("CFEMessages.INFOREF_005_NODEF");
-
-		/*   6  Como se cuenta con un resguardo referenicado, no es necesario setear este campo */
-
-		/*   7 */ referencia.setFechaCFEref(Timestamp_to_XmlGregorianCalendar_OnlyDate(resguardoSocioRef.getDateDoc(), false));
-	}
 
 	/***
 	 * Metodo que verifica si una determinada invoice tiene un resguardo emitido o no.
