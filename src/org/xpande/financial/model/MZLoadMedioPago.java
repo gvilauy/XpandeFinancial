@@ -339,10 +339,84 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 				return DocAction.STATUS_Invalid;
 			}
 			emisionMedioPago.saveEx();
-
-
-
 		}
+
+		// Recorro lineas manuales que vienen ordenadas por cuenta bancaria (necesario para la creación de folios de medios de pago).
+		for (MZLoadMedioPagoMan loadMedioPagoMan: loadMedioPagoManList){
+
+			// Corte por cuenta bancaria
+			if (loadMedioPagoMan.getC_BankAccount_ID() != cBankAccountIDAux){
+
+				MBankAccount bankAccount = (MBankAccount) loadMedioPagoMan.getC_BankAccount();
+
+				// Creo Folio de medios de pago para esta cuenta bancaria
+				medioPagoFolio = new MZMedioPagoFolio(getCtx(), 0, get_TrxName());
+				medioPagoFolio.setC_BankAccount_ID(loadMedioPagoMan.getC_BankAccount_ID());
+				medioPagoFolio.setC_Currency_ID(bankAccount.getC_Currency_ID());
+				medioPagoFolio.setDescription("Generada Automáticamente en Carga de Medios de Pago Nro.: " + this.getDocumentNo());
+				medioPagoFolio.setDisponible(false);
+				medioPagoFolio.setDocumentSerie("CM");
+				medioPagoFolio.setEmisionManual(true);
+				medioPagoFolio.setIsExecuted(true);
+				medioPagoFolio.setName("CARGA_MAN_" + this.getDocumentNo());
+				medioPagoFolio.setAD_Org_ID(bankAccount.getAD_Org_ID());
+				medioPagoFolio.setNumeroDesde(0);
+				medioPagoFolio.setNumeroHasta(1);
+				medioPagoFolio.setTIpoCheque(X_Z_MedioPagoFolio.TIPOCHEQUE_DIFERIDO);
+				medioPagoFolio.setZ_MedioPago_ID(medioPago.get_ID());
+				medioPagoFolio.saveEx();
+
+				cBankAccountIDAux = loadMedioPagoMan.getC_BankAccount_ID();
+			}
+
+			// Creo item de medio de pago
+			MZMedioPagoItem medioPagoItem = new MZMedioPagoItem(getCtx(), 0, get_TrxName());
+			medioPagoItem.setZ_MedioPago_ID(medioPago.get_ID());
+			medioPagoItem.setAD_Org_ID(medioPagoFolio.getAD_Org_ID());
+			medioPagoItem.setZ_MedioPagoFolio_ID(medioPagoFolio.get_ID());
+			medioPagoItem.setEntregado(false);
+			medioPagoItem.setAnulado(false);
+			medioPagoItem.setC_BankAccount_ID(medioPagoFolio.getC_BankAccount_ID());
+			medioPagoItem.setC_BPartner_ID(loadMedioPagoMan.getC_BPartner_ID());
+			medioPagoItem.setC_Currency_ID(medioPagoFolio.getC_Currency_ID());
+			medioPagoItem.setConciliado(false);
+			medioPagoItem.setDateEmitted(loadMedioPagoMan.getDateEmitted());
+			medioPagoItem.setDepositado(false);
+			medioPagoItem.setDocumentSerie(medioPagoFolio.getDocumentSerie());
+			medioPagoItem.setDueDate(loadMedioPagoMan.getDueDate());
+			medioPagoItem.setEmitido(false);
+			medioPagoItem.setIsOwn(true);
+			medioPagoItem.setIsPrinted(true);
+			medioPagoItem.setIsReceipt(false);
+			medioPagoItem.setNroMedioPago(loadMedioPagoMan.getNroMedioPago());
+			medioPagoItem.setTotalAmt(loadMedioPagoMan.getTotalAmt());
+			medioPagoItem.saveEx();
+
+			// Creo documento de Emision de medio de pago y lo completo.
+			MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
+			emisionMedioPago.setZ_MedioPago_ID(medioPago.get_ID());
+			emisionMedioPago.setAD_Org_ID(medioPagoFolio.getAD_Org_ID());
+			emisionMedioPago.setZ_MedioPagoFolio_ID(medioPagoFolio.get_ID());
+			emisionMedioPago.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+			emisionMedioPago.setC_Currency_ID(medioPagoItem.getC_Currency_ID());
+			emisionMedioPago.setC_BankAccount_ID(medioPagoItem.getC_BankAccount_ID());
+			emisionMedioPago.setC_BPartner_ID(medioPagoItem.getC_BPartner_ID());
+			emisionMedioPago.setDateDoc(this.getDateDoc());
+			emisionMedioPago.setDateEmitted(medioPagoItem.getDateEmitted());
+			emisionMedioPago.setDueDate(medioPagoItem.getDueDate());
+			emisionMedioPago.setTotalAmt(medioPagoItem.getTotalAmt());
+			emisionMedioPago.setDescription(loadMedioPagoMan.getDescription());
+			emisionMedioPago.setZ_LoadMedioPago_ID(this.get_ID());
+			emisionMedioPago.saveEx();
+
+			// Completo documento de emisión de medio de pago
+			if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
+				m_processMsg = emisionMedioPago.getProcessMsg();
+				return DocAction.STATUS_Invalid;
+			}
+			emisionMedioPago.saveEx();
+		}
+
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -838,7 +912,7 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 
 		String whereClause = X_Z_LoadMedioPagoMan.COLUMNNAME_Z_LoadMedioPago_ID + " =" + this.get_ID();
 
-		List<MZLoadMedioPagoMan> lines = new Query(getCtx(), I_Z_LoadMedioPagoMan.Table_Name, whereClause, get_TrxName()).list();
+		List<MZLoadMedioPagoMan> lines = new Query(getCtx(), I_Z_LoadMedioPagoMan.Table_Name, whereClause, get_TrxName()).setOrderBy(" C_BankAccount_ID, NroMedioPago ").list();
 
 		return lines;
 	}
