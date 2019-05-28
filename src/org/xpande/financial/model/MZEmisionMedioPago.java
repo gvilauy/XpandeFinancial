@@ -311,6 +311,12 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 			}
 			*/
 
+			// Valido que tenga organizacion
+			if (this.getAD_Org_ID() <= 0){
+				return "Debe indicar Organización para este Documento";
+			}
+
+
 			// Valido fecha de vencimiento no mayor a 180 dias a partir de fecha de emisión
 			Date dateFechaAux = new Date(this.getDateEmitted().getTime());
 			dateFechaAux =  DateUtils.addDays(dateFechaAux, 180);
@@ -570,6 +576,11 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 
 	@Override
 	protected boolean beforeSave(boolean newRecord) {
+
+		if (this.getAD_Org_ID() == 0){
+			log.saveError("ATENCIÓN", "Debe Indicar Organización a considerar (no se acepta organización = * )");
+			return false;
+		}
 
 		if (newRecord){
 			if (this.getC_DocType_ID() <= 0){
