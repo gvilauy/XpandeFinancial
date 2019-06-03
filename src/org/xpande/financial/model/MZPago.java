@@ -333,6 +333,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				 " and isselected ='N' ";
 		DB.executeUpdateEx(action, get_TrxName());
 
+		action = " delete from z_pagoresguardo " +
+				" where z_pago_id =" + this.get_ID() +
+				" and isselected ='N' ";
+		DB.executeUpdateEx(action, get_TrxName());
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
