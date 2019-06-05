@@ -36,4 +36,6 @@ public class MZMedioPagoReplaceLin extends X_Z_MedioPagoReplaceLin {
         return lines;
     }
 
+
+
 }

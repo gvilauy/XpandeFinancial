@@ -274,11 +274,13 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 					m_processMsg = "Libreta no tiene medios de pago disponibles para utilizar: " + ((MZMedioPagoFolio) replaceDet.getZ_MedioPagoFolio()).getName();
 					return DocAction.STATUS_Invalid;
 				}
+				NEW_medioPagoItem.setAD_Org_ID(this.getAD_Org_ID());
 
 				// Realizo emisión para este medio de pago a considerar
 				MDocType[] docsEmision = MDocType.getOfDocBaseType(getCtx(), "EMP");
 				MDocType docEmision = docsEmision[0];
 				MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
+				emisionMedioPago.setAD_Org_ID(this.getAD_Org_ID());
 				emisionMedioPago.setZ_MedioPago_ID(NEW_medioPagoItem.getZ_MedioPago_ID());
 				emisionMedioPago.setZ_MedioPagoFolio_ID(NEW_medioPagoItem.getZ_MedioPagoFolio_ID());
 				emisionMedioPago.setZ_MedioPagoItem_ID(NEW_medioPagoItem.get_ID());
@@ -356,6 +358,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 
 				// Genero auditoría para este documento
 				MZMedioPagoReplaceAud replaceAud = new MZMedioPagoReplaceAud(getCtx(), 0, get_TrxName());
+				replaceAud.setAD_Org_ID(this.getAD_Org_ID());
 				replaceAud.setZ_MedioPago_ID(NEW_medioPagoItem.getZ_MedioPago_ID());
 				replaceAud.setZ_MedioPagoFolio_ID(NEW_medioPagoItem.getZ_MedioPagoFolio_ID());
 				replaceAud.setZ_MedioPagoItem_ID(NEW_medioPagoItem.get_ID());
@@ -688,6 +691,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 
 				// Nueva linea para este proceso con datos del item
 				MZMedioPagoReplaceLin replaceLin = new MZMedioPagoReplaceLin(getCtx(), 0, get_TrxName());
+				replaceLin.setAD_Org_ID(this.getAD_Org_ID());
 				replaceLin.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
 				replaceLin.setZ_MedioPagoReplace_ID(this.get_ID());
 				replaceLin.setZ_MedioPago_ID(medioPagoItem.getZ_MedioPago_ID());
@@ -727,6 +731,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 				if (this.isSelected()){
 					// Nuevo medio de pago por defecto para este reemplazo
 					MZMedioPagoReplaceDet replaceDet = new MZMedioPagoReplaceDet(getCtx(), 0, get_TrxName());
+					replaceDet.setAD_Org_ID(this.getAD_Org_ID());
 					replaceDet.setC_BankAccount_ID(replaceLin.getC_BankAccount_ID());
 					replaceDet.setC_Currency_ID(replaceLin.getC_Currency_ID());
 					replaceDet.setDateEmitted(fechaHoy);
