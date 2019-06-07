@@ -2396,7 +2396,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				else if (pagoLin.getRef_Pago_ID() > 0){
 
 					// Afecta cada comprobante por el monto de afectación, cuando no es el recibo del anticipo
-					if ((this.getTotalMediosPago() != null) && (this.getTotalMediosPago().compareTo(Env.ZERO) != 0)){
+					if (((this.getTotalMediosPago() != null) && (this.getTotalMediosPago().compareTo(Env.ZERO) != 0))
+						|| ((this.getTotalMediosPago().compareTo(Env.ZERO) == 0) && (this.getPayAmt().compareTo(Env.ZERO) == 0))) {
+
 						MZPagoAfectacion pagoAfectacion = null;
 
 						// Si tengo orden de pago asociada, busco afectación del anticipo, para esta orden de pago y le actualizo el campo ID de pago.
