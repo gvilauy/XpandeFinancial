@@ -5,6 +5,7 @@ import org.compiere.model.MBPartner;
 import org.compiere.process.DocAction;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
+import org.compiere.util.Env;
 import org.xpande.financial.model.MZFinancialConfig;
 import org.xpande.financial.model.MZOrdenPago;
 import org.xpande.financial.model.MZPago;
@@ -95,7 +96,7 @@ public class ReciboProveedorAgil extends SvrProcess {
                 if ((ordenPagoMain == null) || (ordenPagoMain.get_ID() <= 0)){
                     return "@Error@ " + "No existe en el sistema una Orden de Pago con el Numero de Orden de Pago 1 ingresado.";
                 }
-                if (ordenPagoMain.getDocStatus() != ordenPagoMain.DOCSTATUS_Completed){
+                if (!ordenPagoMain.getDocStatus().equalsIgnoreCase(DocAction.STATUS_Completed)){
                     return "@Error@ " + "La Orden de Pago número " + this.nroOrdenPago1 + " no esta en estado COMPLETO, por lo tanto no puede procesarse.";
                 }
                 if (ordenPagoMain.getZ_Pago_ID() > 0){
@@ -119,7 +120,7 @@ public class ReciboProveedorAgil extends SvrProcess {
                 if ((ordenPagoAux == null) || (ordenPagoAux.get_ID() <= 0)){
                     return "@Error@ " + "No existe en el sistema una Orden de Pago con el Numero de Orden de Pago 2 ingresado.";
                 }
-                if (ordenPagoAux.getDocStatus() != ordenPagoMain.DOCSTATUS_Completed){
+                if (!ordenPagoAux.getDocStatus().equalsIgnoreCase(DocAction.STATUS_Completed)){
                     return "@Error@ " + "La Orden de Pago número " + this.nroOrdenPago2 + " no esta en estado COMPLETO, por lo tanto no puede procesarse.";
                 }
                 if (ordenPagoAux.getAD_Org_ID() != ordenPagoMain.getAD_Org_ID()){
@@ -149,7 +150,7 @@ public class ReciboProveedorAgil extends SvrProcess {
                 if ((ordenPagoAux == null) || (ordenPagoAux.get_ID() <= 0)){
                     return "@Error@ " + "No existe en el sistema una Orden de Pago con el Numero de Orden de Pago 3 ingresado.";
                 }
-                if (ordenPagoAux.getDocStatus() != ordenPagoMain.DOCSTATUS_Completed){
+                if (!ordenPagoAux.getDocStatus().equalsIgnoreCase(DocAction.STATUS_Completed)){
                     return "@Error@ " + "La Orden de Pago número " + this.nroOrdenPago3 + " no esta en estado COMPLETO, por lo tanto no puede procesarse.";
                 }
                 if (ordenPagoAux.getAD_Org_ID() != ordenPagoMain.getAD_Org_ID()){
@@ -179,7 +180,7 @@ public class ReciboProveedorAgil extends SvrProcess {
                 if ((ordenPagoAux == null) || (ordenPagoAux.get_ID() <= 0)){
                     return "@Error@ " + "No existe en el sistema una Orden de Pago con el Numero de Orden de Pago 4 ingresado.";
                 }
-                if (ordenPagoAux.getDocStatus() != ordenPagoMain.DOCSTATUS_Completed){
+                if (!ordenPagoAux.getDocStatus().equalsIgnoreCase(DocAction.STATUS_Completed)){
                     return "@Error@ " + "La Orden de Pago número " + this.nroOrdenPago4 + " no esta en estado COMPLETO, por lo tanto no puede procesarse.";
                 }
                 if (ordenPagoAux.getAD_Org_ID() != ordenPagoMain.getAD_Org_ID()){
@@ -210,7 +211,7 @@ public class ReciboProveedorAgil extends SvrProcess {
                 if ((ordenPagoAux == null) || (ordenPagoAux.get_ID() <= 0)){
                     return "@Error@ " + "No existe en el sistema una Orden de Pago con el Numero de Orden de Pago 5 ingresado.";
                 }
-                if (ordenPagoAux.getDocStatus() != ordenPagoMain.DOCSTATUS_Completed){
+                if (!ordenPagoAux.getDocStatus().equalsIgnoreCase(DocAction.STATUS_Completed)){
                     return "@Error@ " + "La Orden de Pago número " + this.nroOrdenPago5 + " no esta en estado COMPLETO, por lo tanto no puede procesarse.";
                 }
                 if (ordenPagoAux.getAD_Org_ID() != ordenPagoMain.getAD_Org_ID()){
@@ -247,6 +248,8 @@ public class ReciboProveedorAgil extends SvrProcess {
                 pago.setTieneRecibo(true);
                 pago.setNroRecibo(this.nroReciboProveedor);
                 pago.setC_DocType_ID(financialConfig.getDefaultDocPPD_ID());
+                pago.setPayAmt(Env.ZERO);
+                pago.setTotalMediosPago(Env.ZERO);
                 pago.setDescription("Generada Automáticamente desde Ingreso Ágil de Recibos.");
                 pago.saveEx();
 
