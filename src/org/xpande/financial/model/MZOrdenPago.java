@@ -786,6 +786,23 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 
 	/***
+	 * Método que obtiene y retorna orden de pago según número de documento recibido.
+	 * Xpande. Created by Gabriel Vila on 6/7/19.
+	 * @param ctx
+	 * @param documentNo
+	 * @param trxName
+	 * @return
+	 */
+	public static MZOrdenPago getByDocumentNo(Properties ctx, String documentNo, String trxName){
+
+		String whereClause = X_Z_OrdenPago.COLUMNNAME_DocumentNo + " ='" + documentNo + "' ";
+
+		MZOrdenPago model = new Query(ctx, I_Z_OrdenPago.Table_Name, whereClause, trxName).first();
+
+		return model;
+	}
+
+	/***
 	 * Obtiene y retorna lineas de orden de pago que se corresponden a Anticipos a Proveedores
 	 * Xpande. Created by Gabriel Vila on 3/24/19.
 	 * @return
