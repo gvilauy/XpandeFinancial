@@ -1,9 +1,8 @@
 package org.xpande.financial.callout;
 
 import org.compiere.model.*;
-import org.xpande.financial.model.MZFinancialConfig;
-import org.xpande.financial.model.MZMedioPagoMotivoRep;
-import org.xpande.financial.model.X_Z_MedioPagoMotivoRep;
+import org.compiere.util.Env;
+import org.xpande.financial.model.*;
 
 import java.util.Properties;
 
@@ -112,6 +111,41 @@ public class CalloutFinancial extends CalloutEngine {
 
         MZMedioPagoMotivoRep motivoRep = new MZMedioPagoMotivoRep(ctx, zMedioPagoMotivoRepID, null);
         mTab.setValue(X_Z_MedioPagoMotivoRep.COLUMNNAME_SolicitaFecVenc, motivoRep.isSolicitaFecVenc());
+
+        return "";
+    }
+
+
+    /***
+     * Setea atributos asociados al medio de pago seleccionado en documento de Reemplazo de Medios de Pago.
+     * Xpande. Created by Gabriel Vila on 6/12/19.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setMedioPagoInfoReemplazo(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        int zMedioPagoID = (Integer) value;
+
+        if (zMedioPagoID <= 0) return "";
+
+        MZMedioPago medioPago = new MZMedioPago(ctx, zMedioPagoID, null);
+
+        if ((medioPago != null) && (medioPago.get_ID() > 0)) {
+
+            mTab.setValue(X_Z_MedioPagoReplaceDet.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmi());
+            mTab.setValue(X_Z_MedioPagoReplaceDet.COLUMNNAME_TieneFecVenc, medioPago.isTieneFecVenc());
+            mTab.setValue(X_Z_MedioPagoReplaceDet.COLUMNNAME_TieneCtaBco, medioPago.isTieneCtaBco());
+            mTab.setValue(X_Z_MedioPagoReplaceDet.COLUMNNAME_TieneCaja, medioPago.isTieneCaja());
+            mTab.setValue(X_Z_MedioPagoReplaceDet.COLUMNNAME_TieneFolio, medioPago.isTieneFolio());
+            mTab.setValue(X_Z_MedioPagoReplaceDet.COLUMNNAME_TieneBanco, medioPago.isTieneBanco());
+            mTab.setValue(X_Z_MedioPagoReplaceDet.COLUMNNAME_TieneNroRef, medioPago.isTieneNroRef());
+        }
 
         return "";
     }

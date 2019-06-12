@@ -78,6 +78,36 @@ public interface I_Z_MedioPagoReplaceDet
 
 	public I_C_BankAccount getC_BankAccount() throws RuntimeException;
 
+    /** Column name C_Bank_ID */
+    public static final String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
+
+	/** Set Bank.
+	  * Bank
+	  */
+	public void setC_Bank_ID(int C_Bank_ID);
+
+	/** Get Bank.
+	  * Bank
+	  */
+	public int getC_Bank_ID();
+
+	public I_C_Bank getC_Bank() throws RuntimeException;
+
+    /** Column name C_CashBook_ID */
+    public static final String COLUMNNAME_C_CashBook_ID = "C_CashBook_ID";
+
+	/** Set Cash Book.
+	  * Cash Book for recording petty cash transactions
+	  */
+	public void setC_CashBook_ID(int C_CashBook_ID);
+
+	/** Get Cash Book.
+	  * Cash Book for recording petty cash transactions
+	  */
+	public int getC_CashBook_ID();
+
+	public I_C_CashBook getC_CashBook() throws RuntimeException;
+
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -122,6 +152,19 @@ public interface I_Z_MedioPagoReplaceDet
 	  */
 	public Timestamp getDateEmitted();
 
+    /** Column name DocumentNoRef */
+    public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
+
+	/** Set DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public void setDocumentNoRef(String DocumentNoRef);
+
+	/** Get DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public String getDocumentNoRef();
+
     /** Column name DueDate */
     public static final String COLUMNNAME_DueDate = "DueDate";
 
@@ -147,6 +190,97 @@ public interface I_Z_MedioPagoReplaceDet
 	  * The record is active in the system
 	  */
 	public boolean isActive();
+
+    /** Column name TieneBanco */
+    public static final String COLUMNNAME_TieneBanco = "TieneBanco";
+
+	/** Set TieneBanco.
+	  * Si requiere información de Banco o no
+	  */
+	public void setTieneBanco(boolean TieneBanco);
+
+	/** Get TieneBanco.
+	  * Si requiere información de Banco o no
+	  */
+	public boolean isTieneBanco();
+
+    /** Column name TieneCaja */
+    public static final String COLUMNNAME_TieneCaja = "TieneCaja";
+
+	/** Set TieneCaja.
+	  * Si requiere o no una caja asociada
+	  */
+	public void setTieneCaja(boolean TieneCaja);
+
+	/** Get TieneCaja.
+	  * Si requiere o no una caja asociada
+	  */
+	public boolean isTieneCaja();
+
+    /** Column name TieneCtaBco */
+    public static final String COLUMNNAME_TieneCtaBco = "TieneCtaBco";
+
+	/** Set TieneCtaBco.
+	  * Si requiere o no una cuenta bancaria asociada
+	  */
+	public void setTieneCtaBco(boolean TieneCtaBco);
+
+	/** Get TieneCtaBco.
+	  * Si requiere o no una cuenta bancaria asociada
+	  */
+	public boolean isTieneCtaBco();
+
+    /** Column name TieneFecEmi */
+    public static final String COLUMNNAME_TieneFecEmi = "TieneFecEmi";
+
+	/** Set TieneFecEmi.
+	  * Si lleva o no Fecha de Emisión
+	  */
+	public void setTieneFecEmi(boolean TieneFecEmi);
+
+	/** Get TieneFecEmi.
+	  * Si lleva o no Fecha de Emisión
+	  */
+	public boolean isTieneFecEmi();
+
+    /** Column name TieneFecVenc */
+    public static final String COLUMNNAME_TieneFecVenc = "TieneFecVenc";
+
+	/** Set TieneFecVenc.
+	  * Si lleva o no Fecha de Vencimiento
+	  */
+	public void setTieneFecVenc(boolean TieneFecVenc);
+
+	/** Get TieneFecVenc.
+	  * Si lleva o no Fecha de Vencimiento
+	  */
+	public boolean isTieneFecVenc();
+
+    /** Column name TieneFolio */
+    public static final String COLUMNNAME_TieneFolio = "TieneFolio";
+
+	/** Set TieneFolio.
+	  * Si requiere o no un folio asociado de medios de pago
+	  */
+	public void setTieneFolio(boolean TieneFolio);
+
+	/** Get TieneFolio.
+	  * Si requiere o no un folio asociado de medios de pago
+	  */
+	public boolean isTieneFolio();
+
+    /** Column name TieneNroRef */
+    public static final String COLUMNNAME_TieneNroRef = "TieneNroRef";
+
+	/** Set TieneNroRef.
+	  * Si requiere o no numero de referencia
+	  */
+	public void setTieneNroRef(boolean TieneNroRef);
+
+	/** Get TieneNroRef.
+	  * Si requiere o no numero de referencia
+	  */
+	public boolean isTieneNroRef();
 
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";
