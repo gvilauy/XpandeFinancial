@@ -278,6 +278,12 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 			medioPagoItem.saveEx();
 		}
 
+		// Si esta emision de medio de pago tiene como origen un documento de reemplazo, no hago el asiento aca, sino que se hace en el
+		// documento mismo del reemplazo.
+		if (this.getZ_MedioPagoReplace_ID() > 0){
+			this.setPosted(true);
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -395,15 +401,21 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		if (m_processMsg != null)
 			return false;
 
-		MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
-		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+		// Intancio modelo de item de medio de pago asociado a este emision
+		MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
+
+
+		// Si este item NO fue reemplazado por otro, elimino contabbilidad y chequeo periodo
+		// En un reemplazo el asiento lo hace el documento de reemplazo de medio de pago.
+		if (!medioPagoItem.isReemplazado()){
+			MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
+			MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+		}
 
 		// Marco item de medio de pago como Anulado
-		MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
 		medioPagoItem.setEntregado(false);
 		medioPagoItem.setAnulado(true);
 		medioPagoItem.saveEx();
-
 
 		// After Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);

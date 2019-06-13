@@ -249,9 +249,6 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 			return DocAction.STATUS_Invalid;
 		}
 
-		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-		this.setDateDoc(fechaHoy);
-
 		// Recorro lineas de medios de pago seleccionados para reemplazar
 		for (MZMedioPagoReplaceLin replaceLin: lines){
 
@@ -345,6 +342,8 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 					if ((NEW_medioPagoItem.getTotalAmt() == null) || (NEW_medioPagoItem.getTotalAmt().compareTo(Env.ZERO) == 0)){
 						NEW_medioPagoItem.setTotalAmt(replaceDet.getTotalAmt());
 					}
+					NEW_medioPagoItem.setDateEmitted(replaceDet.getDateEmitted());
+					NEW_medioPagoItem.setDueDate(replaceDet.getDueDate());
 				}
 
 				replaceDet.saveEx();
@@ -486,6 +485,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 			}
 
 			// Anulo medio de pago a reemplazar
+			OLD_medioPagoItem.setZ_MedioPagoReplace_ID(this.get_ID());
 			OLD_medioPagoItem.setReemplazado(true);
 			OLD_medioPagoItem.setZ_MedioPagoItem_Rep_ID(newMedioPagoItemID);
 			OLD_medioPagoItem.saveEx();
@@ -833,7 +833,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 					replaceDet.setAD_Org_ID(this.getAD_Org_ID());
 					replaceDet.setC_BankAccount_ID(replaceLin.getC_BankAccount_ID());
 					replaceDet.setC_Currency_ID(replaceLin.getC_Currency_ID());
-					replaceDet.setDateEmitted(fechaHoy);
+					replaceDet.setDateEmitted(this.getDateDoc());
 					replaceDet.setDueDate(replaceLin.getDueDateTo());
 					replaceDet.setTotalAmt(replaceLin.getTotalAmt());
 					replaceDet.setZ_MedioPago_ID(replaceLin.getZ_MedioPago_ID());

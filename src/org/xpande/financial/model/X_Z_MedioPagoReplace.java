@@ -33,7 +33,7 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190207L;
+	private static final long serialVersionUID = 20190613L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoReplace (Properties ctx, int Z_MedioPagoReplace_ID, String trxName)
@@ -190,6 +190,34 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 		return ii.intValue();
 	}
 
+	public I_C_Charge getC_Charge() throws RuntimeException
+    {
+		return (I_C_Charge)MTable.get(getCtx(), I_C_Charge.Table_Name)
+			.getPO(getC_Charge_ID(), get_TrxName());	}
+
+	/** Set Charge.
+		@param C_Charge_ID 
+		Additional document charges
+	  */
+	public void setC_Charge_ID (int C_Charge_ID)
+	{
+		if (C_Charge_ID < 1) 
+			set_Value (COLUMNNAME_C_Charge_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
+	}
+
+	/** Get Charge.
+		@return Additional document charges
+	  */
+	public int getC_Charge_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_C_Currency getC_Currency() throws RuntimeException
     {
 		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
@@ -244,6 +272,26 @@ public class X_Z_MedioPagoReplace extends PO implements I_Z_MedioPagoReplace, I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Charge amount.
+		@param ChargeAmt 
+		Charge Amount
+	  */
+	public void setChargeAmt (BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	/** Get Charge amount.
+		@return Charge Amount
+	  */
+	public BigDecimal getChargeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Document Date.
