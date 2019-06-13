@@ -409,6 +409,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 					emisionMedioPago.saveEx();
 				}
 
+				NEW_medioPagoItem.setEntregado(OLD_medioPagoItem.isEntregado());
 				NEW_medioPagoItem.setZ_MedioPagoReplace_ID(this.get_ID());
 				NEW_medioPagoItem.saveEx();
 
@@ -549,10 +550,13 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 			// Recorro y valido detalle
 			for (MZMedioPagoReplaceDet replaceDet: dets){
 
+				/*
 				if (replaceDet.getDateEmitted().before(fechaHoy)){
 					replaceDet.setDateEmitted(fechaHoy);
 					replaceDet.saveEx();
 				}
+				*/
+
 
 				if ((replaceDet.getTotalAmt() == null) || (replaceDet.getTotalAmt().compareTo(Env.ZERO) <= 0)){
 					return "Falta indicar importe mayor a cero, en el reemplazo de medio de pago con número : " + replaceLin.getNroMedioPago();
