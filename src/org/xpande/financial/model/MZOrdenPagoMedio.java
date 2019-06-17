@@ -73,6 +73,35 @@ public class MZOrdenPagoMedio extends X_Z_OrdenPagoMedio {
         return true;
     }
 
+    @Override
+    protected boolean beforeDelete() {
+
+        String action = "";
+
+        try{
+
+            // Desasocio emision de medio de pago e item de medio de pago que se quitó de esta orden de pago.
+            if (this.getZ_MedioPagoItem_ID() > 0){
+                MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
+                if ((medioPagoItem != null) && (medioPagoItem.get_ID() > 0)){
+
+                    action = " update z_mediopagoitem set z_ordenpago_id = null where z_mediopagoitem_id =" + medioPagoItem.get_ID();
+                    DB.executeUpdateEx(action, get_TrxName());
+
+                    if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
+                        action = " update z_emisionmediopago set z_ordenpago_id = null where z_emisionmediopago_id =" + medioPagoItem.getZ_EmisionMedioPago_ID();
+                        DB.executeUpdateEx(action, get_TrxName());
+                    }
+                }
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return true;
+    }
 
     @Override
     protected boolean afterDelete(boolean success) {

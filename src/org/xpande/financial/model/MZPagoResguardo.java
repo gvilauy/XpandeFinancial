@@ -28,6 +28,11 @@ public class MZPagoResguardo extends X_Z_PagoResguardo {
 
         if (!newRecord){
 
+            if (this.getZ_OrdenPago_ID() > 0){
+                log.saveError("ATENCIÓN", "No es posible modificar esta linea ya que esta asociada a una Orden de Pago.");
+                return false;
+            }
+
             // Si se modifica el monto a pagar o la tasa de cambio, debo recalcular el monto a pagar en moneda de la transacción.
             if ((is_ValueChanged(X_Z_PagoResguardo.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoResguardo.COLUMNNAME_AmtAllocation))){
                 if (this.getMultiplyRate().compareTo(Env.ONE) == 0){
@@ -44,6 +49,19 @@ public class MZPagoResguardo extends X_Z_PagoResguardo {
                     }
                 }
             }
+        }
+
+        return true;
+    }
+
+
+    @Override
+    protected boolean beforeDelete() {
+
+        if (this.getZ_OrdenPago_ID() > 0){
+            log.saveError("ATENCIÓN", "No es posible eliminar esta linea ya que esta asociada a una Orden de Pago.\n" +
+                    "Elimine la Orden de Pago de la grilla de Ordenes de Pago asociadas a este Recibo.");
+            return false;
         }
 
         return true;

@@ -555,6 +555,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
 						if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
 							MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+							emisionMedioPago.setModificable(true);
 							if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
 								this.m_processMsg = emisionMedioPago.getProcessMsg();
 								return false;
@@ -1577,11 +1578,19 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 				// Valido que los documentos sigan con monto abierto sin cambios
 				for (MZPagoLin pagoLin: pagoLinList){
-					if (pagoLin.getC_Invoice_ID() > 0){
-						BigDecimal amtOpen = FinancialUtils.getInvoiceAmtOpen(getCtx(), pagoLin.getC_Invoice_ID(), get_TrxName());
-						if (amtOpen.compareTo(pagoLin.getAmtAllocation()) != 0){
-							return "El monto pendiente del comprobante " + pagoLin.getDocumentNoRef() + " ha cambiado.\n" +
-									"Por favor elimine la linea del comprobante y vuelva a cargarla para refrescar información.";
+					if (pagoLin.isSelected()){
+						if (pagoLin.getC_Invoice_ID() > 0){
+
+							BigDecimal amtOpen = FinancialUtils.getInvoiceAmtOpen(getCtx(), pagoLin.getC_Invoice_ID(), get_TrxName());
+							BigDecimal amtPagoLin = pagoLin.getAmtAllocation();
+
+							// Para documentos que restan, me aseguro de considerar monto a pagar sin signo.
+							if (amtPagoLin.compareTo(Env.ZERO) < 0) amtPagoLin = amtPagoLin.negate();
+
+							if (amtOpen.compareTo(amtPagoLin) != 0){
+								return "El monto pendiente del comprobante " + pagoLin.getDocumentNoRef() + " ha cambiado.\n" +
+										"Por favor elimine la linea del comprobante y vuelva a cargarla para refrescar información.";
+							}
 						}
 					}
 				}
@@ -2665,7 +2674,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	@Override
 	protected boolean beforeDelete() {
 
-		/*
+		String message = "No se pudo eliminar este registro. ";
+		String action = "";
+
 		try{
 
 			// Antes de eliminar el recibo, me aseguro de anular y eliminar medios de pago asociados a cajas (cashbook)
@@ -2678,9 +2689,22 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 							// Anulo emisión asociada a este item de medio de pago y la elimino
 							MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
 							if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
-
+								if (emisionMedioPago.getProcessMsg() != null){
+									message = message + emisionMedioPago.getProcessMsg();
+								}
+								log.saveError("Error", message);
+								return false;
 							}
+							emisionMedioPago.saveEx();
+
+							action = " update z_mediopagoitem set z_emisionmediopago_id = null where z_mediopagoitem_id =" + medioPagoItem.get_ID();
+							DB.executeUpdateEx(action, get_TrxName());
+
+							emisionMedioPago.deleteEx(true);
 						}
+						medioPagoItem.setEntregado(false);
+						medioPagoItem.setAnulado(true);
+						medioPagoItem.saveEx();
 					}
 				}
 			}
@@ -2689,8 +2713,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		catch (Exception e){
 		    throw new AdempiereException(e);
 		}
-		
-		 */
 
 		return true;
 	}

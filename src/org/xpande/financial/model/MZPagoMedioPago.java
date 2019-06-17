@@ -3,6 +3,7 @@ package org.xpande.financial.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MClient;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -71,6 +72,11 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
         // Cuando no es nuevo registro, y modifican determinado campos, debo recalcular el monto MT de este medio de pago.
         if (!newRecord){
 
+            if (this.getZ_OrdenPago_ID() > 0){
+                log.saveError("ATENCIÓN", "No es posible modificar esta linea ya que esta asociada a una Orden de Pago.");
+                return false;
+            }
+
             // Si se modifica el monto a pagar o la tasa de cambio, debo recalcular el monto a pagar en moneda de la transacción.
             if ((is_ValueChanged(X_Z_PagoMedioPago.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoMedioPago.COLUMNNAME_TotalAmt))){
                 if (this.getMultiplyRate().compareTo(Env.ONE) == 0){
@@ -85,6 +91,43 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
                     }
                 }
             }
+        }
+
+        return true;
+    }
+
+
+    @Override
+    protected boolean beforeDelete() {
+
+        String action  = "";
+
+        try{
+
+            if (this.getZ_OrdenPago_ID() > 0){
+                log.saveError("ATENCIÓN", "No es posible eliminar esta linea ya que esta asociada a una Orden de Pago.\n" +
+                        "Elimine la Orden de Pago de la grilla de Ordenes de Pago asociadas a este Recibo.");
+                return false;
+            }
+
+            // Desasocio emision de medio de pago e item de medio de pago que se quitó de esta orden de pago.
+            if (this.getZ_MedioPagoItem_ID() > 0){
+                MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
+                if ((medioPagoItem != null) && (medioPagoItem.get_ID() > 0)){
+
+                    action = " update z_mediopagoitem set z_pago_id = null, entregado='N' where z_mediopagoitem_id =" + medioPagoItem.get_ID();
+                    DB.executeUpdateEx(action, get_TrxName());
+
+                    if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
+                        action = " update z_emisionmediopago set z_pago_id = null where z_emisionmediopago_id =" + medioPagoItem.getZ_EmisionMedioPago_ID();
+                        DB.executeUpdateEx(action, get_TrxName());
+                    }
+                }
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
         }
 
         return true;

@@ -33,7 +33,7 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190502L;
+	private static final long serialVersionUID = 20190617L;
 
     /** Standard Constructor */
     public X_Z_EmisionMedioPago (Properties ctx, int Z_EmisionMedioPago_ID, String trxName)
@@ -54,6 +54,8 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 			setDocumentNo (null);
 			setDueDate (new Timestamp( System.currentTimeMillis() ));
 			setIsApproved (false);
+// N
+			setModificable (false);
 // N
 			setPaymentRule (null);
 // S
@@ -447,6 +449,30 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Modificable.
+		@param Modificable 
+		Si este registro es o no modificable
+	  */
+	public void setModificable (boolean Modificable)
+	{
+		set_Value (COLUMNNAME_Modificable, Boolean.valueOf(Modificable));
+	}
+
+	/** Get Modificable.
+		@return Si este registro es o no modificable
+	  */
+	public boolean isModificable () 
+	{
+		Object oo = get_Value(COLUMNNAME_Modificable);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

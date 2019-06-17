@@ -284,6 +284,19 @@ public interface I_Z_EmisionMedioPago
 	  */
 	public boolean isApproved();
 
+    /** Column name Modificable */
+    public static final String COLUMNNAME_Modificable = "Modificable";
+
+	/** Set Modificable.
+	  * Si este registro es o no modificable
+	  */
+	public void setModificable(boolean Modificable);
+
+	/** Get Modificable.
+	  * Si este registro es o no modificable
+	  */
+	public boolean isModificable();
+
     /** Column name PaymentRule */
     public static final String COLUMNNAME_PaymentRule = "PaymentRule";
 

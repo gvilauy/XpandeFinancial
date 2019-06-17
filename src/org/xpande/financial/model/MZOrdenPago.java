@@ -860,7 +860,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		if (this.isPaid()){
 			if (this.getZ_Pago_ID() > 0){
 				MZPago pago = (MZPago) this.getZ_Pago();
-				this.m_processMsg = "No se puede anular esta Orden de Pago porque tiene asociado el Recibo de Pago Nro.: " + pago.getDocumentNo() + ".\n" +
+				this.m_processMsg = "No se puede anular esta Orden de Pago porque tiene asociado el Recibo de Proveedor con número interno : " + pago.getDocumentNo() + ".\n" +
 						"Debe Anular primero el Recibo, para luego Anular esta Orden.";
 			}
 			else{
@@ -869,7 +869,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			return false;
 		}
 
-
 		// Anulo medios de pago emitidos en esta orden
 		List<MZOrdenPagoMedio> ordenPagoMedioList = this.getMediosPago();
 		for (MZOrdenPagoMedio ordenPagoMedio: ordenPagoMedioList){
@@ -877,6 +876,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 				MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) ordenPagoMedio.getZ_MedioPagoItem();
 				if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
 					MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+					emisionMedioPago.setModificable(true);
 					if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
 						this.m_processMsg = emisionMedioPago.getProcessMsg();
 						return false;
@@ -978,6 +978,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					if (medioPagoItem.getZ_MedioPagoFolio_ID() <= 0){
 						if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
 							MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+							emisionMedioPago.setModificable(true);
 							if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
 								this.m_processMsg = emisionMedioPago.getProcessMsg();
 								return false;

@@ -401,11 +401,38 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		if (m_processMsg != null)
 			return false;
 
+		// Si esta emisión esta asociada a una orden de pago no anulada o a un recibo de proveedor no anulado,
+		// no permito la anulación de este documento.
+		// Solo se puede anular una emisión de medio de pago que no este asociada.
+		if (this.getZ_OrdenPago_ID() > 0){
+			MZOrdenPago ordenPago = (MZOrdenPago) this.getZ_OrdenPago();
+			if ((ordenPago != null) && (ordenPago.get_ID() > 0)){
+				if (!ordenPago.getDocStatus().equalsIgnoreCase(DOCSTATUS_Voided)){
+					if (!this.isModificable()){
+						m_processMsg = "No es posible Anular este Documento ya que esta asociado a la Orden de Pago número : " + ordenPago.getDocumentNo() + "\n" +
+								"Debe anular la Orden de Pago o reactivarla y quitar este medio de pago de la misma.";
+						return false;
+					}
+				}
+			}
+		}
+		if (this.getZ_Pago_ID() > 0){
+			MZPago pago = (MZPago) this.getZ_Pago();
+			if ((pago != null) && (pago.get_ID() > 0)){
+				if (!pago.getDocStatus().equalsIgnoreCase(DOCSTATUS_Voided)){
+					if (!this.isModificable()){
+						m_processMsg = "No es posible Anular este Documento ya que esta asociado al Recibo de Proveedor con número interno : " + pago.getDocumentNo() + "\n" +
+								"Debe anular este Recibo o reactivarlo y quitar este medio de pago del mismo.";
+						return false;
+					}
+				}
+			}
+		}
+
 		// Intancio modelo de item de medio de pago asociado a este emision
 		MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
 
-
-		// Si este item NO fue reemplazado por otro, elimino contabbilidad y chequeo periodo
+		// Si este item NO fue reemplazado por otro, elimino contabilidad y chequeo periodo
 		// En un reemplazo el asiento lo hace el documento de reemplazo de medio de pago.
 		if (!medioPagoItem.isReemplazado()){
 			MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
@@ -475,6 +502,31 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
 			return false;
+
+		// Si esta emisión esta asociada a una orden de pago no anulada o a un recibo de proveedor no anulado,
+		// no permito la anulación de este documento.
+		// Solo se puede anular una emisión de medio de pago que no este asociada.
+		if (this.getZ_OrdenPago_ID() > 0){
+			MZOrdenPago ordenPago = (MZOrdenPago) this.getZ_OrdenPago();
+			if ((ordenPago != null) && (ordenPago.get_ID() > 0)){
+				if (!ordenPago.getDocStatus().equalsIgnoreCase(DOCSTATUS_Voided)){
+					m_processMsg = "No es posible Reactivar este Documento ya que esta asociado a la Orden de Pago número : " + ordenPago.getDocumentNo() + "\n" +
+							"Debe anular la Orden de Pago o reactivarla y quitar este medio de pago de la misma.";
+					return false;
+				}
+			}
+		}
+
+		if (this.getZ_Pago_ID() > 0){
+			MZPago pago = (MZPago) this.getZ_Pago();
+			if ((pago != null) && (pago.get_ID() > 0)){
+				if (!pago.getDocStatus().equalsIgnoreCase(DOCSTATUS_Voided)){
+					m_processMsg = "No es posible Reactivar este Documento ya que esta asociado al Recibo de Proveedor con número interno : " + pago.getDocumentNo() + "\n" +
+							"Debe anular este Recibo o reactivarlo y quitar este medio de pago del mismo.";
+					return false;
+				}
+			}
+		}
 
 		// Control de período contable
 		MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
