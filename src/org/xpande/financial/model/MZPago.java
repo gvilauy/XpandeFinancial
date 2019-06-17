@@ -35,6 +35,7 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.financial.utils.FinancialUtils;
 
 /** Generated Model for Z_Pago
  *  @author Adempiere (generated) 
@@ -1573,6 +1574,28 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				if (pagoLinList.size() <= 0){
 					return "No hay Documentos seleccionados para afectar.";
 				}
+
+				// Valido que los documentos sigan con monto abierto sin cambios
+				for (MZPagoLin pagoLin: pagoLinList){
+					if (pagoLin.getC_Invoice_ID() > 0){
+						BigDecimal amtOpen = FinancialUtils.getInvoiceAmtOpen(getCtx(), pagoLin.getC_Invoice_ID(), get_TrxName());
+						if (amtOpen.compareTo(pagoLin.getAmtAllocation()) != 0){
+							return "El monto pendiente del comprobante " + pagoLin.getDocumentNoRef() + " ha cambiado.\n" +
+									"Por favor elimine la linea del comprobante y vuelva a cargarla para refrescar información.";
+						}
+					}
+				}
+
+				// Valido que los medios de pago sigan disponibles para utilizar en un recibo
+				for (MZPagoMedioPago pagoMedioPago: medioPagoList){
+					if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+						MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+						if (medioPagoItem.isEntregado()){
+							return "El medio de pago número " + medioPagoItem.getNroMedioPago() + " ya fue entregado en otro comprobante.\n" +
+									"Por favor utilice otro medio de pago en este documento.";
+						}
+					}
+				}
 			}
 
 			/*
@@ -2638,6 +2661,39 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		return true;
 	}
 
+
+	@Override
+	protected boolean beforeDelete() {
+
+		/*
+		try{
+
+			// Antes de eliminar el recibo, me aseguro de anular y eliminar medios de pago asociados a cajas (cashbook)
+			List<MZPagoMedioPago> pagoMedioPagoList = this.getMediosPago();
+			for (MZPagoMedioPago pagoMedioPago: pagoMedioPagoList){
+				if (pagoMedioPago.getC_CashBook_ID() > 0){
+					if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+						MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+						if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
+							// Anulo emisión asociada a este item de medio de pago y la elimino
+							MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+							if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
+
+							}
+						}
+					}
+				}
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		
+		 */
+
+		return true;
+	}
 
 	/***
 	 * Obtiene y carga medios de pago emitidos para el socio de negocio del documento y ademas medios de pago de terceros que no
