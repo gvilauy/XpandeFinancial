@@ -701,9 +701,13 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     " and hdr.z_pago_id not in (select l.z_pago_id from z_generaordenpagolin l " +
                     " where l.z_pago_id is not null " +
                     " and l.z_generaordenpago_id =" + this.get_ID() + ") " +
+
+                    /*
                     " and hdr.z_pago_id not in (select a.z_pago_id from z_ordenpagolin a " +
                     " inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
                     " where a.z_pago_id is not null and b.docstatus='CO') " +
+                     */
+
                     whereClause +
                     " order by hdr.c_bpartner_id ";
 
@@ -905,9 +909,13 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     " and hdr.c_invoice_id not in (select c_invoice_id from z_generaordenpagolin " +
                     " where c_invoice_id is not null " +
                     " and z_generaordenpago_id =" + this.get_ID() + ") " +
+
+                    /*
                     " and hdr.c_invoice_id not in (select c_invoice_id from z_ordenpagolin a " +
                     " inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
                     " where c_invoice_id is not null and b.docstatus='CO') " +
+                     */
+
                     whereClause +
                     " order by hdr.c_bpartner_id ";
 
@@ -1095,9 +1103,12 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     " and hdr.z_transfersaldo_id not in (select z_transfersaldo_id from z_generaordenpagolin " +
                     " where z_transfersaldo_id is not null " +
                     " and z_generaordenpago_id =" + this.get_ID() + ") " +
+                    /*
                     " and hdr.z_transfersaldo_id not in (select z_transfersaldo_id from z_ordenpagolin a " +
                     " inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
                     " where z_transfersaldo_id is not null and b.docstatus='CO') " +
+
+                     */
                     whereClause +
                     " order by hdr.c_bpartner_id ";
 

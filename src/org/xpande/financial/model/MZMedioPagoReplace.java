@@ -493,6 +493,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 
 			MZEmisionMedioPago OLD_emisionMedioPago = (MZEmisionMedioPago) OLD_medioPagoItem.getZ_EmisionMedioPago();
 			OLD_emisionMedioPago.setDescription("Reemplazado por Medios de Pago : " + nrosMediosPago);
+			OLD_emisionMedioPago.setModificable(true);
 			if (!OLD_emisionMedioPago.processIt(DocAction.ACTION_Void)){
 				if (OLD_emisionMedioPago.getProcessMsg() != null){
 					m_processMsg = OLD_emisionMedioPago.getProcessMsg();
@@ -537,6 +538,14 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 			return "El documento no tiene medios de pago para Reemplazar.";
 		}
 
+		BigDecimal amtTotalOlD = Env.ZERO;
+		BigDecimal amtTotalNEW = Env.ZERO;
+		BigDecimal amtCargo = this.getChargeAmt();
+		if (amtCargo == null){
+			amtCargo = Env.ZERO;
+		}
+
+
 		// Valido detalle de nuevos medios de pago por cada linea del medio de pago que se quiere reemplazar
 		for (MZMedioPagoReplaceLin replaceLin: lines){
 
@@ -546,28 +555,23 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 				return "No se indica nuevos medios de pago para el medio de pago a reemplazar con número: " + replaceLin.getNroMedioPago();
 			}
 
-			BigDecimal montoDetalle = Env.ZERO;
+			amtTotalOlD = amtTotalOlD.add(replaceLin.getTotalAmt());
+
 			// Recorro y valido detalle
 			for (MZMedioPagoReplaceDet replaceDet: dets){
-
-				/*
-				if (replaceDet.getDateEmitted().before(fechaHoy)){
-					replaceDet.setDateEmitted(fechaHoy);
-					replaceDet.saveEx();
-				}
-				*/
-
 
 				if ((replaceDet.getTotalAmt() == null) || (replaceDet.getTotalAmt().compareTo(Env.ZERO) <= 0)){
 					return "Falta indicar importe mayor a cero, en el reemplazo de medio de pago con número : " + replaceLin.getNroMedioPago();
 				}
 
-				montoDetalle = montoDetalle.add(replaceDet.getTotalAmt());
+				amtTotalNEW = amtTotalNEW.add(replaceDet.getTotalAmt());
 			}
 
-			if (montoDetalle.compareTo(replaceLin.getTotalAmt()) != 0){
-				return "Suma de Importes incorrecta, en el reemplazo de medio de pago con número : " + replaceLin.getNroMedioPago();
-			}
+		}
+
+		BigDecimal amtTotalAux = amtCargo.add(amtTotalNEW);
+		if (amtTotalOlD.compareTo(amtTotalAux) != 0){
+			return "El importe total de medios de pago a reemplazar (mas monto de cargos), no coincide con el importe total de nuevos medios de pago.";
 		}
 
 

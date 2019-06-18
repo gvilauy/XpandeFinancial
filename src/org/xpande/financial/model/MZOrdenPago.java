@@ -401,7 +401,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					invoiceAfecta.setAD_Org_ID(this.getAD_Org_ID());
 					invoiceAfecta.saveEx();
 
-					// Marca invoice como paga
+					// Marca invoice como paga si ya no tengo monto pendiente de pago
 					MInvoice invoice = (MInvoice) pagoLin.getC_Invoice();
 					invoice.setIsPaid(true);
 					invoice.saveEx();

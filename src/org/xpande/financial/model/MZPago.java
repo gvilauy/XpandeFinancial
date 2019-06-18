@@ -1582,6 +1582,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						if (pagoLin.getC_Invoice_ID() > 0){
 
 							BigDecimal amtOpen = FinancialUtils.getInvoiceAmtOpen(getCtx(), pagoLin.getC_Invoice_ID(), get_TrxName());
+							if (amtOpen == null){
+								amtOpen = pagoLin.getAmtDocument();
+							}
 							BigDecimal amtPagoLin = pagoLin.getAmtAllocation();
 
 							// Para documentos que restan, me aseguro de considerar monto a pagar sin signo.

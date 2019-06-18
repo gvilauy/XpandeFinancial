@@ -72,9 +72,11 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
         // Cuando no es nuevo registro, y modifican determinado campos, debo recalcular el monto MT de este medio de pago.
         if (!newRecord){
 
-            if (this.getZ_OrdenPago_ID() > 0){
-                log.saveError("ATENCIÓN", "No es posible modificar esta linea ya que esta asociada a una Orden de Pago.");
-                return false;
+            if (!is_ValueChanged(X_Z_PagoMedioPago.COLUMNNAME_Z_MedioPagoItem_ID)){
+                if (this.getZ_OrdenPago_ID() > 0){
+                    log.saveError("ATENCIÓN", "No es posible modificar esta linea ya que esta asociada a una Orden de Pago.");
+                    return false;
+                }
             }
 
             // Si se modifica el monto a pagar o la tasa de cambio, debo recalcular el monto a pagar en moneda de la transacción.
