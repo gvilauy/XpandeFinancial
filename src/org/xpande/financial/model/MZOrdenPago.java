@@ -31,6 +31,7 @@ import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.xpande.financial.utils.FinancialUtils;
 
 /** Generated Model for Z_OrdenPago
  *  @author Adempiere (generated) 
@@ -237,6 +238,13 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		log.info(toString());
 		//
 
+		// Obtengo lineas a procesar
+		List<MZOrdenPagoMedio> mediosPago = this.getMediosPago();
+		List<MZOrdenPagoLin> pagoLinInvList = this.getInvoices();
+		List<MZOrdenPagoLin> pagoLinTransferList = this.getTransferSaldos();
+		List<MZOrdenPagoLin> pagoLinAnticipoList = this.getAnticipos();
+		List<MZOrdenPagoLin> pagoLinResgList = this.getResguardos();
+
 		// Valido condiciones para completar este documento
 		m_processMsg = this.validateDocument();
 		if (m_processMsg != null){
@@ -244,35 +252,30 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		}
 
 		// Emite medios de pago necesarios
-		List<MZOrdenPagoMedio> mediosPago = this.getMediosPago();
 		m_processMsg = this.emitirMediosPago(mediosPago);
 		if (m_processMsg != null){
 			return DocAction.STATUS_Invalid;
 		}
 
 		// Afecta invoices asociadas a esta orden de pago
-		List<MZOrdenPagoLin> pagoLinInvList = this.getInvoices();
 		m_processMsg = this.afectarInvoices(pagoLinInvList);
 		if (m_processMsg != null){
 			return DocAction.STATUS_Invalid;
 		}
 
 		// Afecta transferencias de saldos asociados
-		List<MZOrdenPagoLin> pagoLinTransferList = this.getTransferSaldos();
 		m_processMsg = this.afectarTransferSaldos(pagoLinTransferList);
 		if (m_processMsg != null){
 			return DocAction.STATUS_Invalid;
 		}
 
 		// Afecta anticipos a proveedores asociados
-		List<MZOrdenPagoLin> pagoLinAnticipoList = this.getAnticipos();
 		m_processMsg = this.afectarAnticipos(pagoLinAnticipoList);
 		if (m_processMsg != null){
 			return DocAction.STATUS_Invalid;
 		}
 
 		// Afecta resguardos asociados
-		List<MZOrdenPagoLin> pagoLinResgList = this.getResguardos();
 		m_processMsg = this.afectarResguardos(pagoLinResgList);
 		if (m_processMsg != null){
 			return DocAction.STATUS_Invalid;
@@ -402,10 +405,11 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					invoiceAfecta.saveEx();
 
 					// Marca invoice como paga si ya no tengo monto pendiente de pago
-					MInvoice invoice = (MInvoice) pagoLin.getC_Invoice();
-					invoice.setIsPaid(true);
-					invoice.saveEx();
-
+					if (pagoLin.getAmtAllocation().compareTo(pagoLin.getAmtOpen()) == 0){
+						MInvoice invoice = (MInvoice) pagoLin.getC_Invoice();
+						invoice.setIsPaid(true);
+						invoice.saveEx();
+					}
 
 					// Afecto estado de cuenta de esta invoice
 					String action = "";
@@ -464,10 +468,12 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					transferAfecta.setAD_Org_ID(this.getAD_Org_ID());
 					transferAfecta.saveEx();
 
-					// Marca transferencia de saldo como paga
-					MZTransferSaldo transferSaldo = (MZTransferSaldo) pagoLin.getZ_TransferSaldo();
-					transferSaldo.setIsPaid(true);
-					transferSaldo.saveEx();
+					// Marca transferencia de saldo como paga sino le queda monto pendiente
+					if (pagoLin.getAmtAllocation().compareTo(pagoLin.getAmtOpen()) == 0){
+						MZTransferSaldo transferSaldo = (MZTransferSaldo) pagoLin.getZ_TransferSaldo();
+						transferSaldo.setIsPaid(true);
+						transferSaldo.saveEx();
+					}
 
 					// Afecto estado de cuenta de esta transferencia de saldo
 					String action = " update z_estadocuenta set referenciapago ='ORDEN PAGO " + this.getDocumentNo() + "', " +
@@ -698,6 +704,43 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			if ((this.getAmtPaymentRule() == null) || (this.getAmtPaymentRule().compareTo(this.getTotalAmt()) != 0)){
 				return "El importe Total de Medios de Pago debe ser igual al importe Total de Documentos";
 			}
+
+			/*
+			// Valido que los documentos sigan con monto abierto sin cambios
+			for (MZPagoLin pagoLin: pagoLinList){
+				if (pagoLin.isSelected()){
+					if (pagoLin.getC_Invoice_ID() > 0){
+
+						BigDecimal amtOpen = FinancialUtils.getInvoiceAmtOpen(getCtx(), pagoLin.getC_Invoice_ID(), get_TrxName());
+						if (amtOpen == null){
+							amtOpen = pagoLin.getAmtDocument();
+						}
+						BigDecimal amtPagoLin = pagoLin.getAmtAllocation();
+
+						// Para documentos que restan, me aseguro de considerar monto a pagar sin signo.
+						if (amtPagoLin.compareTo(Env.ZERO) < 0) amtPagoLin = amtPagoLin.negate();
+
+						if (amtOpen.compareTo(amtPagoLin) != 0){
+							return "El monto pendiente del comprobante " + pagoLin.getDocumentNoRef() + " ha cambiado.\n" +
+									"Por favor elimine la linea del comprobante y vuelva a cargarla para refrescar información.";
+						}
+					}
+				}
+			}
+
+			// Valido que los medios de pago sigan disponibles para utilizar en un recibo
+			for (MZPagoMedioPago pagoMedioPago: medioPagoList){
+				if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+					MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+					if (medioPagoItem.isEntregado()){
+						return "El medio de pago número " + medioPagoItem.getNroMedioPago() + " ya fue entregado en otro comprobante.\n" +
+								"Por favor utilice otro medio de pago en este documento.";
+					}
+				}
+			}
+			 */
+
+
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);

@@ -26,6 +26,11 @@ public class MZOrdenPagoMedio extends X_Z_OrdenPagoMedio {
 
         // Me aseguro de tener ID de generador cuando se ingresa un registro, de manera manual o por sistema.
         if (newRecord){
+
+            // Me aseguro de tener la organización correcta
+            MZOrdenPago ordenPago = (MZOrdenPago) this.getZ_OrdenPago();
+            this.setAD_Org_ID(ordenPago.getAD_Org_ID());
+
             if (this.getZ_GeneraOrdenPago_ID() <= 0){
                 this.setZ_GeneraOrdenPago_ID(((MZOrdenPago) this.getZ_OrdenPago()).getZ_GeneraOrdenPago_ID());
             }
