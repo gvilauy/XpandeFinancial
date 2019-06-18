@@ -2691,6 +2691,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
 							// Anulo emisión asociada a este item de medio de pago y la elimino
 							MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+							emisionMedioPago.setModificable(true);
 							if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
 								if (emisionMedioPago.getProcessMsg() != null){
 									message = message + emisionMedioPago.getProcessMsg();
