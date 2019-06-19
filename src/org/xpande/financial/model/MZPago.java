@@ -1590,10 +1590,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 							// Para documentos que restan, me aseguro de considerar monto a pagar sin signo.
 							if (amtPagoLin.compareTo(Env.ZERO) < 0) amtPagoLin = amtPagoLin.negate();
 
+							/*
 							if (amtOpen.compareTo(amtPagoLin) != 0){
 								return "El monto pendiente del comprobante " + pagoLin.getDocumentNoRef() + " ha cambiado.\n" +
 										"Por favor elimine la linea del comprobante y vuelva a cargarla para refrescar información.";
 							}
+							 */
 						}
 					}
 				}
