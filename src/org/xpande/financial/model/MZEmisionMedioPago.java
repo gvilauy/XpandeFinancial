@@ -300,28 +300,28 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 	}	//	completeIt
 
 
+	/***
+	 * Validaciones de este documento.
+	 * Xpande. Created by Gabriel Vila on 6/20/19.
+	 * @return
+	 */
 	private String validateDocument() {
 
 		String message = null;
 
 		try{
 
-
-			/*
-			// Quito esta validación ya que se pueden emitir manualmente cheques de fechas pasadas en caso de contingencia.
-			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-
-			// Valido fecha de emsión no menor a fecha de hoy
-			if (this.getDateEmitted().before(fechaHoy)){
-				return "Fecha de emisión no puede ser anterior a la fecha de hoy.";
-			}
-			*/
-
 			// Valido que tenga organizacion
 			if (this.getAD_Org_ID() <= 0){
 				return "Debe indicar Organización para este Documento";
 			}
 
+			// Valido fecha de emision debe ser siempre menor a fecha de vencimiento.
+			if ((this.getDateEmitted() != null) && (this.getDueDate() != null)){
+				if (this.getDueDate().before(this.getDateEmitted())){
+					return "La fecha de Vencimiento debe ser mayor o igual a la fecha de Emisión";
+				}
+			}
 
 			// Valido fecha de vencimiento no mayor a 180 dias a partir de fecha de emisión
 			Date dateFechaAux = new Date(this.getDateEmitted().getTime());
@@ -661,6 +661,52 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 			}
 		}
 
+		// Valido fecha de emision debe ser siempre menor a fecha de vencimiento.
+		if ((this.getDateEmitted() != null) && (this.getDueDate() != null)){
+			if (this.getDueDate().before(this.getDateEmitted())){
+				log.saveError("ATENCIÓN", "La fecha de Vencimiento debe ser mayor o igual a la fecha de Emisión.");
+				return false;
+			}
+		}
+
 		return true;
 	}
+
+
+	@Override
+	protected boolean afterSave(boolean newRecord, boolean success) {
+
+		if (!success) return success;
+
+		String action = "";
+
+		try{
+			// Control de integridad de campos según comportamiento del medio de pago
+			if (this.getZ_MedioPago_ID() > 0){
+				MZMedioPago medioPago = (MZMedioPago) this.getZ_MedioPago();
+
+				if ((!medioPago.isTieneCaja()) && (this.getC_CashBook_ID() > 0)){
+					action = " update z_emisionmediopago set c_cashbook_id = null where z_emisionmediopago_id =" + this.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+
+				if ((!medioPago.isTieneCtaBco()) && (this.getC_BankAccount_ID() > 0)){
+					action = " update z_emisionmediopago set c_bankaccount_id = null where z_emisionmediopago_id =" + this.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+
+				if ((!medioPago.isTieneFolio()) && (this.getZ_MedioPagoFolio_ID() > 0)){
+					action = " update z_emisionmediopago set z_mediopagofolio_id = null where z_emisionmediopago_id =" + this.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return true;
+	}
+
 }

@@ -141,12 +141,45 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
 
         if (!success) return success;
 
-        if ((newRecord) || (is_ValueChanged(X_Z_PagoMedioPago.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoMedioPago.COLUMNNAME_TotalAmt))){
+        String action = "";
 
-            // Actualizo totales del documento
+        try{
+
             MZPago pago = (MZPago) this.getZ_Pago();
-            pago.updateTotals();
+
+            if ((newRecord) || (is_ValueChanged(X_Z_PagoMedioPago.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoMedioPago.COLUMNNAME_TotalAmt))){
+
+                // Actualizo totales del documento
+                pago.updateTotals();
+            }
+
+            // Control de integridad de campos según comportamiento del medio de pago
+            if (!pago.isSOTrx()){
+                if (this.getZ_MedioPago_ID() > 0){
+                    MZMedioPago medioPago = (MZMedioPago) this.getZ_MedioPago();
+
+                    if ((!medioPago.isTieneCaja()) && (this.getC_CashBook_ID() > 0)){
+                        action = " update z_pagomediopago set c_cashbook_id = null where z_pagomediopago_id =" + this.get_ID();
+                        DB.executeUpdateEx(action, get_TrxName());
+                    }
+
+                    if ((!medioPago.isTieneCtaBco()) && (this.getC_BankAccount_ID() > 0)){
+                        action = " update z_pagomediopago set c_bankaccount_id = null where z_pagomediopago_id =" + this.get_ID();
+                        DB.executeUpdateEx(action, get_TrxName());
+                    }
+
+                    if ((!medioPago.isTieneFolio()) && (this.getZ_MedioPagoFolio_ID() > 0)){
+                        action = " update z_pagomediopago set z_mediopagofolio_id = null where z_pagomediopago_id =" + this.get_ID();
+                        DB.executeUpdateEx(action, get_TrxName());
+                    }
+                }
+            }
+
         }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
 
         return true;
     }

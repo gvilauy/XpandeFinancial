@@ -50,6 +50,14 @@ public class MZOrdenPagoMedio extends X_Z_OrdenPagoMedio {
             }
         }
 
+        // Valido fecha de emision debe ser siempre menor a fecha de vencimiento.
+        if ((this.getDateEmitted() != null) && (this.getDueDate() != null)){
+            if (this.getDueDate().before(this.getDateEmitted())){
+                log.saveError("ATENCIÓN", "La fecha de Vencimiento debe ser mayor o igual a la fecha de Emisión.");
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -69,6 +77,26 @@ public class MZOrdenPagoMedio extends X_Z_OrdenPagoMedio {
                     " where z_ordenpago_id =" + this.getZ_OrdenPago_ID();
 
             DB.executeUpdateEx(action, get_TrxName());
+
+            // Control de integridad de campos según comportamiento del medio de pago
+            if (this.getZ_MedioPago_ID() > 0){
+                MZMedioPago medioPago = (MZMedioPago) this.getZ_MedioPago();
+
+                if ((!medioPago.isTieneCaja()) && (this.getC_CashBook_ID() > 0)){
+                    action = " update z_ordenpagomedio set c_cashbook_id = null where z_ordenpagomedio_id =" + this.get_ID();
+                    DB.executeUpdateEx(action, get_TrxName());
+                }
+
+                if ((!medioPago.isTieneCtaBco()) && (this.getC_BankAccount_ID() > 0)){
+                    action = " update z_ordenpagomedio set c_bankaccount_id = null where z_ordenpagomedio_id =" + this.get_ID();
+                    DB.executeUpdateEx(action, get_TrxName());
+                }
+
+                if ((!medioPago.isTieneFolio()) && (this.getZ_MedioPagoFolio_ID() > 0)){
+                    action = " update z_ordenpagomedio set z_mediopagofolio_id = null where z_ordenpagomedio_id =" + this.get_ID();
+                    DB.executeUpdateEx(action, get_TrxName());
+                }
+            }
 
         }
         catch (Exception e){
