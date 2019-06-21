@@ -1094,9 +1094,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and hdr.c_invoice_id not in (select c_invoice_id from z_pagolin " +
 					" where c_invoice_id is not null " +
 					" and z_pago_id =" + this.get_ID() + ") " +
+
+					/*
 					" and hdr.c_invoice_id not in (select a.c_invoice_id from z_ordenpagolin a " +
 					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
 					" where a.c_invoice_id is not null and b.docstatus='CO') " +
+					 */
+
 					whereClause +
 					" order by hdr.dateinvoiced ";
 
@@ -1218,9 +1222,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and hdr.z_transfersaldo_id not in (select z_transfersaldo_id from z_pagolin " +
 					" where z_transfersaldo_id is not null " +
 					" and z_pago_id =" + this.get_ID() + ") " +
+
+					/*
 					" and hdr.z_transfersaldo_id not in (select a.z_transfersaldo_id from z_ordenpagolin a " +
 					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
 					" where a.z_transfersaldo_id is not null and b.docstatus='CO') " +
+					 */
+
 					whereClause +
 					" order by hdr.datedoc ";
 
@@ -1328,7 +1336,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and hdr.issotrx='" + ((this.isSOTrx()) ? "Y":"N") + "' " +
 					" and hdr.docstatus='CO' " +
 					" and iop.amtopen > 0 " +
-					" and hdr.z_pago_id not in (select l.z_pago_id from z_pagolin l " +
+					" and hdr.z_pago_id not in (select l.ref_pago_id from z_pagolin l " +
 					" where l.z_pago_id is not null " +
 					" and l.z_pago_id =" + this.get_ID() + ") " +
 					" and hdr.z_pago_id not in (select a.z_pago_id from z_ordenpagolin a " +
