@@ -2,6 +2,7 @@ package org.xpande.financial.model;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -44,8 +45,23 @@ public class MZOrdenPagoMedio extends X_Z_OrdenPagoMedio {
             if (this.getZ_MedioPagoItem_ID() > 0){
                 MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
                 if (medioPagoItem.isEmitido()){
+
+                    if (this.getDateEmitted() == null) this.setDateEmitted(medioPagoItem.getDateEmitted());
+                    if (this.getDueDate() == null) this.setDueDate(medioPagoItem.getDueDate());
+                    if ((this.getTotalAmt() == null) || (this.getTotalAmt().compareTo(Env.ZERO) <= 0)) this.setTotalAmt(medioPagoItem.getTotalAmt());
+
+                    if ((!this.getDateEmitted().equals(medioPagoItem.getDateEmitted())) || (!this.getDueDate().equals(medioPagoItem.getDueDate()))
+                            || (this.getTotalAmt().compareTo(medioPagoItem.getTotalAmt()) != 0)){
+                        log.saveError("ATENCIÓN", "No es posible modificar datos de este medio de pago ya que el mismo esta emitido.");
+                        return false;
+                    }
+
+                    /*
                     this.setDateEmitted(medioPagoItem.getDateEmitted());
                     this.setDueDate(medioPagoItem.getDueDate());
+                    this.setTotalAmt(medioPagoItem.getTotalAmt());
+
+                     */
                 }
             }
         }

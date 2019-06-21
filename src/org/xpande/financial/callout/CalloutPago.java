@@ -166,4 +166,34 @@ public class CalloutPago extends CalloutEngine {
         return "";
     }
 
+
+    /***
+     * Setea atributos asociados al item de medios de pago
+     * Xpande. Created by Gabriel Vila on 1/31/18.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setItemMedioPagoInfo(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        int zMedioPagoItemID = (Integer) value;
+
+        if (zMedioPagoItemID <= 0) return "";
+
+        MZMedioPagoItem medioPagoItem = new MZMedioPagoItem(ctx, zMedioPagoItemID, null);
+
+        if (medioPagoItem.isEmitido()){
+            mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DateEmitted, medioPagoItem.getDateEmitted());
+            mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DueDate, medioPagoItem.getDueDate());
+            mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TotalAmt, medioPagoItem.getTotalAmt());
+        }
+
+        return "";
+    }
+
 }

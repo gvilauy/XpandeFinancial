@@ -43,6 +43,23 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
 
         MAcctSchema schema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
 
+        // Si tengo item de medio de pago y el mismo ya esta emitido, no puedo modificar datos de ese item
+        if (this.getZ_MedioPagoItem_ID() > 0){
+            MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
+            if (medioPagoItem.isEmitido()){
+
+                if (this.getDateEmitted() == null) this.setDateEmitted(medioPagoItem.getDateEmitted());
+                if (this.getDueDate() == null) this.setDueDate(medioPagoItem.getDueDate());
+                if ((this.getTotalAmt() == null) || (this.getTotalAmt().compareTo(Env.ZERO) <= 0)) this.setTotalAmt(medioPagoItem.getTotalAmt());
+
+                if ((!this.getDateEmitted().equals(medioPagoItem.getDateEmitted())) || (!this.getDueDate().equals(medioPagoItem.getDueDate()))
+                        || (this.getTotalAmt().compareTo(medioPagoItem.getTotalAmt()) != 0)){
+                    log.saveError("ATENCIÓN", "No es posible modificar datos de este medio de pago ya que el mismo esta emitido.");
+                    return false;
+                }
+            }
+        }
+
         // Cuando es nuevo registro, por callout obtuve el monto MT y tengo entonces que calcular alreves el monto en moneda de medio de pago
         if (newRecord){
 
