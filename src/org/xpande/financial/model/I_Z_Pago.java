@@ -308,6 +308,19 @@ public interface I_Z_Pago
 	  */
 	public Timestamp getDueDateTo();
 
+    /** Column name ID_Virtual */
+    public static final String COLUMNNAME_ID_Virtual = "ID_Virtual";
+
+	/** Set ID_Virtual.
+	  * Identificador virtual para tablas
+	  */
+	public void setID_Virtual(String ID_Virtual);
+
+	/** Get ID_Virtual.
+	  * Identificador virtual para tablas
+	  */
+	public String getID_Virtual();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -494,6 +507,19 @@ public interface I_Z_Pago
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
+
+    /** Column name ReciboAnticipo */
+    public static final String COLUMNNAME_ReciboAnticipo = "ReciboAnticipo";
+
+	/** Set ReciboAnticipo.
+	  * Si un determinado pago/cobro es solamente un recibo hecho contra un anticipo
+	  */
+	public void setReciboAnticipo(boolean ReciboAnticipo);
+
+	/** Get ReciboAnticipo.
+	  * Si un determinado pago/cobro es solamente un recibo hecho contra un anticipo
+	  */
+	public boolean isReciboAnticipo();
 
     /** Column name Reference */
     public static final String COLUMNNAME_Reference = "Reference";

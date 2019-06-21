@@ -33,7 +33,7 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190505L;
+	private static final long serialVersionUID = 20190621L;
 
     /** Standard Constructor */
     public X_Z_Pago (Properties ctx, int Z_Pago_ID, String trxName)
@@ -63,6 +63,8 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 			setProcessed (false);
 // N
 			setProcessing (false);
+// N
+			setReciboAnticipo (false);
 // N
 			setTieneOrdenPago (true);
 // Y
@@ -501,6 +503,22 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 		return (Timestamp)get_Value(COLUMNNAME_DueDateTo);
 	}
 
+	/** Set ID_Virtual.
+		@param ID_Virtual 
+		Identificador virtual para tablas
+	  */
+	public void setID_Virtual (String ID_Virtual)
+	{
+		throw new IllegalArgumentException ("ID_Virtual is virtual column");	}
+
+	/** Get ID_Virtual.
+		@return Identificador virtual para tablas
+	  */
+	public String getID_Virtual () 
+	{
+		return (String)get_Value(COLUMNNAME_ID_Virtual);
+	}
+
 	/** Set Approved.
 		@param IsApproved 
 		Indicates if this document requires approval
@@ -765,6 +783,30 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set ReciboAnticipo.
+		@param ReciboAnticipo 
+		Si un determinado pago/cobro es solamente un recibo hecho contra un anticipo
+	  */
+	public void setReciboAnticipo (boolean ReciboAnticipo)
+	{
+		set_Value (COLUMNNAME_ReciboAnticipo, Boolean.valueOf(ReciboAnticipo));
+	}
+
+	/** Get ReciboAnticipo.
+		@return Si un determinado pago/cobro es solamente un recibo hecho contra un anticipo
+	  */
+	public boolean isReciboAnticipo () 
+	{
+		Object oo = get_Value(COLUMNNAME_ReciboAnticipo);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

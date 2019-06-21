@@ -246,6 +246,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			this.setDateDoc(fechaHoy);
 		}
 
+		// Seteo flag en este documento que me indica si es un Recibo asociado solamente a anticipos.
+		//this.setReciboAnticipo();
+
 		// Obtengo lineas a procesar
 		List<MZPagoLin> pagoLinList = this.getSelectedLines();
 
@@ -320,9 +323,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		// Obtengo importe total de anticipos afectados en este recibo
 		if (!this.isAnticipo()){
-			if ((this.getTotalMediosPago() != null) && (this.getTotalMediosPago().compareTo(Env.ZERO) != 0)){
-				this.setTotalAnticiposAfectados();
-			}
+			this.setTotalAnticiposAfectados();
 		}
 
 		// Impactos en estado de cuenta del socio de negocio
@@ -376,7 +377,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			if (rs.next()){
 				this.setAmtAnticipo(rs.getBigDecimal("total"));
 				if (this.getAmtAnticipo().compareTo(Env.ZERO) < 0){
-					this.setAmtAnticipo(this.getAmtAnticipo().negate());
+					this.setAmtAnticipo(rs.getBigDecimal("total").negate());
 				}
 			}
 		}
