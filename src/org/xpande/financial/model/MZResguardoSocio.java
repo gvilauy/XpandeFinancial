@@ -281,7 +281,8 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 
 
 		// Impacto asociación de resguardo a invoices en estado de cuenta
-		String action = " update z_estadocuenta set z_resguardosocio_to_id =" + this.get_ID() +
+		String action = " update z_estadocuenta set z_resguardosocio_to_id =" + this.get_ID() + ", " +
+						" daterefresguardo ='" + this.getDateDoc() + "' " +
 						" where c_invoice_id is not null " +
 						" and c_invoice_id in (select c_invoice_id from z_resguardosociodoc where z_resguardosocio_id =" + this.get_ID() + ")";
 		DB.executeUpdateEx(action, get_TrxName());
@@ -297,29 +298,8 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		//	Set Definitive Document No
 		setDefiniteDocumentNo();
 
-		// Impacto documento en estado de cuenta
-		MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
-		estadoCuenta.setZ_ResguardoSocio_ID(this.get_ID());
-		estadoCuenta.setAD_Table_ID(this.get_Table_ID());
-		// Monto al debe o al haber segun sea resguardo o contra-resguardo
-		if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
-			estadoCuenta.setAmtSourceCr(this.getTotalAmt());
-			estadoCuenta.setAmtSourceDr(Env.ZERO);
-		}
-		else{
-			estadoCuenta.setAmtSourceCr(Env.ZERO);
-			estadoCuenta.setAmtSourceDr(this.getTotalAmt());
-		}
-		estadoCuenta.setC_BPartner_ID(this.getC_BPartner_ID());
-		estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
-		estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
-		estadoCuenta.setDateDoc(this.getDateDoc());
-		estadoCuenta.setDocBaseType(docType.getDocBaseType());
-		estadoCuenta.setDocumentNoRef(this.getDocumentNo());
-		estadoCuenta.setIsSOTrx(false);
-		estadoCuenta.setRecord_ID(this.get_ID());
-		estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
-		estadoCuenta.saveEx();
+		// Seteo info de este documento en modelo de estado de cuenta
+		this.setEstadoCuenta(docType);
 
 		ProcesadorCFE procesadorCFE = new ProcesadorCFE(getCtx(), get_TrxName());
 		m_processMsg = procesadorCFE.executeCFE(this, this.getAD_Org_ID(), this.getC_DocType_ID());
@@ -332,6 +312,45 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
+
+
+	/***
+	 * Impacto información de este documento en modelo de estado de cuenta.
+	 * Xpande. Created by Gabriel Vila on 6/26/19.
+	 * @param docType
+	 */
+	private void setEstadoCuenta(MDocType docType) {
+
+		try{
+			// Impacto documento en estado de cuenta
+			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
+			estadoCuenta.setZ_ResguardoSocio_ID(this.get_ID());
+			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
+			// Monto al debe o al haber segun sea resguardo o contra-resguardo
+			if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
+				estadoCuenta.setAmtSourceCr(this.getTotalAmt());
+				estadoCuenta.setAmtSourceDr(Env.ZERO);
+			}
+			else{
+				estadoCuenta.setAmtSourceCr(Env.ZERO);
+				estadoCuenta.setAmtSourceDr(this.getTotalAmt());
+			}
+			estadoCuenta.setC_BPartner_ID(this.getC_BPartner_ID());
+			estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
+			estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
+			estadoCuenta.setDateDoc(this.getDateDoc());
+			estadoCuenta.setDocBaseType(docType.getDocBaseType());
+			estadoCuenta.setDocumentNoRef(this.getDocumentNo());
+			estadoCuenta.setIsSOTrx(false);
+			estadoCuenta.setRecord_ID(this.get_ID());
+			estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
+			estadoCuenta.saveEx();
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+	}
 
 
 	/***
@@ -409,7 +428,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 	public boolean voidIt()
 	{
 		log.info("voidIt - " + toString());
-		return closeIt();
+		return false;
 	}	//	voidIt
 	
 	/**
@@ -507,9 +526,8 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		String action = "";
 
 		try{
-
 			// Desafecto documentos asociadas con este resguardo en el estado de cuenta
-			action = " update z_estadocuenta set z_resguardosocio_to_id = null " +
+			action = " update z_estadocuenta set z_resguardosocio_to_id = null, daterefresguardo = null " +
 					" where z_resguardosocio_to_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 

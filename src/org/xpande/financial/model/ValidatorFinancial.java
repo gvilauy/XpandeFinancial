@@ -199,6 +199,23 @@ public class ValidatorFinancial implements ModelValidator {
                 }
             }
 
+            // Si tengo flag de Transferir Saldo a otro socio de negocio, genero este documento y lo completo.
+            MZTransferSaldo transferSaldo = null;
+            if (model.get_ValueAsBoolean("TransferSaldo")){
+                // Genero documento de transferencia de saldo
+                transferSaldo = new MZTransferSaldo(model.getCtx(), 0, model.get_TrxName());
+                message = transferSaldo.generateFromInvoice(model);
+                if (message != null){
+                    return message;
+                }
+                // Completo documento de transferencia de saldo
+                if (!transferSaldo.processIt(DocAction.ACTION_Complete)){
+                    message = transferSaldo.getProcessMsg();
+                    return message;
+                }
+                transferSaldo.saveEx();
+            }
+
             // Al completar impacto en estado de cuenta
             // Impacto según vencimientos o no de esta invoice
             MInvoicePaySchedule[] paySchedules = MInvoicePaySchedule.getInvoicePaySchedule(model.getCtx(), model.get_ID(), 0, model.get_TrxName());
@@ -250,6 +267,12 @@ public class ValidatorFinancial implements ModelValidator {
                     estadoCuenta.setIsSOTrx(model.isSOTrx());
                     estadoCuenta.setRecord_ID(model.get_ID());
                     estadoCuenta.setAD_Org_ID(model.getAD_Org_ID());
+
+                    if ((transferSaldo != null) && (transferSaldo.get_ID() > 0)){
+                        estadoCuenta.setZ_TransferSaldo_To_ID(transferSaldo.get_ID());
+                        estadoCuenta.setDateRefTransfSaldo(transferSaldo.getDateDoc());
+                    }
+
                     estadoCuenta.saveEx();
                 }
             }
@@ -313,6 +336,12 @@ public class ValidatorFinancial implements ModelValidator {
                 estadoCuenta.setIsSOTrx(model.isSOTrx());
                 estadoCuenta.setRecord_ID(model.get_ID());
                 estadoCuenta.setAD_Org_ID(model.getAD_Org_ID());
+
+                if ((transferSaldo != null) && (transferSaldo.get_ID() > 0)){
+                    estadoCuenta.setZ_TransferSaldo_To_ID(transferSaldo.get_ID());
+                    estadoCuenta.setDateRefTransfSaldo(transferSaldo.getDateDoc());
+                }
+
                 estadoCuenta.saveEx();
             }
 
@@ -336,21 +365,6 @@ public class ValidatorFinancial implements ModelValidator {
                 }
             }
 
-            // Si tengo flag de Transferir Saldo a otro socio de negocio, genero este documento y lo completo.
-            if (model.get_ValueAsBoolean("TransferSaldo")){
-                // Genero documento de transferencia de saldo
-                MZTransferSaldo transferSaldo = new MZTransferSaldo(model.getCtx(), 0, model.get_TrxName());
-                message = transferSaldo.generateFromInvoice(model);
-                if (message != null){
-                    return message;
-                }
-                // Completo documento de transferencia de saldo
-                if (!transferSaldo.processIt(DocAction.ACTION_Complete)){
-                    message = transferSaldo.getProcessMsg();
-                    return message;
-                }
-                transferSaldo.saveEx();
-            }
         }
 
         return null;

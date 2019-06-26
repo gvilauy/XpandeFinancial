@@ -33,7 +33,7 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190313L;
+	private static final long serialVersionUID = 20190626L;
 
     /** Standard Constructor */
     public X_Z_EstadoCuenta (Properties ctx, int Z_EstadoCuenta_ID, String trxName)
@@ -310,6 +310,74 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 		return (Timestamp)get_Value(COLUMNNAME_DateDoc);
 	}
 
+	/** Set DateRefOrdenPago.
+		@param DateRefOrdenPago 
+		Fecha referencia de Orden de Pago
+	  */
+	public void setDateRefOrdenPago (Timestamp DateRefOrdenPago)
+	{
+		set_Value (COLUMNNAME_DateRefOrdenPago, DateRefOrdenPago);
+	}
+
+	/** Get DateRefOrdenPago.
+		@return Fecha referencia de Orden de Pago
+	  */
+	public Timestamp getDateRefOrdenPago () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateRefOrdenPago);
+	}
+
+	/** Set DateRefPago.
+		@param DateRefPago 
+		Fecha referencia de un documento de pago / cobro
+	  */
+	public void setDateRefPago (Timestamp DateRefPago)
+	{
+		set_Value (COLUMNNAME_DateRefPago, DateRefPago);
+	}
+
+	/** Get DateRefPago.
+		@return Fecha referencia de un documento de pago / cobro
+	  */
+	public Timestamp getDateRefPago () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateRefPago);
+	}
+
+	/** Set DateRefResguardo.
+		@param DateRefResguardo 
+		Fecha referencia de un Resguardo a Socio de Negocio
+	  */
+	public void setDateRefResguardo (Timestamp DateRefResguardo)
+	{
+		set_Value (COLUMNNAME_DateRefResguardo, DateRefResguardo);
+	}
+
+	/** Get DateRefResguardo.
+		@return Fecha referencia de un Resguardo a Socio de Negocio
+	  */
+	public Timestamp getDateRefResguardo () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateRefResguardo);
+	}
+
+	/** Set DateRefTransfSaldo.
+		@param DateRefTransfSaldo 
+		Fecha referencia de documento de Transferencia de Saldo
+	  */
+	public void setDateRefTransfSaldo (Timestamp DateRefTransfSaldo)
+	{
+		set_Value (COLUMNNAME_DateRefTransfSaldo, DateRefTransfSaldo);
+	}
+
+	/** Get DateRefTransfSaldo.
+		@return Fecha referencia de documento de Transferencia de Saldo
+	  */
+	public Timestamp getDateRefTransfSaldo () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateRefTransfSaldo);
+	}
+
 	/** DocBaseType AD_Reference_ID=183 */
 	public static final int DOCBASETYPE_AD_Reference_ID=183;
 	/** GL Journal = GLJ */
@@ -428,6 +496,12 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	public static final String DOCBASETYPE_CIICargaInicialInvoices = "CII";
 	/** TSP Transferencia Saldo a Pagar = TSP */
 	public static final String DOCBASETYPE_TSPTransferenciaSaldoAPagar = "TSP";
+	/** CIM Carga Inicial Medios de Pago = CIM */
+	public static final String DOCBASETYPE_CIMCargaInicialMediosDePago = "CIM";
+	/** CIJ Carga Inicial Asientos Contables = CIJ */
+	public static final String DOCBASETYPE_CIJCargaInicialAsientosContables = "CIJ";
+	/** AVG Generacion de Asientos de Venta POS = AVG */
+	public static final String DOCBASETYPE_AVGGeneracionDeAsientosDeVentaPOS = "AVG";
 	/** Set Document BaseType.
 		@param DocBaseType 
 		Logical type of document
@@ -568,6 +642,55 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 		return (String)get_Value(COLUMNNAME_ReferenciaPago);
 	}
 
+	/** Set Ref_Pago_ID.
+		@param Ref_Pago_ID 
+		ID de Pago Referenciado
+	  */
+	public void setRef_Pago_ID (int Ref_Pago_ID)
+	{
+		if (Ref_Pago_ID < 1) 
+			set_Value (COLUMNNAME_Ref_Pago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Ref_Pago_ID, Integer.valueOf(Ref_Pago_ID));
+	}
+
+	/** Get Ref_Pago_ID.
+		@return ID de Pago Referenciado
+	  */
+	public int getRef_Pago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_Pago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** TipoSocioNegocio AD_Reference_ID=1000029 */
+	public static final int TIPOSOCIONEGOCIO_AD_Reference_ID=1000029;
+	/** CLIENTES = CLIENTES */
+	public static final String TIPOSOCIONEGOCIO_CLIENTES = "CLIENTES";
+	/** PROVEEDORES = PROVEEDORES */
+	public static final String TIPOSOCIONEGOCIO_PROVEEDORES = "PROVEEDORES";
+	/** TODOS = TODOS */
+	public static final String TIPOSOCIONEGOCIO_TODOS = "TODOS";
+	/** Set TipoSocioNegocio.
+		@param TipoSocioNegocio 
+		Tipo de Socio de Negocio
+	  */
+	public void setTipoSocioNegocio (String TipoSocioNegocio)
+	{
+
+		set_Value (COLUMNNAME_TipoSocioNegocio, TipoSocioNegocio);
+	}
+
+	/** Get TipoSocioNegocio.
+		@return Tipo de Socio de Negocio
+	  */
+	public String getTipoSocioNegocio () 
+	{
+		return (String)get_Value(COLUMNNAME_TipoSocioNegocio);
+	}
+
 	public I_Z_Afectacion getZ_Afectacion() throws RuntimeException
     {
 		return (I_Z_Afectacion)MTable.get(getCtx(), I_Z_Afectacion.Table_Name)
@@ -638,6 +761,34 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 		return ii.intValue();
 	}
 
+	public I_Z_OrdenPago getZ_OrdenPago_To() throws RuntimeException
+    {
+		return (I_Z_OrdenPago)MTable.get(getCtx(), I_Z_OrdenPago.Table_Name)
+			.getPO(getZ_OrdenPago_To_ID(), get_TrxName());	}
+
+	/** Set Z_OrdenPago_To_ID.
+		@param Z_OrdenPago_To_ID 
+		Referencia a un documento de Orden de Pago
+	  */
+	public void setZ_OrdenPago_To_ID (int Z_OrdenPago_To_ID)
+	{
+		if (Z_OrdenPago_To_ID < 1) 
+			set_Value (COLUMNNAME_Z_OrdenPago_To_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_OrdenPago_To_ID, Integer.valueOf(Z_OrdenPago_To_ID));
+	}
+
+	/** Get Z_OrdenPago_To_ID.
+		@return Referencia a un documento de Orden de Pago
+	  */
+	public int getZ_OrdenPago_To_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_OrdenPago_To_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_Z_Pago getZ_Pago() throws RuntimeException
     {
 		return (I_Z_Pago)MTable.get(getCtx(), I_Z_Pago.Table_Name)
@@ -658,6 +809,34 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	public int getZ_Pago_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_Pago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_Pago getZ_Pago_To() throws RuntimeException
+    {
+		return (I_Z_Pago)MTable.get(getCtx(), I_Z_Pago.Table_Name)
+			.getPO(getZ_Pago_To_ID(), get_TrxName());	}
+
+	/** Set Z_Pago_To_ID.
+		@param Z_Pago_To_ID 
+		Referencia a un documento de Pago
+	  */
+	public void setZ_Pago_To_ID (int Z_Pago_To_ID)
+	{
+		if (Z_Pago_To_ID < 1) 
+			set_Value (COLUMNNAME_Z_Pago_To_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_Pago_To_ID, Integer.valueOf(Z_Pago_To_ID));
+	}
+
+	/** Get Z_Pago_To_ID.
+		@return Referencia a un documento de Pago
+	  */
+	public int getZ_Pago_To_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_Pago_To_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -736,6 +915,34 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	public int getZ_TransferSaldo_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_TransferSaldo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_TransferSaldo getZ_TransferSaldo_To() throws RuntimeException
+    {
+		return (I_Z_TransferSaldo)MTable.get(getCtx(), I_Z_TransferSaldo.Table_Name)
+			.getPO(getZ_TransferSaldo_To_ID(), get_TrxName());	}
+
+	/** Set Z_TransferSaldo_To_ID.
+		@param Z_TransferSaldo_To_ID 
+		Referencia a un documento de Transferencia de Saldo
+	  */
+	public void setZ_TransferSaldo_To_ID (int Z_TransferSaldo_To_ID)
+	{
+		if (Z_TransferSaldo_To_ID < 1) 
+			set_Value (COLUMNNAME_Z_TransferSaldo_To_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_TransferSaldo_To_ID, Integer.valueOf(Z_TransferSaldo_To_ID));
+	}
+
+	/** Get Z_TransferSaldo_To_ID.
+		@return Referencia a un documento de Transferencia de Saldo
+	  */
+	public int getZ_TransferSaldo_To_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_TransferSaldo_To_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -208,6 +208,58 @@ public interface I_Z_EstadoCuenta
 	  */
 	public Timestamp getDateDoc();
 
+    /** Column name DateRefOrdenPago */
+    public static final String COLUMNNAME_DateRefOrdenPago = "DateRefOrdenPago";
+
+	/** Set DateRefOrdenPago.
+	  * Fecha referencia de Orden de Pago
+	  */
+	public void setDateRefOrdenPago(Timestamp DateRefOrdenPago);
+
+	/** Get DateRefOrdenPago.
+	  * Fecha referencia de Orden de Pago
+	  */
+	public Timestamp getDateRefOrdenPago();
+
+    /** Column name DateRefPago */
+    public static final String COLUMNNAME_DateRefPago = "DateRefPago";
+
+	/** Set DateRefPago.
+	  * Fecha referencia de un documento de pago / cobro
+	  */
+	public void setDateRefPago(Timestamp DateRefPago);
+
+	/** Get DateRefPago.
+	  * Fecha referencia de un documento de pago / cobro
+	  */
+	public Timestamp getDateRefPago();
+
+    /** Column name DateRefResguardo */
+    public static final String COLUMNNAME_DateRefResguardo = "DateRefResguardo";
+
+	/** Set DateRefResguardo.
+	  * Fecha referencia de un Resguardo a Socio de Negocio
+	  */
+	public void setDateRefResguardo(Timestamp DateRefResguardo);
+
+	/** Get DateRefResguardo.
+	  * Fecha referencia de un Resguardo a Socio de Negocio
+	  */
+	public Timestamp getDateRefResguardo();
+
+    /** Column name DateRefTransfSaldo */
+    public static final String COLUMNNAME_DateRefTransfSaldo = "DateRefTransfSaldo";
+
+	/** Set DateRefTransfSaldo.
+	  * Fecha referencia de documento de Transferencia de Saldo
+	  */
+	public void setDateRefTransfSaldo(Timestamp DateRefTransfSaldo);
+
+	/** Get DateRefTransfSaldo.
+	  * Fecha referencia de documento de Transferencia de Saldo
+	  */
+	public Timestamp getDateRefTransfSaldo();
+
     /** Column name DocBaseType */
     public static final String COLUMNNAME_DocBaseType = "DocBaseType";
 
@@ -312,6 +364,32 @@ public interface I_Z_EstadoCuenta
 	  */
 	public String getReferenciaPago();
 
+    /** Column name Ref_Pago_ID */
+    public static final String COLUMNNAME_Ref_Pago_ID = "Ref_Pago_ID";
+
+	/** Set Ref_Pago_ID.
+	  * ID de Pago Referenciado
+	  */
+	public void setRef_Pago_ID(int Ref_Pago_ID);
+
+	/** Get Ref_Pago_ID.
+	  * ID de Pago Referenciado
+	  */
+	public int getRef_Pago_ID();
+
+    /** Column name TipoSocioNegocio */
+    public static final String COLUMNNAME_TipoSocioNegocio = "TipoSocioNegocio";
+
+	/** Set TipoSocioNegocio.
+	  * Tipo de Socio de Negocio
+	  */
+	public void setTipoSocioNegocio(String TipoSocioNegocio);
+
+	/** Get TipoSocioNegocio.
+	  * Tipo de Socio de Negocio
+	  */
+	public String getTipoSocioNegocio();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -359,6 +437,21 @@ public interface I_Z_EstadoCuenta
 
 	public I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException;
 
+    /** Column name Z_OrdenPago_To_ID */
+    public static final String COLUMNNAME_Z_OrdenPago_To_ID = "Z_OrdenPago_To_ID";
+
+	/** Set Z_OrdenPago_To_ID.
+	  * Referencia a un documento de Orden de Pago
+	  */
+	public void setZ_OrdenPago_To_ID(int Z_OrdenPago_To_ID);
+
+	/** Get Z_OrdenPago_To_ID.
+	  * Referencia a un documento de Orden de Pago
+	  */
+	public int getZ_OrdenPago_To_ID();
+
+	public I_Z_OrdenPago getZ_OrdenPago_To() throws RuntimeException;
+
     /** Column name Z_Pago_ID */
     public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
 
@@ -369,6 +462,21 @@ public interface I_Z_EstadoCuenta
 	public int getZ_Pago_ID();
 
 	public I_Z_Pago getZ_Pago() throws RuntimeException;
+
+    /** Column name Z_Pago_To_ID */
+    public static final String COLUMNNAME_Z_Pago_To_ID = "Z_Pago_To_ID";
+
+	/** Set Z_Pago_To_ID.
+	  * Referencia a un documento de Pago
+	  */
+	public void setZ_Pago_To_ID(int Z_Pago_To_ID);
+
+	/** Get Z_Pago_To_ID.
+	  * Referencia a un documento de Pago
+	  */
+	public int getZ_Pago_To_ID();
+
+	public I_Z_Pago getZ_Pago_To() throws RuntimeException;
 
     /** Column name Z_ResguardoSocio_ID */
     public static final String COLUMNNAME_Z_ResguardoSocio_ID = "Z_ResguardoSocio_ID";
@@ -406,4 +514,19 @@ public interface I_Z_EstadoCuenta
 	public int getZ_TransferSaldo_ID();
 
 	public I_Z_TransferSaldo getZ_TransferSaldo() throws RuntimeException;
+
+    /** Column name Z_TransferSaldo_To_ID */
+    public static final String COLUMNNAME_Z_TransferSaldo_To_ID = "Z_TransferSaldo_To_ID";
+
+	/** Set Z_TransferSaldo_To_ID.
+	  * Referencia a un documento de Transferencia de Saldo
+	  */
+	public void setZ_TransferSaldo_To_ID(int Z_TransferSaldo_To_ID);
+
+	/** Get Z_TransferSaldo_To_ID.
+	  * Referencia a un documento de Transferencia de Saldo
+	  */
+	public int getZ_TransferSaldo_To_ID();
+
+	public I_Z_TransferSaldo getZ_TransferSaldo_To() throws RuntimeException;
 }

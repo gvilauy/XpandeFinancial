@@ -242,26 +242,12 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
                 if (this.getDateEmitted() == null){
                     return "Debe indicar Fecha de Emisión del Medio de Pago";
                 }
-                /*
-                if (this.getDateEmitted().before(fechaHoy)){
-                    if (this.isEmisionManual()){
-                        return "La Fecha de Emisión del Medio de Pago no puede ser menor a la fecha actual";
-                    }
-                }
-                */
             }
 
             if (this.isTieneFecVenc()){
                 if (this.getDueDate() == null){
                     return "Debe indicar Fecha de Vencimiento del Medio de Pago";
                 }
-                /*
-                if (this.getDueDate().before(fechaHoy)){
-                    if (this.isEmisionManual()){
-                        return "La Fecha de Vencimiento del Medio de Pago no puede ser menor a la fecha actual";
-                    }
-                }
-                */
                 if (this.getDateEmitted() != null){
                     if (this.getDueDate().before(this.getDateEmitted())){
                         return "La Fecha de Vencimiento del Medio de Pago no puede ser menor a la Fecha de Emisión del mismo";
@@ -279,6 +265,11 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
                     }
                 }
             }
+
+            if ((this.getTotalAmt() == null) || (this.getTotalAmt().compareTo(Env.ZERO) <= 0)){
+                return "Debe indicar importe mayor a cero para este medio de pago.";
+            }
+
         }
         catch (Exception e){
             throw new AdempiereException(e);

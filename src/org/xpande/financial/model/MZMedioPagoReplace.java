@@ -784,7 +784,8 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 
 		    sql = " select mpi.z_mediopagoitem_id " +
 					" from z_mediopagoitem mpi " +
-					" where mpi.c_currency_id =" + this.getC_Currency_ID() +
+					" where mpi.ad_org_id =" + this.getAD_Org_ID() +
+					" and mpi.c_currency_id =" + this.getC_Currency_ID() +
 					//" and mpi.emitido ='Y' and mpi.anulado ='N' and mpi.entregado ='N' " + whereClause;
 					" and mpi.emitido ='Y' and mpi.anulado ='N' and mpi.conciliado ='N' " + whereClause;
 

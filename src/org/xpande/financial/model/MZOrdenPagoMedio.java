@@ -74,6 +74,11 @@ public class MZOrdenPagoMedio extends X_Z_OrdenPagoMedio {
             }
         }
 
+        // Valido importe del medio de pago mayor a cero
+        if ((this.getTotalAmt() == null) && (this.getTotalAmt().compareTo(Env.ZERO) <= 0)){
+            log.saveError("ATENCIÓN", "Debe indicar importe mayor a cero para este medio de pago.");
+        }
+
         return true;
     }
 

@@ -376,10 +376,13 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 	 */
 	public boolean reActivateIt()
 	{
+		/*
 		log.info("reActivateIt - " + toString());
 		setProcessed(false);
 		if (reverseCorrectIt())
 			return true;
+		 */
+
 		return false;
 	}	//	reActivateIt
 	
@@ -543,13 +546,6 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 			invoiceAfecta.setZ_TransferSaldo_ID(this.get_ID());
 			invoiceAfecta.saveEx();
 
-			// Actualizo linea de estado de cuento original de la invoice
-			String action = " update z_estadocuenta set referenciapago ='TRANSF.SALDO " + this.getDocumentNo() + "', " +
-							" z_transfersaldo_id =" + this.get_ID() +
-							" where c_invoice_id =" + this.getC_Invoice_ID();
-			DB.executeUpdateEx(action, get_TrxName());
-
-
 			// Impacto linea en estado de cuenta para bajar la deuda del socio de negocio de la invoice
 			MDocType docTypeTarget = (MDocType) this.getC_DocTypeTarget();
 			MDocType docType = (MDocType) this.getC_DocType();
@@ -676,7 +672,7 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 			action = " delete from z_invoiceafectacion where z_transfersaldo_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
-			action = " update z_estadocuenta set referenciapago = null, z_transfersaldo_id = null " +
+			action = " update z_estadocuenta set z_transfersaldo_to_id = null, datereftransfsaldo = null " +
 					" where c_invoice_id =" + this.getC_Invoice_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 

@@ -272,6 +272,9 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
             ordenPago.saveEx();
         }
 
+        // Elimino documentos no procesados en ordenes de pago y socios de negocio sin ordenes generadas
+        this.deleteNotProcessedData();
+
         //	User Validation
         String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
         if (valid != null)
@@ -286,6 +289,37 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
         setDocAction(DOCACTION_Close);
         return DocAction.STATUS_Completed;
     }	//	completeIt
+
+    /***
+     * Al completarse elimino documentos y socios de negocio que no se consideraron en la generación de las ordenes de pago.
+     * Xpande. Created by Gabriel Vila on 6/26/19.
+     */
+    private void deleteNotProcessedData() {
+
+        String action = "";
+
+        try{
+            // Elimino socios de negocio con ningun documento procesado en ordenes de pago
+            action = " delete from z_generaordenpagosocio " +
+                        " where z_generaordenpago_id =" + this.get_ID() +
+                        " and z_generaordenpagosocio_id not in " +
+                        " (select distinct z_generaordenpagosocio_id " +
+                        " from z_generaordenpagolin " +
+                        " where z_generaordenpago_id =" + this.get_ID() +
+                        " and isselected ='Y') ";
+            DB.executeUpdateEx(action, get_TrxName());
+
+            // Elimino lines no procesadas en ordenes de pago
+            action = " delete from z_generaordenpagolin " +
+                        " where z_generaordenpago_id =" + this.get_ID() +
+                        " and isselected ='N'";
+            DB.executeUpdateEx(action, get_TrxName());
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
 
 
     /***
