@@ -33,7 +33,7 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190621L;
+	private static final long serialVersionUID = 20190627L;
 
     /** Standard Constructor */
     public X_Z_Pago (Properties ctx, int Z_Pago_ID, String trxName)
@@ -901,6 +901,34 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 		return bd;
 	}
 
+	public I_Z_OrdenPago getZ_OrdenPago_To() throws RuntimeException
+    {
+		return (I_Z_OrdenPago)MTable.get(getCtx(), I_Z_OrdenPago.Table_Name)
+			.getPO(getZ_OrdenPago_To_ID(), get_TrxName());	}
+
+	/** Set Z_OrdenPago_To_ID.
+		@param Z_OrdenPago_To_ID 
+		Referencia a un documento de Orden de Pago
+	  */
+	public void setZ_OrdenPago_To_ID (int Z_OrdenPago_To_ID)
+	{
+		if (Z_OrdenPago_To_ID < 1) 
+			set_Value (COLUMNNAME_Z_OrdenPago_To_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_OrdenPago_To_ID, Integer.valueOf(Z_OrdenPago_To_ID));
+	}
+
+	/** Get Z_OrdenPago_To_ID.
+		@return Referencia a un documento de Orden de Pago
+	  */
+	public int getZ_OrdenPago_To_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_OrdenPago_To_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Z_Pago ID.
 		@param Z_Pago_ID Z_Pago ID	  */
 	public void setZ_Pago_ID (int Z_Pago_ID)
@@ -916,6 +944,34 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	public int getZ_Pago_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_Pago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_Pago getZ_Pago_To() throws RuntimeException
+    {
+		return (I_Z_Pago)MTable.get(getCtx(), I_Z_Pago.Table_Name)
+			.getPO(getZ_Pago_To_ID(), get_TrxName());	}
+
+	/** Set Z_Pago_To_ID.
+		@param Z_Pago_To_ID 
+		Referencia a un documento de Pago
+	  */
+	public void setZ_Pago_To_ID (int Z_Pago_To_ID)
+	{
+		if (Z_Pago_To_ID < 1) 
+			set_Value (COLUMNNAME_Z_Pago_To_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_Pago_To_ID, Integer.valueOf(Z_Pago_To_ID));
+	}
+
+	/** Get Z_Pago_To_ID.
+		@return Referencia a un documento de Pago
+	  */
+	public int getZ_Pago_To_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_Pago_To_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

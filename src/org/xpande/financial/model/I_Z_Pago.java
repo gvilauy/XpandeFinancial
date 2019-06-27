@@ -589,6 +589,21 @@ public interface I_Z_Pago
 	  */
 	public int getUpdatedBy();
 
+    /** Column name Z_OrdenPago_To_ID */
+    public static final String COLUMNNAME_Z_OrdenPago_To_ID = "Z_OrdenPago_To_ID";
+
+	/** Set Z_OrdenPago_To_ID.
+	  * Referencia a un documento de Orden de Pago
+	  */
+	public void setZ_OrdenPago_To_ID(int Z_OrdenPago_To_ID);
+
+	/** Get Z_OrdenPago_To_ID.
+	  * Referencia a un documento de Orden de Pago
+	  */
+	public int getZ_OrdenPago_To_ID();
+
+	public I_Z_OrdenPago getZ_OrdenPago_To() throws RuntimeException;
+
     /** Column name Z_Pago_ID */
     public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
 
@@ -597,4 +612,19 @@ public interface I_Z_Pago
 
 	/** Get Z_Pago ID	  */
 	public int getZ_Pago_ID();
+
+    /** Column name Z_Pago_To_ID */
+    public static final String COLUMNNAME_Z_Pago_To_ID = "Z_Pago_To_ID";
+
+	/** Set Z_Pago_To_ID.
+	  * Referencia a un documento de Pago
+	  */
+	public void setZ_Pago_To_ID(int Z_Pago_To_ID);
+
+	/** Get Z_Pago_To_ID.
+	  * Referencia a un documento de Pago
+	  */
+	public int getZ_Pago_To_ID();
+
+	public I_Z_Pago getZ_Pago_To() throws RuntimeException;
 }

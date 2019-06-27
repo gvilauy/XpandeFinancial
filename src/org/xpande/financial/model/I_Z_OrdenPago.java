@@ -63,6 +63,19 @@ public interface I_Z_OrdenPago
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AmtAnticipo */
+    public static final String COLUMNNAME_AmtAnticipo = "AmtAnticipo";
+
+	/** Set AmtAnticipo.
+	  * Monto de Anticipos
+	  */
+	public void setAmtAnticipo(BigDecimal AmtAnticipo);
+
+	/** Get AmtAnticipo.
+	  * Monto de Anticipos
+	  */
+	public BigDecimal getAmtAnticipo();
+
     /** Column name AmtPaymentRule */
     public static final String COLUMNNAME_AmtPaymentRule = "AmtPaymentRule";
 
@@ -240,6 +253,28 @@ public interface I_Z_OrdenPago
 	  * The document is paid
 	  */
 	public boolean isPaid();
+
+    /** Column name OrdPagoAnticipo */
+    public static final String COLUMNNAME_OrdPagoAnticipo = "OrdPagoAnticipo";
+
+	/** Set OrdPagoAnticipo.
+	  * Si una orden de pago es solamente para afectar un anticipo a proveedor
+	  */
+	public void setOrdPagoAnticipo(boolean OrdPagoAnticipo);
+
+	/** Get OrdPagoAnticipo.
+	  * Si una orden de pago es solamente para afectar un anticipo a proveedor
+	  */
+	public boolean isOrdPagoAnticipo();
+
+    /** Column name ProcessButton */
+    public static final String COLUMNNAME_ProcessButton = "ProcessButton";
+
+	/** Set ProcessButton	  */
+	public void setProcessButton(String ProcessButton);
+
+	/** Get ProcessButton	  */
+	public String getProcessButton();
 
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";

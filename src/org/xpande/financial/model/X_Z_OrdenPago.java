@@ -33,7 +33,7 @@ public class X_Z_OrdenPago extends PO implements I_Z_OrdenPago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180312L;
+	private static final long serialVersionUID = 20190627L;
 
     /** Standard Constructor */
     public X_Z_OrdenPago (Properties ctx, int Z_OrdenPago_ID, String trxName)
@@ -54,6 +54,8 @@ public class X_Z_OrdenPago extends PO implements I_Z_OrdenPago, I_Persistent
 			setIsApproved (false);
 // N
 			setIsPaid (false);
+// N
+			setOrdPagoAnticipo (false);
 // N
 			setProcessed (false);
 // N
@@ -91,6 +93,26 @@ public class X_Z_OrdenPago extends PO implements I_Z_OrdenPago, I_Persistent
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set AmtAnticipo.
+		@param AmtAnticipo 
+		Monto de Anticipos
+	  */
+	public void setAmtAnticipo (BigDecimal AmtAnticipo)
+	{
+		set_Value (COLUMNNAME_AmtAnticipo, AmtAnticipo);
+	}
+
+	/** Get AmtAnticipo.
+		@return Monto de Anticipos
+	  */
+	public BigDecimal getAmtAnticipo () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAnticipo);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
 
 	/** Set AmtPaymentRule.
 		@param AmtPaymentRule 
@@ -385,6 +407,44 @@ public class X_Z_OrdenPago extends PO implements I_Z_OrdenPago, I_Persistent
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set OrdPagoAnticipo.
+		@param OrdPagoAnticipo 
+		Si una orden de pago es solamente para afectar un anticipo a proveedor
+	  */
+	public void setOrdPagoAnticipo (boolean OrdPagoAnticipo)
+	{
+		set_Value (COLUMNNAME_OrdPagoAnticipo, Boolean.valueOf(OrdPagoAnticipo));
+	}
+
+	/** Get OrdPagoAnticipo.
+		@return Si una orden de pago es solamente para afectar un anticipo a proveedor
+	  */
+	public boolean isOrdPagoAnticipo () 
+	{
+		Object oo = get_Value(COLUMNNAME_OrdPagoAnticipo);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set ProcessButton.
+		@param ProcessButton ProcessButton	  */
+	public void setProcessButton (String ProcessButton)
+	{
+		set_Value (COLUMNNAME_ProcessButton, ProcessButton);
+	}
+
+	/** Get ProcessButton.
+		@return ProcessButton	  */
+	public String getProcessButton () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton);
 	}
 
 	/** Set Processed.
