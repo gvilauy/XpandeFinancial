@@ -246,41 +246,48 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			this.setDateDoc(fechaHoy);
 		}
 
-		// Si no es anticipo
-		if (!this.isAnticipo()){
-
-			// Seteo flag en este documento que me indica si es un Recibo asociado solamente a anticipos.
-			this.setEsReciboAnticipo();
-
-			// Obtengo importe total de anticipos afectados en este recibo
-			this.setTotalAnticiposAfectados();
-
-			// Obtengo lineas a procesar
-			List<MZPagoLin> pagoLinList = this.getSelectedLines();
-
-			// Obtengo medios de pago a procesar
-			List<MZPagoMedioPago> medioPagoList = this.getMediosPago();
-
-			// Obtengo ordenes de pago asociadas a este documento (si existen)
-			List<MZPagoOrdenPago> ordenPagoList = this.getOrdenesPagoReferenciadas();
-			if (ordenPagoList.size() <= 0){
-				this.setTieneOrdenPago(false);
-			}
-
-			// Validaciones del documento
-			m_processMsg = this.validateDocument(pagoLinList, medioPagoList);
-			if (m_processMsg != null){
+		if (this.isAnticipo()){
+			if ((this.getPayAmt() == null) || (this.getPayAmt().compareTo(Env.ZERO) <= 0)){
+				m_processMsg = "Debe indicar importe mayor a cero para este anticipo.";
 				return DocAction.STATUS_Invalid;
 			}
+		}
 
-			// Para recibos hechos por anticipos, me aseguro de dejar monto en positivo.
-			if (this.isReciboAnticipo()){
-				if (this.getPayAmt().compareTo(Env.ZERO) < 0){
-					this.setPayAmt(this.getPayAmt().negate());
+		if (!this.isSOTrx()){
+
+			// Si no es anticipo
+			if (!this.isAnticipo()){
+
+				// Seteo flag en este documento que me indica si es un Recibo asociado solamente a anticipos.
+				this.setEsReciboAnticipo();
+
+				// Obtengo importe total de anticipos afectados en este recibo
+				this.setTotalAnticiposAfectados();
+
+				// Obtengo lineas a procesar
+				List<MZPagoLin> pagoLinList = this.getSelectedLines();
+
+				// Obtengo medios de pago a procesar
+				List<MZPagoMedioPago> medioPagoList = this.getMediosPago();
+
+				// Obtengo ordenes de pago asociadas a este documento (si existen)
+				List<MZPagoOrdenPago> ordenPagoList = this.getOrdenesPagoReferenciadas();
+				if (ordenPagoList.size() <= 0){
+					this.setTieneOrdenPago(false);
 				}
-			}
 
-			if (!this.isSOTrx()){
+				// Validaciones del documento
+				m_processMsg = this.validateDocument(pagoLinList, medioPagoList);
+				if (m_processMsg != null){
+					return DocAction.STATUS_Invalid;
+				}
+
+				// Para recibos hechos por anticipos, me aseguro de dejar monto en positivo.
+				if (this.isReciboAnticipo()){
+					if (this.getPayAmt().compareTo(Env.ZERO) < 0){
+						this.setPayAmt(this.getPayAmt().negate());
+					}
+				}
 
 				// Si no tengo ordenes de pago
 				if (!this.isTieneOrdenPago()){
@@ -312,6 +319,38 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					return DocAction.STATUS_Invalid;
 				}
 
+				// Afecta documentos asociadas a este pago/cobro.
+				m_processMsg = this.afectarDocumentosLineas(pagoLinList);
+				if (m_processMsg != null){
+					return DocAction.STATUS_Invalid;
+				}
+			}
+		}
+		else{  // Cobranza
+
+			// Obtengo lineas a procesar
+			List<MZPagoLin> pagoLinList = this.getSelectedLines();
+			List<MZPagoMedioPago> medioPagoList = this.getMediosPago();
+
+			if (!this.isAnticipo()){
+				// Seteo flag en este documento que me indica si es un Recibo asociado solamente a anticipos.
+				this.setEsReciboAnticipo();
+
+				// Obtengo importe total de anticipos afectados en este recibo
+				this.setTotalAnticiposAfectados();
+
+				// Validaciones del documento
+				m_processMsg = this.validateDocument(pagoLinList, medioPagoList);
+				if (m_processMsg != null){
+					return DocAction.STATUS_Invalid;
+				}
+
+				// Para recibos hechos por anticipos, me aseguro de dejar monto en positivo.
+				if (this.isReciboAnticipo()){
+					if (this.getPayAmt().compareTo(Env.ZERO) < 0){
+						this.setPayAmt(this.getPayAmt().negate());
+					}
+				}
 			}
 
 			// Afecta documentos asociadas a este pago/cobro.
@@ -319,13 +358,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			if (m_processMsg != null){
 				return DocAction.STATUS_Invalid;
 			}
-		}
 
-		// Si es una cobranza
-		if (this.isSOTrx()){
-			// creo medios de pago si es necesario, sin importar si es o no un anticipo de cliente.
-			List<MZPagoMedioPago> medioPagoList = this.getMediosPago();
+			// Crea medios de pago si es necesario, sin importar si es o no un anticipo de cliente.
 			m_processMsg = this.crearMediosPago(medioPagoList);
+			if (m_processMsg != null){
+				return DocAction.STATUS_Invalid;
+			}
+
 		}
 
 		// Impactos en estado de cuenta del socio de negocio
