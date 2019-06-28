@@ -28,7 +28,6 @@ public class EstadoCuentaRP extends SvrProcess {
     @Override
     protected void prepare() {
 
-
         ProcessInfoParameter[] para = getParameter();
 
         for (int i = 0; i < para.length; i++){
