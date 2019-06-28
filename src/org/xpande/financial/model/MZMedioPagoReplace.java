@@ -434,6 +434,8 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 					ordenPagoMedio.setTotalAmt(NEW_medioPagoItem.getTotalAmt());
 					ordenPagoMedio.saveEx();
 				}
+
+				/*
 				if (OLD_medioPagoItem.getZ_Pago_ID() > 0){
 					MZPago pago = (MZPago) OLD_medioPagoItem.getZ_Pago();
 					MZPagoMedioPago pagoMedioPago = pago.getMedioPagoByItem(OLD_medioPagoItem.get_ID());
@@ -456,6 +458,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 					pagoMedioPago.setTotalAmt(NEW_medioPagoItem.getTotalAmt());
 					pagoMedioPago.saveEx();
 				}
+				*/
 
 				// Genero auditoría para este documento
 				MZMedioPagoReplaceAud replaceAud = new MZMedioPagoReplaceAud(getCtx(), 0, get_TrxName());

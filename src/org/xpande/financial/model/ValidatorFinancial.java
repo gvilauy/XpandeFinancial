@@ -228,6 +228,14 @@ public class ValidatorFinancial implements ModelValidator {
                     estadoCuenta.setAD_Table_ID(model.get_Table_ID());
 
                     if (!model.isSOTrx()){
+                        estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
+                    }
+                    else{
+                        estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
+                    }
+
+
+                    if (!model.isSOTrx()){
                         if (docType.getDocBaseType().equalsIgnoreCase("API")){
                             estadoCuenta.setAmtSourceCr(ips.getDueAmt());
                             estadoCuenta.setAmtSourceDr(Env.ZERO);
@@ -290,6 +298,13 @@ public class ValidatorFinancial implements ModelValidator {
                 estadoCuenta.setC_Invoice_ID(model.get_ID());
                 estadoCuenta.setAD_Table_ID(model.get_Table_ID());
 
+                if (!model.isSOTrx()){
+                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
+                }
+                else{
+                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
+                }
+
                 // No se porque razón el grandtotal en esta etapa me lo guarda sin el redondeo.
                 // Fuerzo el redondeo aca para el estado de cuenta
                 BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
@@ -345,6 +360,7 @@ public class ValidatorFinancial implements ModelValidator {
                 estadoCuenta.saveEx();
             }
 
+            /*
             // Si estoy en una nota de crédito de clientes y tengo invoices referenciadas, guardo afectación
             if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_ARCredit)){
                 List<MZInvoiceRef> invoiceRefList = MZInvoiceRef.getByInvoice(model.getCtx(), model.get_ID(), model.get_TrxName());
@@ -364,6 +380,7 @@ public class ValidatorFinancial implements ModelValidator {
                     invoiceAfecta.saveEx();
                 }
             }
+            */
 
         }
 

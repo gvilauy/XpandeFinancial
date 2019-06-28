@@ -256,13 +256,29 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		if (this.isOrdPagoAnticipo()){
 			// Doy vuelta signos de anticipos para que me queden positivos
 			for (MZOrdenPagoLin ordenPagoLin: pagoLinAnticipoList){
+				if (ordenPagoLin.getAmtDocument().compareTo(Env.ZERO) < 0){
+					ordenPagoLin.setAmtDocument(ordenPagoLin.getAmtDocument().negate());
+				}
+				if (ordenPagoLin.getAmtOpen().compareTo(Env.ZERO) < 0){
+					ordenPagoLin.setAmtOpen(ordenPagoLin.getAmtOpen().negate());
+				}
 				if (ordenPagoLin.getAmtAllocation().compareTo(Env.ZERO) < 0){
 					ordenPagoLin.setAmtAllocation(ordenPagoLin.getAmtAllocation().negate());
 					ordenPagoLin.setAmtAllocationMT(ordenPagoLin.getAmtAllocationMT().negate());
-					ordenPagoLin.saveEx();
+				}
+				ordenPagoLin.saveEx();
+			}
+			// Doy vuelta signo de medios de pago
+			for (MZOrdenPagoMedio ordenPagoMedio: mediosPagoList){
+				if (ordenPagoMedio.getTotalAmt().compareTo(Env.ZERO) < 0){
+					ordenPagoMedio.setTotalAmt(ordenPagoMedio.getTotalAmt().negate());
+					ordenPagoMedio.saveEx();
 				}
 			}
-
+			// Doy vuelta monto total de la orden de pago
+			if (this.getTotalAmt().compareTo(Env.ZERO) < 0){
+				this.setTotalAmt(this.getTotalAmt().negate());
+			}
 		}
 
 		// Valido condiciones para completar este documento
@@ -341,7 +357,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 				if (amtAnticipo == null) amtAnticipo = Env.ZERO;
 
 				// Impacto parte acreedora por monto total menos anticipos
-				this.setEstadoCuenta(this.getTotalAmt().subtract(amtAnticipo), true);
+				this.setEstadoCuenta(this.getTotalAmt().add(amtAnticipo), true);
 
 				// Impacto parte deudora por monto anticipos (si es mayor a cero)
 				if (amtAnticipo.compareTo(Env.ZERO) > 0){
@@ -371,10 +387,12 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
 
 			if (isVendor){
+				estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
 				estadoCuenta.setAmtSourceCr(Env.ZERO);
 				estadoCuenta.setAmtSourceDr(amt);
 			}
 			else{
+				estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
 				estadoCuenta.setAmtSourceDr(Env.ZERO);
 				estadoCuenta.setAmtSourceCr(amt);
 			}
@@ -591,11 +609,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 						pagoAfectacion.setAD_Org_ID(this.getAD_Org_ID());
 						pagoAfectacion.saveEx();
 
-						// Afecto estado de cuenta de este anticipo
-						String action = " update z_estadocuenta set z_ordenpago_to_id =" + this.get_ID() + ", " +
-										" daterefordenpago ='" + this.getDateDoc() + "' " +
-										" where z_pago_id =" + pagoLin.getZ_Pago_ID();
-						DB.executeUpdateEx(action, get_TrxName());
 					}
 					else{ // Es una orden de pago para pagar anticipos en etapa 1.
 
@@ -603,6 +616,13 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 						anticipo.setZ_OrdenPago_To_ID(this.get_ID());
 						anticipo.saveEx();
 					}
+
+					// Afecto estado de cuenta de este anticipo
+					String action = " update z_estadocuenta set z_ordenpago_to_id =" + this.get_ID() + ", " +
+							" daterefordenpago ='" + this.getDateDoc() + "' " +
+							" where z_pago_id =" + pagoLin.getZ_Pago_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+
 				}
 			}
 		}
@@ -633,6 +653,11 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 				MZMedioPago medioPago = (MZMedioPago) ordenMedioPago.getZ_MedioPago();
 				if ((medioPago == null) || (medioPago.get_ID() <= 0)){
 					continue;
+				}
+
+				// Valido importe positivo y mayor a cero en este medio de pago
+				if ((ordenMedioPago.getTotalAmt() == null) || (ordenMedioPago.getTotalAmt().compareTo(Env.ZERO) <= 0)){
+					return "Debe indicar importe mayor a cero en medios de pago de este documento.";
 				}
 
 				// Si este medio de pago no se emite por definición
@@ -815,7 +840,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 					// Si este anticipo ya fue afectado en etapa 1 en otra orden de pago, no lo puedo procesar de nuevo.
 					MZPago anticipo = (MZPago) ordenPagoLin.getZ_Pago();
-					if (anticipo.getZ_OrdenPago_To_ID() > 0){
+					if ((anticipo.getZ_OrdenPago_To_ID() > 0) && (anticipo.getZ_OrdenPago_To_ID() != this.get_ID())){
 						MZOrdenPago ordenPagoAux = (MZOrdenPago) anticipo.getZ_OrdenPago_To();
 						return "No es posible procesar el Anticipo Nro.: " + anticipo.getDocumentNo() +
 								" ya que el mismo ya fue afectado en la Orden de Pago Nro.: " + ordenPagoAux.getDocumentNo();
@@ -1245,7 +1270,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 			// Anulo afectacion de anticipos a proveedores
 			List<MZOrdenPagoLin> pagoLinAnticipoList = this.getAnticipos();
-			for (MZOrdenPagoLin pagoLin: pagoLinTransferList){
+			for (MZOrdenPagoLin pagoLin: pagoLinAnticipoList){
 
 				if (pagoLin.getZ_Pago_ID() > 0){
 
@@ -1255,7 +1280,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					DB.executeUpdateEx(action, get_TrxName());
 
 					// Anulo afectacion para este anticipo
-					action = " delete from z_pagofectacion where z_ordenpago_id =" + this.get_ID() +
+					action = " delete from z_pagoafectacion where z_ordenpago_id =" + this.get_ID() +
 							" and z_pago_id =" + pagoLin.getZ_Pago_ID();
 					DB.executeUpdateEx(action, get_TrxName());
 
@@ -1414,7 +1439,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			sql = " select count(*) contador " +
 					" from z_ordenpagolin " +
 					" where z_ordenpago_id =" + this.get_ID() +
-					" and isselected ='Y' " +
 					" and c_doctype_id not in " +
 					" (select c_doctype_id from c_doctype where docbasetype ='" + docBaseType + "') ";
 			int contador = DB.getSQLValueEx(get_TrxName(), sql);

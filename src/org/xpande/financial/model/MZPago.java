@@ -388,7 +388,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				if (amtAnticipo == null) amtAnticipo = Env.ZERO;
 
 				// Impacto parte acreedora para pagos y deudora para cobros, por monto total menos anticipos
-				this.setEstadoCuenta(this.getPayAmt().subtract(amtAnticipo),isVendor);
+				this.setEstadoCuenta(this.getPayAmt().add(amtAnticipo),isVendor);
 
 				// Impacto parte deudora para pagos y acreedora para cobros por monto anticipos (si es mayor a cero)
 				if (amtAnticipo.compareTo(Env.ZERO) > 0){
@@ -1654,7 +1654,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 								// Si este anticipo ya fue afectado en etapa 2 en otro recibo, no lo puedo procesar de nuevo.
 								MZPago anticipo = new MZPago(getCtx(), pagoLin.getRef_Pago_ID(), get_TrxName());
-								if (anticipo.getZ_Pago_To_ID() > 0){
+								if ((anticipo.getZ_Pago_To_ID() > 0) && (anticipo.getZ_Pago_To_ID() != this.get_ID())){
 									MZPago pagoAux = (MZPago) anticipo.getZ_Pago_To();
 									return "No es posible procesar el Anticipo Nro.: " + anticipo.getDocumentNo() +
 											" ya que el mismo ya fue afectado en el Recibo con número interno: " + pagoAux.getDocumentNo();
@@ -2135,6 +2135,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				MZMedioPago medioPago = (MZMedioPago) pagoMedioPago.getZ_MedioPago();
 				if ((medioPago == null) || (medioPago.get_ID() <= 0)){
 					continue;
+				}
+
+				// Valido importe positivo y mayor a cero en este medio de pago
+				if ((pagoMedioPago.getTotalAmt() == null) || (pagoMedioPago.getTotalAmt().compareTo(Env.ZERO) <= 0)){
+					return "Debe indicar importe mayor a cero en medios de pago de este documento.";
 				}
 
 				// Si este medio de pago no se emite por definición

@@ -326,6 +326,9 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
 			estadoCuenta.setZ_ResguardoSocio_ID(this.get_ID());
 			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
+
+			estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
+
 			// Monto al debe o al haber segun sea resguardo o contra-resguardo
 			if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
 				estadoCuenta.setAmtSourceCr(this.getTotalAmt());

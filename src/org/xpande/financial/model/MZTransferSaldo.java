@@ -457,7 +457,7 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 	 * Xpande. Created by Gabriel Vila on 3/13/19.
 	 * @param dueDate
 	 */
-	private void setEstadoCuenta(Timestamp dueDate) {
+	public void setEstadoCuenta(Timestamp dueDate) {
 
 		try{
 
@@ -470,6 +470,8 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 			estadoCuenta.setZ_TransferSaldo_ID(this.get_ID());
 
 			if (!this.isSOTrx()){
+
+				estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
 
 				if (docTypeTarget.getDocBaseType().equalsIgnoreCase("API")){
 					estadoCuenta.setAmtSourceCr(this.getGrandTotal());
@@ -485,6 +487,9 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 				}
 			}
 			else{
+
+				estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
+
 				if (docTypeTarget.getDocBaseType().equalsIgnoreCase("ARC")){
 					estadoCuenta.setAmtSourceCr(this.getGrandTotal());
 					estadoCuenta.setAmtSourceDr(Env.ZERO);
@@ -555,6 +560,8 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 
 			if (!this.isSOTrx()){
 
+				estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
+
 				if (docTypeTarget.getDocBaseType().equalsIgnoreCase("API")){
 					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
 					estadoCuenta.setAmtSourceCr(Env.ZERO);
@@ -569,6 +576,9 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 				}
 			}
 			else{
+
+				estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
+
 				if (docTypeTarget.getDocBaseType().equalsIgnoreCase("ARC")){
 					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
 					estadoCuenta.setAmtSourceCr(Env.ZERO);
