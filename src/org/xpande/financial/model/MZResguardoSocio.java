@@ -49,6 +49,7 @@ import org.xpande.cfe.model.MZCFEConfig;
 import org.xpande.cfe.model.MZCFERespuestaProvider;
 import org.xpande.cfe.utils.ProcesadorCFE;
 import org.xpande.core.utils.CurrencyUtils;
+import org.xpande.financial.utils.FinancialUtils;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -279,14 +280,6 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 			this.setDescription("CONTRADOCUMENTO DE E-RESGUARDO");
 		}
 
-
-		// Impacto asociación de resguardo a invoices en estado de cuenta
-		String action = " update z_estadocuenta set z_resguardosocio_to_id =" + this.get_ID() + ", " +
-						" daterefresguardo ='" + this.getDateDoc() + "' " +
-						" where c_invoice_id is not null " +
-						" and c_invoice_id in (select c_invoice_id from z_resguardosociodoc where z_resguardosocio_id =" + this.get_ID() + ")";
-		DB.executeUpdateEx(action, get_TrxName());
-
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -298,8 +291,8 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		//	Set Definitive Document No
 		setDefiniteDocumentNo();
 
-		// Seteo info de este documento en modelo de estado de cuenta
-		this.setEstadoCuenta(docType);
+		// Impacto en estado de cuenta
+		FinancialUtils.setEstadoCtaResguardo(getCtx(), this, true, get_TrxName());
 
 		ProcesadorCFE procesadorCFE = new ProcesadorCFE(getCtx(), get_TrxName());
 		m_processMsg = procesadorCFE.executeCFE(this, this.getAD_Org_ID(), this.getC_DocType_ID());
@@ -312,49 +305,6 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-
-
-	/***
-	 * Impacto información de este documento en modelo de estado de cuenta.
-	 * Xpande. Created by Gabriel Vila on 6/26/19.
-	 * @param docType
-	 */
-	private void setEstadoCuenta(MDocType docType) {
-
-		try{
-			// Impacto documento en estado de cuenta
-			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
-			estadoCuenta.setZ_ResguardoSocio_ID(this.get_ID());
-			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
-
-			estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
-
-			// Monto al debe o al haber segun sea resguardo o contra-resguardo
-			if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
-				estadoCuenta.setAmtSourceCr(this.getTotalAmt());
-				estadoCuenta.setAmtSourceDr(Env.ZERO);
-			}
-			else{
-				estadoCuenta.setAmtSourceCr(Env.ZERO);
-				estadoCuenta.setAmtSourceDr(this.getTotalAmt());
-			}
-			estadoCuenta.setC_BPartner_ID(this.getC_BPartner_ID());
-			estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
-			estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
-			estadoCuenta.setDateDoc(this.getDateDoc());
-			estadoCuenta.setDocBaseType(docType.getDocBaseType());
-			estadoCuenta.setDocumentNoRef(this.getDocumentNo());
-			estadoCuenta.setIsSOTrx(false);
-			estadoCuenta.setRecord_ID(this.get_ID());
-			estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
-			estadoCuenta.saveEx();
-
-		}
-		catch (Exception e){
-		    throw new AdempiereException(e);
-		}
-	}
-
 
 	/***
 	 * Validaciones al documento al momento de completar.
@@ -499,10 +449,8 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		// Elimino asientos contables
 		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
-		// Desafecto documentos asociados a este documento de pago/cobro
-		m_processMsg = this.desafectarDocumentos();
-		if (m_processMsg != null)
-			return false;
+		// Impacto en estado de cuenta
+		FinancialUtils.setEstadoCtaResguardo(getCtx(), this, false, get_TrxName());
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
@@ -518,34 +466,6 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		return true;
 	}
 
-	/***
-	 * Desafecto documentos asociados a este.
-	 * Xpande. Created by Gabriel Vila on 5/20/19.
-	 * @return
-	 */
-	private String desafectarDocumentos() {
-
-		String message = null;
-		String action = "";
-
-		try{
-			// Desafecto documentos asociadas con este resguardo en el estado de cuenta
-			action = " update z_estadocuenta set z_resguardosocio_to_id = null, daterefresguardo = null " +
-					" where z_resguardosocio_to_id =" + this.get_ID();
-			DB.executeUpdateEx(action, get_TrxName());
-
-			// Desafecto info en estado de cuenta para este documento de pago/cobro
-			action = " delete from z_estadocuenta where z_resguardosocio_id =" + this.get_ID() +
-					" and ad_table_id =" + this.get_Table_ID();
-			DB.executeUpdateEx(action, get_TrxName());
-
-		}
-		catch (Exception e){
-		    throw new AdempiereException(e);
-		}
-
-		return message;
-	}
 
 	/*************************************************************************
 	 * 	Get Summary

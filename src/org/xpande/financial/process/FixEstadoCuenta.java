@@ -5,6 +5,9 @@ import org.compiere.model.MInvoice;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.DB;
+import org.xpande.financial.model.MZOrdenPago;
+import org.xpande.financial.model.MZPago;
+import org.xpande.financial.model.MZResguardoSocio;
 import org.xpande.financial.model.MZTransferSaldo;
 import org.xpande.financial.utils.FinancialUtils;
 
@@ -74,14 +77,22 @@ public class FixEstadoCuenta extends SvrProcess {
             this.setTransferSaldos(whereClause);
 
             // Proceso Resguardos
+            this.setResguardos(whereClause);
 
             // Proceso anticipos de pago / cobro
+            this.setAnticipos(whereClause);
 
-            // Proceso Ordenes de Pago
+            // Proceso Ordenes de Pago para anticipos
+            this.setOrdenesPago(whereClause, true);
 
-            // Proceso recibos de pago / cobro
+            // Proceso recibos de pago / cobro para anticipos
+            this.setPagos(whereClause, true);
 
+            // Proceso ordenes de pago normales
+            this.setOrdenesPago(whereClause, false);
 
+            // Proceso recibos de pago / cobro normales
+            this.setPagos(whereClause, false);
 
         }
         catch (Exception e){
@@ -146,7 +157,17 @@ public class FixEstadoCuenta extends SvrProcess {
 
                 MZTransferSaldo transferSaldo = new MZTransferSaldo(getCtx(), rs.getInt("z_transfersaldo_id"), get_TrxName());
 
-                //FinancialUtils.setEstadoCtaInvoice(getCtx(), invoice, null, true, get_TrxName());
+                // Obtengo fecha de vencimiento de la invoice referenciada
+                // Fecha de Vencimiento de esta invoice, directamente de termino de pago
+                sql = " select paymentTermDueDate(C_PaymentTerm_ID, DateInvoiced) as DueDate " +
+                        " from c_invoice " +
+                        " where c_invoice_id =" + transferSaldo.getC_Invoice_ID();
+                Timestamp dueDate = DB.getSQLValueTSEx(get_TrxName(), sql);
+                if (dueDate == null){
+                    dueDate = transferSaldo.getDateInvoiced();
+                }
+
+                FinancialUtils.setEstadoCtaTransferSaldo(getCtx(), transferSaldo, dueDate,true, get_TrxName());
             }
         }
         catch (Exception e){
@@ -158,4 +179,139 @@ public class FixEstadoCuenta extends SvrProcess {
         }
     }
 
+    private void setResguardos(String whereClause){
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.z_resguardosocio_id " +
+                    " from z_resguardosocio a " +
+                    " where a.ad_client_id =" + this.adClientID + whereClause +
+                    " and a.docstatus ='CO' " +
+                    " and a.datedoc between '" + this.startDate + "' and '" + this.endDate + "' " +
+                    " order by a.datedoc ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                MZResguardoSocio resguardoSocio = new MZResguardoSocio(getCtx(), rs.getInt("z_resguardosocio_id"), get_TrxName());
+
+                FinancialUtils.setEstadoCtaResguardo(getCtx(), resguardoSocio, true, get_TrxName());
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+    }
+
+    private void setOrdenesPago(String whereClause, boolean esOrdenAnticipo){
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.z_ordenpago_id " +
+                    " from z_ordenpago a " +
+                    " where a.ad_client_id =" + this.adClientID + whereClause +
+                    " and a.docstatus ='CO' " +
+                    ((esOrdenAnticipo) ? " and OrdPagoAnticipo ='Y' " :  " and OrdPagoAnticipo ='N' ") +
+                    " and a.datedoc between '" + this.startDate + "' and '" + this.endDate + "' " +
+                    " order by a.datedoc ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                MZOrdenPago ordenPago = new MZOrdenPago(getCtx(), rs.getInt("z_ordenpago_id"), get_TrxName());
+
+                FinancialUtils.setEstadoCtaOrdenPago(getCtx(), ordenPago, true, get_TrxName());
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+    }
+
+    private void setPagos(String whereClause, boolean esReciboAnticipo){
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.z_pago_id " +
+                    " from z_pago a " +
+                    " where a.ad_client_id =" + this.adClientID + whereClause +
+                    " and a.docstatus ='CO' " +
+                    ((esReciboAnticipo) ? " and ReciboAnticipo ='Y' " :  " and ReciboAnticipo ='N' ") +
+                    " and a.datedoc between '" + this.startDate + "' and '" + this.endDate + "' " +
+                    " order by a.datedoc ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                MZPago pago = new MZPago(getCtx(), rs.getInt("z_pago_id"), get_TrxName());
+
+                FinancialUtils.setEstadoCtaPago(getCtx(), pago, true, get_TrxName());
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+    }
+
+
+    private void setAnticipos(String whereClause){
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.z_pago_id " +
+                    " from z_pago a " +
+                    " where a.ad_client_id =" + this.adClientID + whereClause +
+                    " and a.docstatus ='CO' " +
+                    " and anticipo ='Y' " +
+                    " and a.datedoc between '" + this.startDate + "' and '" + this.endDate + "' " +
+                    " order by a.datedoc ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                MZPago pago = new MZPago(getCtx(), rs.getInt("z_pago_id"), get_TrxName());
+
+                FinancialUtils.setEstadoCtaPago(getCtx(), pago, true, get_TrxName());
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+    }
 }

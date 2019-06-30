@@ -31,6 +31,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.financial.utils.FinancialUtils;
 
 /** Generated Model for Z_TransferSaldo
  *  @author Adempiere (generated) 
@@ -246,9 +247,11 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 			dueDate = this.getDateInvoiced();
 		}
 
-		// Seteo estado de cuenta y afecto invoice referenciada
-		this.setEstadoCuenta(dueDate);
+		// Afecto invoice referenciada
 		this.afectarInvoice(dueDate);
+
+		// Impacto en estado de cuenta
+		FinancialUtils.setEstadoCtaTransferSaldo(getCtx(), this, dueDate, true, get_TrxName());
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -322,6 +325,9 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 		m_processMsg = this.desafectarDocumentos();
 		if (m_processMsg != null)
 			return false;
+
+		// Impacto en estado de cuenta
+		FinancialUtils.setEstadoCtaTransferSaldo(getCtx(), this, null, false, get_TrxName());
 
 		// After Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
@@ -451,81 +457,6 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
       return sb.toString();
     }
 
-
-	/***
-	 * Al completarse este documento se hacen los impactos necesarios en el estado de cuenta del socio de negocio.
-	 * Xpande. Created by Gabriel Vila on 3/13/19.
-	 * @param dueDate
-	 */
-	public void setEstadoCuenta(Timestamp dueDate) {
-
-		try{
-
-			MDocType docTypeTarget = (MDocType) this.getC_DocTypeTarget();
-			MDocType docType = (MDocType) this.getC_DocType();
-			MBPartner partner = new MBPartner(getCtx(), this.getC_BPartnerRelation_ID(), null);
-
-			// Impacto documento en estado de cuenta  (se comporta como una invoice)
-			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
-			estadoCuenta.setZ_TransferSaldo_ID(this.get_ID());
-
-			if (!this.isSOTrx()){
-
-				estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
-
-				if (docTypeTarget.getDocBaseType().equalsIgnoreCase("API")){
-					estadoCuenta.setAmtSourceCr(this.getGrandTotal());
-					estadoCuenta.setAmtSourceDr(Env.ZERO);
-				}
-				else if (docTypeTarget.getDocBaseType().equalsIgnoreCase("APC")){
-					estadoCuenta.setAmtSourceCr(Env.ZERO);
-					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
-				}
-				else{
-					estadoCuenta.setAmtSourceCr(this.getGrandTotal());
-					estadoCuenta.setAmtSourceDr(Env.ZERO);
-				}
-			}
-			else{
-
-				estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
-
-				if (docTypeTarget.getDocBaseType().equalsIgnoreCase("ARC")){
-					estadoCuenta.setAmtSourceCr(this.getGrandTotal());
-					estadoCuenta.setAmtSourceDr(Env.ZERO);
-				}
-				else if (docTypeTarget.getDocBaseType().equalsIgnoreCase("ARI")){
-					estadoCuenta.setAmtSourceCr(Env.ZERO);
-					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
-				}
-				else{
-					estadoCuenta.setAmtSourceCr(Env.ZERO);
-					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
-				}
-			}
-			estadoCuenta.setC_BPartner_ID(this.getC_BPartner_ID());
-			estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
-			estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
-			estadoCuenta.setDateDoc(this.getDateDoc());
-			estadoCuenta.setDocBaseType(docType.getDocBaseType());
-			estadoCuenta.setDocumentNoRef(this.getDocumentNo());
-			estadoCuenta.setDueDate(dueDate);
-			if ((partner != null) && (partner.get_ID() > 0)){
-				estadoCuenta.setReferenciaPago(partner.getName());
-			}
-			estadoCuenta.setIsSOTrx(this.isSOTrx());
-			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
-			estadoCuenta.setRecord_ID(this.get_ID());
-			estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
-			estadoCuenta.saveEx();
-
-		}
-		catch (Exception e){
-			throw new AdempiereException(e);
-		}
-	}
-
-
 	/***
 	 * Afecta invoice referenciada.
 	 * Xpande. Created by Gabriel Vila on 3/13/19.
@@ -550,61 +481,6 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 			invoiceAfecta.setAD_Org_ID(this.getAD_Org_ID());
 			invoiceAfecta.setZ_TransferSaldo_ID(this.get_ID());
 			invoiceAfecta.saveEx();
-
-			// Impacto linea en estado de cuenta para bajar la deuda del socio de negocio de la invoice
-			MDocType docTypeTarget = (MDocType) this.getC_DocTypeTarget();
-			MDocType docType = (MDocType) this.getC_DocType();
-			MBPartner partner = (MBPartner) this.getC_BPartner();
-			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
-			estadoCuenta.setZ_TransferSaldo_ID(this.get_ID());
-
-			if (!this.isSOTrx()){
-
-				estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
-
-				if (docTypeTarget.getDocBaseType().equalsIgnoreCase("API")){
-					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
-					estadoCuenta.setAmtSourceCr(Env.ZERO);
-				}
-				else if (docTypeTarget.getDocBaseType().equalsIgnoreCase("APC")){
-					estadoCuenta.setAmtSourceDr(Env.ZERO);
-					estadoCuenta.setAmtSourceCr(this.getGrandTotal());
-				}
-				else{
-					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
-					estadoCuenta.setAmtSourceCr(Env.ZERO);
-				}
-			}
-			else{
-
-				estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
-
-				if (docTypeTarget.getDocBaseType().equalsIgnoreCase("ARC")){
-					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
-					estadoCuenta.setAmtSourceCr(Env.ZERO);
-				}
-				else if (docTypeTarget.getDocBaseType().equalsIgnoreCase("ARI")){
-					estadoCuenta.setAmtSourceCr(Env.ZERO);
-					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
-				}
-				else{
-					estadoCuenta.setAmtSourceCr(Env.ZERO);
-					estadoCuenta.setAmtSourceDr(this.getGrandTotal());
-				}
-			}
-			estadoCuenta.setC_BPartner_ID(this.getC_BPartnerRelation_ID());
-			estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
-			estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
-			estadoCuenta.setDateDoc(this.getDateDoc());
-			estadoCuenta.setDocBaseType(docType.getDocBaseType());
-			estadoCuenta.setDocumentNoRef(this.getDocumentNo());
-			estadoCuenta.setDueDate(dueDate);
-			estadoCuenta.setIsSOTrx(this.isSOTrx());
-			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
-			estadoCuenta.setRecord_ID(this.get_ID());
-			estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
-			estadoCuenta.setReferenciaPago(partner.getName());
-			estadoCuenta.saveEx();
 
 		}
 		catch (Exception e){
@@ -680,14 +556,6 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 
 			// Elimino Afectacion de invoices
 			action = " delete from z_invoiceafectacion where z_transfersaldo_id =" + this.get_ID();
-			DB.executeUpdateEx(action, get_TrxName());
-
-			action = " update z_estadocuenta set z_transfersaldo_to_id = null, datereftransfsaldo = null " +
-					" where c_invoice_id =" + this.getC_Invoice_ID();
-			DB.executeUpdateEx(action, get_TrxName());
-
-			// Desasocio info en estado de cuenta para este documento
-			action = " delete from z_estadocuenta where z_transfersaldo_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
 		}

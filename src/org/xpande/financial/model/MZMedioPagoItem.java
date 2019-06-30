@@ -68,18 +68,6 @@ public class MZMedioPagoItem extends X_Z_MedioPagoItem {
     }
 
     @Override
-    protected boolean beforeSave(boolean newRecord) {
-
-        // Valido importe siempre mayor a cero
-        if ((this.getTotalAmt() == null) || (this.getTotalAmt().compareTo(Env.ZERO) <= 0)){
-            log.saveError("ATENCIÓN", "Debe indicar importe mayor a cero en medio de pago.");
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
     protected boolean afterSave(boolean newRecord, boolean success) {
 
         if (!success) return success;

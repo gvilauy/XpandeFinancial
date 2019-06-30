@@ -368,34 +368,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		}
 
 		// Impactos en estado de cuenta del socio de negocio. Parte Acreedora y Deudora.
-		boolean isVendor = true;
-		if (this.isSOTrx()) isVendor = false;
-
-		// Si es un anticipo, impacto en estado de cuenta para parte acreedora y deudora
-		if (this.isAnticipo()){
-			this.setEstadoCuenta(this.getPayAmt(),isVendor);
-			this.setEstadoCuenta(this.getPayAmt(),!isVendor);
-		}
-		else{
-			// Si es un recibo para pago de anticipo
-			if (this.isReciboAnticipo()){
-				// Impacto solamente parte acreedora para pagos y parte deudora para cobros
-				this.setEstadoCuenta(this.getPayAmt(),isVendor);
-			}
-			else{
-
-				BigDecimal amtAnticipo = this.getAmtAnticipo();
-				if (amtAnticipo == null) amtAnticipo = Env.ZERO;
-
-				// Impacto parte acreedora para pagos y deudora para cobros, por monto total menos anticipos
-				this.setEstadoCuenta(this.getPayAmt().add(amtAnticipo),isVendor);
-
-				// Impacto parte deudora para pagos y acreedora para cobros por monto anticipos (si es mayor a cero)
-				if (amtAnticipo.compareTo(Env.ZERO) > 0){
-					this.setEstadoCuenta(amtAnticipo,!isVendor);
-				}
-			}
-		}
+		FinancialUtils.setEstadoCtaPago(getCtx(), this, true, get_TrxName());
 
 		// Elimino lineas no seleccionadas
 		action = " delete from z_pagolin " +
@@ -677,6 +650,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		if (m_processMsg != null)
 			return false;
 
+		// Impacto en estado de cuenta
+		FinancialUtils.setEstadoCtaPago(getCtx(), this, false, get_TrxName());
+
 		// After Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
 		if (m_processMsg != null)
@@ -717,12 +693,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				if (ordenPagoList.size() > 0){
 					action = " update z_ordenpago set ispaid='N', z_pago_id = null where z_pago_id =" + this.get_ID();
 					DB.executeUpdateEx(action, get_TrxName());
-
-					// Seteo estado de cuenta para esta orden de pago
-					for (MZPagoOrdenPago pagoOrdenPago: ordenPagoList){
-						MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
-						ordenPago.setEstadoCuenta();
-					}
 				}
 			}
 
@@ -773,15 +743,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			// Desasocio resguardos
 			action = " update z_resguardosocio set ispaid='N', z_pago_id = null where z_pago_id =" + this.get_ID();
-			DB.executeUpdateEx(action, get_TrxName());
-
-			// Desasocio info en estado de cuenta para cualquier documento que haga referencia a esta pago/cobro
-			action = " update z_estadocuenta set z_pago_to_id = null, daterefpago = null " +
-					" where z_pago_to_id =" + this.get_ID();
-			DB.executeUpdateEx(action, get_TrxName());
-
-			// Elimino info en estado de cuenta para este documento de pago/cobro
-			action = " delete from z_estadocuenta where z_pago_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
 		}
@@ -855,6 +816,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		m_processMsg = this.desafectarDocumentos(ordenPagoList);
 		if (m_processMsg != null)
 			return false;
+
+		// Impacto en estado de cuenta
+		FinancialUtils.setEstadoCtaPago(getCtx(), this, false, get_TrxName());
 
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
@@ -2446,20 +2410,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 							invoice.saveEx();
 						}
 					}
-
-					// Afecto estado de cuenta de esta invoice
-					if (pagoLin.getC_InvoicePaySchedule_ID() > 0){
-						action = " update z_estadocuenta set z_pago_to_id =" + this.get_ID() + ", " +
-								 " daterefpago ='" + this.getDateDoc() + "' " +
-								 " where c_invoicepayschedule_id =" + pagoLin.getC_InvoicePaySchedule_ID();
-					}
-					else{
-						action = " update z_estadocuenta set z_pago_to_id =" + this.get_ID() + ", " +
-								 " daterefpago ='" + this.getDateDoc() + "' " +
-								 " where c_invoice_id =" + pagoLin.getC_Invoice_ID();
-					}
-					DB.executeUpdateEx(action, get_TrxName());
-
 				}
 				else if (pagoLin.getZ_TransferSaldo_ID() > 0){
 
@@ -2503,13 +2453,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 							transferSaldo.saveEx();
 						}
 					}
-
-					// Afecto estado de cuenta de este documento de transferencia de saldo
-					action = " update z_estadocuenta set z_pago_to_id =" + this.get_ID() + ", " +
-							 " daterefpago ='" + this.getDateDoc() + "' " +
-							 " where z_transfersaldo_id =" + pagoLin.getZ_TransferSaldo_ID();
-					DB.executeUpdateEx(action, get_TrxName());
-
 				}
 				else if (pagoLin.getRef_Pago_ID() > 0){
 
@@ -2553,12 +2496,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 							anticipo.saveEx();
 						}
 					}
-
-					// Afecto estado de cuenta de esta anticipo
-					action = " update z_estadocuenta set z_pago_to_id =" + this.get_ID() + ", " +
-							 " daterefpago ='" + this.getDateDoc() + "' " +
-							 " where z_pago_id =" + pagoLin.getRef_Pago_ID();
-					DB.executeUpdateEx(action, get_TrxName());
 				}
 			}
 
@@ -2601,15 +2538,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					resguardoSocio.setZ_Pago_ID(this.get_ID());
 					resguardoSocio.setIsPaid(true);
 					resguardoSocio.saveEx();
-
-					// Afecto estado de cuenta de este resguardo, cuando el pago no esta referenciando ordenes de pago
-					if (!this.isTieneOrdenPago()){
-
-						action = " update z_estadocuenta set referenciapago ='RECIBO " + documentNoRef + "', " +
-								 " z_pago_id =" + this.get_ID() +
-								 " where z_resguardosocio_id =" + resguardoSocio.get_ID();
-						DB.executeUpdateEx(action, get_TrxName());
-					}
 				}
 			}
 
@@ -2631,7 +2559,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	private String afectarOrdenesPago(List<MZPagoOrdenPago> ordenPagoList) {
 
 		String message = null;
-		String action = "";
 
 		try{
 
@@ -2645,28 +2572,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				return null;
 			}
 
-			String documentNoRef = this.getDocumentNo();
-			if ((this.getNroRecibo() != null) && (!this.getNroRecibo().trim().equalsIgnoreCase(""))){
-				documentNoRef = this.getNroRecibo();
-			}
-
-
 			for (MZPagoOrdenPago pagoOrdenPago: ordenPagoList){
 				MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
 				ordenPago.setZ_Pago_ID(this.get_ID());
 				ordenPago.setIsPaid(true);
 				ordenPago.saveEx();
-
-				// Elimino la orden de pago del estado de cuenta, ya que ahora tengo un recibo.
-				action = " delete from z_estadocuenta where z_ordenpago_id =" + ordenPago.get_ID();
-
-				/*
-				action = " update z_estadocuenta set referenciapago ='RECIBO " + documentNoRef + "', " +
-						 " z_pago_id =" + this.get_ID() +
-						 " where z_ordenpago_id =" + ordenPago.get_ID();
-
-				 */
-				DB.executeUpdateEx(action, get_TrxName());
 			}
 
 		}
@@ -2675,107 +2585,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		}
 
 		return message;
-	}
-
-	/***
-	 * Al completarse el pago / cobro se hacen los impactos necesarios en el estado de cuenta del socio de negocio.
-	 * Xpande. Created by Gabriel Vila on 3/24/18.
-	 * @param amt
-	 * @param isVendor
-	 */
-	private void setEstadoCuenta(BigDecimal amt, boolean isVendor) {
-
-		try{
-
-			MDocType docType = (MDocType) this.getC_DocType();
-
-			// Impacto documento en estado de cuenta
-			MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(getCtx(), 0, get_TrxName());
-			estadoCuenta.setZ_Pago_ID(this.get_ID());
-			estadoCuenta.setAD_Table_ID(this.get_Table_ID());
-			estadoCuenta.setC_BPartner_ID(this.getC_BPartner_ID());
-			estadoCuenta.setC_Currency_ID(this.getC_Currency_ID());
-			estadoCuenta.setC_DocType_ID(this.getC_DocType_ID());
-			estadoCuenta.setDateDoc(this.getDateDoc());
-			estadoCuenta.setDocBaseType(docType.getDocBaseType());
-			if ((this.getNroRecibo() != null) && (!this.getNroRecibo().trim().equalsIgnoreCase(""))){
-				estadoCuenta.setDocumentNoRef(this.getNroRecibo());
-			}
-			else{
-				estadoCuenta.setDocumentNoRef(this.getDocumentNo());
-			}
-
-			estadoCuenta.setIsSOTrx(this.isSOTrx());
-
-			// Si es Recibo de Proveedor
-			if (!this.isSOTrx()){
-				// Parte Acreedora
-				if (isVendor){
-					estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
-					if (!this.isAnticipo()){
-						estadoCuenta.setAmtSourceCr(Env.ZERO);
-						estadoCuenta.setAmtSourceDr(amt);
-					}
-					else{
-						estadoCuenta.setAmtSourceDr(Env.ZERO);
-						estadoCuenta.setAmtSourceCr(amt);
-					}
-				}
-				else{  // Parte Deudora
-					estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
-					if (!this.isAnticipo()){
-						estadoCuenta.setAmtSourceDr(Env.ZERO);
-						estadoCuenta.setAmtSourceCr(amt);
-					}
-					else{
-						estadoCuenta.setAmtSourceCr(Env.ZERO);
-						estadoCuenta.setAmtSourceDr(amt);
-					}
-				}
-			}
-			else{  // Es Recibo de Cobro
-
-				// Parte Deudora
-				if (!isVendor){
-					estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
-					if (!this.isAnticipo()){
-						estadoCuenta.setAmtSourceCr(amt);
-						estadoCuenta.setAmtSourceDr(Env.ZERO);
-					}
-					else{
-						estadoCuenta.setAmtSourceDr(amt);
-						estadoCuenta.setAmtSourceCr(Env.ZERO);
-					}
-				}
-				else{  // Parte Acreedora
-					estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
-					if (!this.isAnticipo()){
-						estadoCuenta.setAmtSourceDr(amt);
-						estadoCuenta.setAmtSourceCr(Env.ZERO);
-					}
-					else{
-						estadoCuenta.setAmtSourceCr(amt);
-						estadoCuenta.setAmtSourceDr(Env.ZERO);
-					}
-				}
-			}
-
-			estadoCuenta.setRecord_ID(this.get_ID());
-			estadoCuenta.setAD_Org_ID(this.getAD_Org_ID());
-
-			if (!this.isSOTrx()){
-				List<MZPagoOrdenPago> ordenPagoList = this.getOrdenesPagoReferenciadas();
-				if (ordenPagoList.size() > 0){
-					estadoCuenta.setZ_OrdenPago_To_ID(ordenPagoList.get(0).getZ_OrdenPago_ID());
-					estadoCuenta.setDateRefOrdenPago(ordenPagoList.get(0).getDateTrx());
-				}
-			}
-
-			estadoCuenta.saveEx();
-		}
-		catch (Exception e){
-			throw new AdempiereException(e);
-		}
 	}
 
 	@Override
