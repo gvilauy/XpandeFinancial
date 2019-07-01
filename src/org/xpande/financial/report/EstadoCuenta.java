@@ -84,23 +84,23 @@ public class EstadoCuenta {
             }
 
             if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
-                whereClause += " and issotrx ='Y'";
+                whereClause += " and tiposocionegocio ='CLIENTES'";
             }
             else if (this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
-                whereClause += " and issotrx ='N'";
+                whereClause += " and tiposocionegocio ='PROVEEDORES'";
             }
 
             // Cadenas de insert en tablas del reporte
-            action = " insert into " + TABLA_REPORTE + "(ad_user_id, tipofiltrofecha, tiposocionegocio, ad_client_id, ad_org_id, " +
-                    " issotrx, c_currency_id, c_bpartner_id, amtsourcecr, amtsourcedr, amtstart, amtacumulado) ";
+            action = " insert into " + TABLA_REPORTE + "(ad_user_id, tipofiltrofecha, ad_client_id, ad_org_id, " +
+                    " tiposocionegocio, c_currency_id, c_bpartner_id, amtsourcecr, amtsourcedr, amtstart, amtacumulado) ";
 
-            sql = " select " + this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', " +
-                    " ad_client_id, ad_org_id, issotrx, c_currency_id, c_bpartner_id, 0, 0, (sum(amtsourcedr) - sum(amtsourcecr)), (sum(amtsourcedr) - sum(amtsourcecr)) " +
+            sql = " select " + this.adUserID + ", '" + this.tipoFecha + "', " +
+                    " ad_client_id, ad_org_id, tiposocionegocio, c_currency_id, c_bpartner_id, 0, 0, (sum(amtsourcedr) - sum(amtsourcecr)), (sum(amtsourcedr) - sum(amtsourcecr)) " +
                     " from z_estadocuenta " +
                     " where c_bpartner_id not in (select c_bpartner_id from z_rp_estadocuenta where ad_user_id =" + this.adUserID + ") " +
                     whereClause +
-                    " group by ad_client_id, ad_org_id, issotrx, c_currency_id, c_bpartner_id " +
-                    " order by ad_client_id, ad_org_id, issotrx, c_currency_id, c_bpartner_id";
+                    " group by ad_client_id, ad_org_id, tiposocionegocio, c_currency_id, c_bpartner_id " +
+                    " order by ad_client_id, ad_org_id, tiposocionegocio, c_currency_id, c_bpartner_id";
 
             DB.executeUpdateEx(action + sql, null);
 
@@ -159,10 +159,10 @@ public class EstadoCuenta {
             sql = " select ad_client_id, ad_org_id, amtsourcecr, amtsourcedr, c_bpartner_id, c_currency_id, c_doctype_id, c_invoice_id, " +
                     " c_invoicepayschedule_id, datedoc, docbasetype, documentnoref, duedate, estadoaprobacion, issotrx, referenciapago, " +
                     " z_afectacion_id, z_estadocuenta_id, z_ordenpago_id, z_pago_id, z_resguardosocio_id, z_resguardosocio_to_id, " +
-                    this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "' " +
+                    this.adUserID + ", '" + this.tipoFecha + "', tiposocionegocio " +
                     " from z_estadocuenta " +
                     " where " + whereClause +
-                    " order by issotrx, c_currency_id, c_bpartner_id, datedoc, c_doctype_id, z_estadocuenta_id ";
+                    " order by tiposocionegocio, c_currency_id, c_bpartner_id, datedoc, c_doctype_id, z_estadocuenta_id ";
 
             DB.executeUpdateEx(action + sql, null);
 
@@ -203,10 +203,10 @@ public class EstadoCuenta {
         }
 
         if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
-            whereClause += " and issotrx ='Y'";
+            whereClause += " and TipoSocioNegocio ='CLIENTES'";
         }
         else if (this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
-            whereClause += " and issotrx ='N'";
+            whereClause += " and TipoSocioNegocio ='PROVEEDORES'";
         }
 
         return whereClause;
@@ -224,24 +224,24 @@ public class EstadoCuenta {
         ResultSet rs = null;
 
         try{
-            sql = " select a.issotrx, a.ad_org_id, a.c_currency_id, a.c_bpartner_id, a.amtsourcedr, a.amtsourcecr, a.z_estadocuenta_id " +
+            sql = " select a.tiposocionegocio, a.ad_org_id, a.c_currency_id, a.c_bpartner_id, a.amtsourcedr, a.amtsourcecr, a.z_estadocuenta_id " +
                     " from " + TABLA_REPORTE + " a " +
                     " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.ad_user_id =" + this.adUserID +
-                    " order by a.issotrx, a.ad_org_id, a.c_currency_id, bp.name, a.datedoc, a.c_doctype_id, a.z_estadocuenta_id ";
+                    " order by a.tiposocionegocio, a.ad_org_id, a.c_currency_id, bp.name, a.datedoc, a.c_doctype_id, a.z_estadocuenta_id ";
 
         	pstmt = DB.prepareStatement(sql, null);
         	rs = pstmt.executeQuery();
 
         	int cCurrencyIDAux = 0, cBpartnerIDAux = 0, adOrgIDAux= 0;
-        	String isSOTrxAux = "-";
+        	String tipoSocioNegocioAux = "-";
 
             BigDecimal amtAcumulado = Env.ZERO;
 
         	while(rs.next()){
 
         	    // Corte por issotrx, moneda y socio de negocio
-                if ((!rs.getString("issotrx").equalsIgnoreCase(isSOTrxAux))
+                if ((!rs.getString("tiposocionegocio").equalsIgnoreCase(tipoSocioNegocioAux))
                         || (rs.getInt("ad_org_id") != adOrgIDAux)
                         || (rs.getInt("c_currency_id") != cCurrencyIDAux)
                         || (rs.getInt("c_bpartner_id") != cBpartnerIDAux)){
@@ -250,10 +250,10 @@ public class EstadoCuenta {
                     cCurrencyIDAux = rs.getInt("c_currency_id");
                     cBpartnerIDAux = rs.getInt("c_bpartner_id");
                     adOrgIDAux = rs.getInt("ad_org_id");
-                    isSOTrxAux = rs.getString("issotrx");
+                    tipoSocioNegocioAux = rs.getString("tiposocionegocio");
 
                     // Obtengo y seteo saldo inicial del socio de negocio-moneda en tabla del reporte
-                    BigDecimal saldoInicial = this.getSaldoInicial(cBpartnerIDAux, cCurrencyIDAux, isSOTrxAux, adOrgIDAux);
+                    BigDecimal saldoInicial = this.getSaldoInicial(cBpartnerIDAux, cCurrencyIDAux, tipoSocioNegocioAux, adOrgIDAux);
                     if (saldoInicial == null) saldoInicial = Env.ZERO;
 
                     action = " update " + TABLA_REPORTE +
@@ -262,7 +262,7 @@ public class EstadoCuenta {
                             " and c_bpartner_id = " + cBpartnerIDAux +
                             " and c_currency_id = " + cCurrencyIDAux +
                             " and ad_org_id =" + adOrgIDAux +
-                            " and issotrx ='" + isSOTrxAux + "' ";
+                            " and tiposocionegocio ='" + tipoSocioNegocioAux + "' ";
                     DB.executeUpdateEx(action, null);
 
                     amtAcumulado = saldoInicial;
@@ -303,7 +303,7 @@ public class EstadoCuenta {
      * @param adOrgIDAux
      * @return
      */
-    private BigDecimal getSaldoInicial(int cBpartnerID, int cCurrencyID, String isSOTrx, int adOrgIDAux) {
+    private BigDecimal getSaldoInicial(int cBpartnerID, int cCurrencyID, String tipoSocioNegocio, int adOrgIDAux) {
 
         BigDecimal amt = Env.ZERO;
         String sql = "";
@@ -322,13 +322,13 @@ public class EstadoCuenta {
             }
 
             if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
-                whereClause += " and issotrx ='Y'";
+                whereClause += " and TipoSocioNegocio ='CLIENTES'";
             }
             else if (this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
-                whereClause += " and issotrx ='N'";
+                whereClause += " and TipoSocioNegocio ='PROVEEDORES'";
             }
             else{
-                whereClause += " and issotrx ='" + isSOTrx + "'";
+                whereClause += " and TipoSocioNegocio ='" + tipoSocioNegocio + "'";
             }
 
             sql = " select (sum(amtsourcedr) - sum(amtsourcecr)) as saldo " +
