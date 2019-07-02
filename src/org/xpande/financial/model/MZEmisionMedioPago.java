@@ -241,6 +241,8 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		log.info(toString());
 		//
 
+		this.setDateAcct(this.getDateDoc());
+
 		/*
 		// Quito esta validación ya que se pueden emitir manualmente cheques de fechas pasadas en caso de contingencia.
 		// Me aseguro fecha de emisión no menor a hoy
@@ -668,6 +670,8 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 				return false;
 			}
 		}
+
+		this.setDateAcct(this.getDateDoc());
 
 		return true;
 	}

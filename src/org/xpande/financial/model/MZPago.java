@@ -812,6 +812,42 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			this.setTieneOrdenPago(false);
 		}
 
+
+		// Si es un pago y no tiene asociado ordenes de pago
+		if (!this.isSOTrx()){
+			if (!this.isTieneOrdenPago()){
+				// Anulo emision de medios de pago emitidos en este recibo que no tengan folio asociado (esto para no anular cheques por ejemplo, pero si transferencias.)
+				List<MZPagoMedioPago> pagoMedioPagoList = this.getMediosPago();
+				for (MZPagoMedioPago pagoMedioPago: pagoMedioPagoList){
+					if (pagoMedioPago.getZ_OrdenPago_ID() <= 0){
+						if (pagoMedioPago.getZ_MedioPagoFolio_ID() <= 0){
+							if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+								MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+								if (medioPagoItem.getZ_MedioPagoFolio_ID() <= 0){
+									if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
+										MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+										emisionMedioPago.setModificable(true);
+										if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
+											this.m_processMsg = emisionMedioPago.getProcessMsg();
+											return false;
+										}
+										emisionMedioPago.saveEx();
+										emisionMedioPago.deleteEx(true);
+									}
+
+									// Desafecto item de medio de pago de este recibo y lo elimino
+									String action = " update z_pagomediopago set z_mediopagoitem_id = null where z_pagomediopago_id =" + pagoMedioPago.get_ID();
+									DB.executeUpdateEx(action, get_TrxName());
+
+									medioPagoItem.deleteEx(true);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		// Desafecto documentos asociados a este documento de pago/cobro
 		m_processMsg = this.desafectarDocumentos(ordenPagoList);
 		if (m_processMsg != null)
