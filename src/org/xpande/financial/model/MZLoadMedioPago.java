@@ -279,7 +279,7 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 				medioPagoFolio.setC_Currency_ID(bankAccount.getC_Currency_ID());
 				medioPagoFolio.setDescription("Generada Automáticamente en Carga de Medios de Pago Nro.: " + this.getDocumentNo());
 				medioPagoFolio.setDisponible(false);
-				medioPagoFolio.setDocumentSerie("CM");
+				//medioPagoFolio.setDocumentSerie("CM");
 				medioPagoFolio.setEmisionManual(true);
 				medioPagoFolio.setIsExecuted(true);
 				medioPagoFolio.setName("CARGA_" + this.getDocumentNo());
@@ -306,7 +306,7 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 			medioPagoItem.setConciliado(false);
 			medioPagoItem.setDateEmitted(loadMedioPagoFile.getDateEmitted());
 			medioPagoItem.setDepositado(false);
-			medioPagoItem.setDocumentSerie(medioPagoFolio.getDocumentSerie());
+			//medioPagoItem.setDocumentSerie(medioPagoFolio.getDocumentSerie());
 			medioPagoItem.setDueDate(loadMedioPagoFile.getDueDate());
 			medioPagoItem.setEmitido(false);
 			medioPagoItem.setIsOwn(true);
@@ -355,7 +355,7 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 				medioPagoFolio.setC_Currency_ID(bankAccount.getC_Currency_ID());
 				medioPagoFolio.setDescription("Generada Automáticamente en Carga de Medios de Pago Nro.: " + this.getDocumentNo());
 				medioPagoFolio.setDisponible(false);
-				medioPagoFolio.setDocumentSerie("CM");
+				//medioPagoFolio.setDocumentSerie("CM");
 				medioPagoFolio.setEmisionManual(true);
 				medioPagoFolio.setIsExecuted(true);
 				medioPagoFolio.setName("CARGA_MAN_" + this.getDocumentNo());
@@ -382,7 +382,7 @@ public class MZLoadMedioPago extends X_Z_LoadMedioPago implements DocAction, Doc
 			medioPagoItem.setConciliado(false);
 			medioPagoItem.setDateEmitted(loadMedioPagoMan.getDateEmitted());
 			medioPagoItem.setDepositado(false);
-			medioPagoItem.setDocumentSerie(medioPagoFolio.getDocumentSerie());
+			//medioPagoItem.setDocumentSerie(medioPagoFolio.getDocumentSerie());
 			medioPagoItem.setDueDate(loadMedioPagoMan.getDueDate());
 			medioPagoItem.setEmitido(false);
 			medioPagoItem.setIsOwn(true);

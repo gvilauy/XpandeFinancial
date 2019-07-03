@@ -301,7 +301,6 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 						// Creo el item de medio de pago sin folio asociado
 						NEW_medioPagoItem = new MZMedioPagoItem(getCtx(), 0, get_TrxName());
 						NEW_medioPagoItem.setZ_MedioPago_ID(replaceDet.getZ_MedioPago_ID());
-						NEW_medioPagoItem.setAD_Org_ID(this.getAD_Org_ID());
 						if (replaceDet.getC_BankAccount_ID() > 0){
 							NEW_medioPagoItem.setC_BankAccount_ID(replaceDet.getC_BankAccount_ID());
 						}
@@ -324,17 +323,18 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 						else{
 							NEW_medioPagoItem.setNroMedioPago(replaceDet.getDocumentNoRef());
 						}
-
-						NEW_medioPagoItem.setDateEmitted(replaceDet.getDateEmitted());
-						NEW_medioPagoItem.setDueDate(replaceDet.getDueDate());
-
-						NEW_medioPagoItem.setIsReceipt(false);
-						NEW_medioPagoItem.setEmitido(false);
-						NEW_medioPagoItem.setTotalAmt(replaceDet.getTotalAmt());
-						NEW_medioPagoItem.setIsOwn(true);
-						NEW_medioPagoItem.setC_BPartner_ID(OLD_medioPagoItem.getC_BPartner_ID());
 					}
+
+					NEW_medioPagoItem.setAD_Org_ID(this.getAD_Org_ID());
+					NEW_medioPagoItem.setDateEmitted(replaceDet.getDateEmitted());
+					NEW_medioPagoItem.setDueDate(replaceDet.getDueDate());
+					NEW_medioPagoItem.setIsReceipt(false);
+					NEW_medioPagoItem.setEmitido(false);
+					NEW_medioPagoItem.setTotalAmt(replaceDet.getTotalAmt());
+					NEW_medioPagoItem.setIsOwn(true);
+					NEW_medioPagoItem.setC_BPartner_ID(OLD_medioPagoItem.getC_BPartner_ID());
 					NEW_medioPagoItem.saveEx();
+
 					replaceDet.setZ_MedioPagoItem_ID(NEW_medioPagoItem.get_ID());
 				}
 				else{
