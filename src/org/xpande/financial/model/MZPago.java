@@ -826,13 +826,15 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 								if (medioPagoItem.getZ_MedioPagoFolio_ID() <= 0){
 									if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
 										MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
-										emisionMedioPago.setModificable(true);
-										if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
-											this.m_processMsg = emisionMedioPago.getProcessMsg();
-											return false;
+										if ((emisionMedioPago != null) && (emisionMedioPago.get_ID() > 0)){
+											emisionMedioPago.setModificable(true);
+											if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
+												this.m_processMsg = emisionMedioPago.getProcessMsg();
+												return false;
+											}
+											emisionMedioPago.saveEx();
+											emisionMedioPago.deleteEx(true);
 										}
-										emisionMedioPago.saveEx();
-										emisionMedioPago.deleteEx(true);
 									}
 
 									// Desafecto item de medio de pago de este recibo y lo elimino
