@@ -666,8 +666,9 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 		// Valido fecha de emision debe ser siempre menor a fecha de vencimiento.
 		if ((this.getDateEmitted() != null) && (this.getDueDate() != null)){
 			if (this.getDueDate().before(this.getDateEmitted())){
-				log.saveError("ATENCIÓN", "La fecha de Vencimiento debe ser mayor o igual a la fecha de Emisión.");
-				return false;
+				this.setDueDate(this.getDateEmitted());
+				//log.saveError("ATENCIÓN", "La fecha de Vencimiento debe ser mayor o igual a la fecha de Emisión.");
+				//return false;
 			}
 		}
 

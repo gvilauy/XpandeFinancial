@@ -516,6 +516,11 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 				documentNoRef = invoice.get_ValueAsString("DocumentSerie").trim() + documentNoRef;
 			}
 
+			BigDecimal amtRounding = (BigDecimal) invoice.get_Value("AmtRounding");
+			if (amtRounding == null) amtRounding = Env.ZERO;
+			BigDecimal amtTotal = invoice.getGrandTotal().add(amtRounding);
+
+
 			this.setAD_Client_ID(invoice.getAD_Client_ID());
 			this.setAD_Org_ID(invoice.getAD_Org_ID());
 			this.setC_Invoice_ID(invoice.get_ID());
@@ -529,7 +534,7 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 			this.setDescription("Generada Automáticamente");
 			this.setDocumentNoRef(invoice.getDocumentNo());
 			this.setDocumentNoRef(documentNoRef);
-			this.setGrandTotal(invoice.getGrandTotal());
+			this.setGrandTotal(amtTotal);
 			this.setIsSOTrx(invoice.isSOTrx());
 
 			this.saveEx();
