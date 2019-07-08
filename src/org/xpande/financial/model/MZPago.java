@@ -295,16 +295,23 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					// Emite medios de pago cuando es un Pago y no esta referenciando ordenes de pago
 					// (siempre y cuando los medios de pago no fueron emitidos previamente a mano).
 					m_processMsg = this.emitirMediosPago(medioPagoList);
+					if (m_processMsg != null){
+						return DocAction.STATUS_Invalid;
+					}
 
 					// Marco medios de pago incluídos en anticipos asociados a este documennto, como entregados.
 					m_processMsg = this.entregarMediosPagoAnticipos();
+					if (m_processMsg != null){
+						return DocAction.STATUS_Invalid;
+					}
+
 				}
 				else{
 					// Marca medios de pago que ya fueron emitidos en ordenes de pago, como entregados.
 					m_processMsg = this.entregarMediosPago(medioPagoList);
-				}
-				if (m_processMsg != null){
-					return DocAction.STATUS_Invalid;
+					if (m_processMsg != null){
+						return DocAction.STATUS_Invalid;
+					}
 				}
 
 				// Afecta ordendes de pago asociados a este pago, si este pago referencia ordenes de pago
@@ -691,7 +698,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			if (!this.isSOTrx()){
 
 				if (ordenPagoList.size() > 0){
-					action = " update z_ordenpago set ispaid='N', z_pago_id = null where z_pago_id =" + this.get_ID();
+					action = " update z_ordenpago set ispaid='N', z_pago_id = null, processing='N' where z_pago_id =" + this.get_ID();
 					DB.executeUpdateEx(action, get_TrxName());
 				}
 			}
@@ -2232,10 +2239,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 
 				// Realizo emisión para este medio de pago a considerar
-				if (!medioPagoItem.isEmitido()){
+				if ((!medioPagoItem.isEmitido()) || (medioPagoItem.getZ_EmisionMedioPago_ID() <= 0)){
 					MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
 					emisionMedioPago.setZ_MedioPago_ID(pagoMedioPago.getZ_MedioPago_ID());
 					emisionMedioPago.setAD_Org_ID(this.getAD_Org_ID());
+
+					medioPagoItem.setEmitido(false);
+					medioPagoItem.saveEx();
 
 					if (pagoMedioPago.getZ_MedioPagoFolio_ID() > 0){
 						emisionMedioPago.setZ_MedioPagoFolio_ID(pagoMedioPago.getZ_MedioPagoFolio_ID());
