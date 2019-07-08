@@ -32,7 +32,7 @@ public class FixGenericFinancial extends SvrProcess {
 
         try{
 
-            sql = " select z_pago_id from aux_fix order by z_pago_id ";
+            sql = " select distinct z_pago_id from aux_fix order by z_pago_id ";
 
             pstmt = DB.prepareStatement(sql, get_TrxName());
             rs = pstmt.executeQuery();

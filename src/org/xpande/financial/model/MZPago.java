@@ -795,6 +795,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	{
 		log.info("reActivateIt - " + toString());
 
+		String action = "";
+
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
@@ -837,11 +839,20 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 										}
 									}
 
-									// Desafecto item de medio de pago de este recibo y lo elimino
-									String action = " update z_pagomediopago set z_mediopagoitem_id = null where z_pagomediopago_id =" + pagoMedioPago.get_ID();
-									DB.executeUpdateEx(action, get_TrxName());
+									// Si el medio de pago no es de terceros (ej: canje que ingreso en una cobranza)
+									if (medioPagoItem.isOwn()){
+										// Desafecto item de medio de pago de este recibo y lo elimino
+										action = " update z_pagomediopago set z_mediopagoitem_id = null where z_pagomediopago_id =" + pagoMedioPago.get_ID();
+										DB.executeUpdateEx(action, get_TrxName());
 
-									medioPagoItem.deleteEx(true);
+										medioPagoItem.deleteEx(true);
+									}
+									else{
+										// Desafecto emision del medio de pago
+										action = " update z_mediopagoitem set z_emisionmediopago_id = null, emitido ='N', entregado='N' " +
+												 " where z_mediopagoitem_id =" + medioPagoItem.get_ID();
+										DB.executeUpdateEx(action, get_TrxName());
+									}
 								}
 							}
 						}
