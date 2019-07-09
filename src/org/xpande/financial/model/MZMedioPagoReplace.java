@@ -397,6 +397,11 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 						emisionMedioPago.setZ_Pago_ID(OLD_medioPagoItem.getZ_Pago_ID());
 					}
 
+					if (this.getC_Charge_ID() > 0){
+						emisionMedioPago.setC_Charge_ID(this.getC_Charge_ID());
+						emisionMedioPago.setChargeAmt(this.getChargeAmt());
+					}
+
 					emisionMedioPago.saveEx();
 
 					// Completo documento de emisión de medio de pago
@@ -496,6 +501,7 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 
 			MZEmisionMedioPago OLD_emisionMedioPago = (MZEmisionMedioPago) OLD_medioPagoItem.getZ_EmisionMedioPago();
 			OLD_emisionMedioPago.setDescription("Reemplazado por Medios de Pago : " + nrosMediosPago);
+			OLD_emisionMedioPago.setZ_MedioPagoReplace_To_ID(this.get_ID());
 			OLD_emisionMedioPago.setModificable(true);
 			if (!OLD_emisionMedioPago.processIt(DocAction.ACTION_Void)){
 				if (OLD_emisionMedioPago.getProcessMsg() != null){

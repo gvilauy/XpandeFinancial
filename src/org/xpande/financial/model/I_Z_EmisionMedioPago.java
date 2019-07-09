@@ -108,6 +108,21 @@ public interface I_Z_EmisionMedioPago
 
 	public I_C_CashBook getC_CashBook() throws RuntimeException;
 
+    /** Column name C_Charge_ID */
+    public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
+
+	/** Set Charge.
+	  * Additional document charges
+	  */
+	public void setC_Charge_ID(int C_Charge_ID);
+
+	/** Get Charge.
+	  * Additional document charges
+	  */
+	public int getC_Charge_ID();
+
+	public I_C_Charge getC_Charge() throws RuntimeException;
+
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -137,6 +152,19 @@ public interface I_Z_EmisionMedioPago
 	public int getC_DocType_ID();
 
 	public I_C_DocType getC_DocType() throws RuntimeException;
+
+    /** Column name ChargeAmt */
+    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/** Set Charge amount.
+	  * Charge Amount
+	  */
+	public void setChargeAmt(BigDecimal ChargeAmt);
+
+	/** Get Charge amount.
+	  * Charge Amount
+	  */
+	public BigDecimal getChargeAmt();
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -336,6 +364,19 @@ public interface I_Z_EmisionMedioPago
 	  */
 	public boolean isPosted();
 
+    /** Column name PostedText */
+    public static final String COLUMNNAME_PostedText = "PostedText";
+
+	/** Set PostedText.
+	  * Texto informativo del estado de contabilización de un docuemento.
+	  */
+	public void setPostedText(String PostedText);
+
+	/** Get PostedText.
+	  * Texto informativo del estado de contabilización de un docuemento.
+	  */
+	public String getPostedText();
+
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -476,6 +517,21 @@ public interface I_Z_EmisionMedioPago
 	public int getZ_MedioPagoReplace_ID();
 
 	public I_Z_MedioPagoReplace getZ_MedioPagoReplace() throws RuntimeException;
+
+    /** Column name Z_MedioPagoReplace_To_ID */
+    public static final String COLUMNNAME_Z_MedioPagoReplace_To_ID = "Z_MedioPagoReplace_To_ID";
+
+	/** Set Z_MedioPagoReplace_To_ID.
+	  * Reemplazado por este ID de documento de Reemplazo de medio de pago
+	  */
+	public void setZ_MedioPagoReplace_To_ID(int Z_MedioPagoReplace_To_ID);
+
+	/** Get Z_MedioPagoReplace_To_ID.
+	  * Reemplazado por este ID de documento de Reemplazo de medio de pago
+	  */
+	public int getZ_MedioPagoReplace_To_ID();
+
+	public I_Z_MedioPagoReplace getZ_MedioPagoReplace_To() throws RuntimeException;
 
     /** Column name Z_OrdenPago_ID */
     public static final String COLUMNNAME_Z_OrdenPago_ID = "Z_OrdenPago_ID";

@@ -33,7 +33,7 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190701L;
+	private static final long serialVersionUID = 20190709L;
 
     /** Standard Constructor */
     public X_Z_EmisionMedioPago (Properties ctx, int Z_EmisionMedioPago_ID, String trxName)
@@ -181,6 +181,34 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 		return ii.intValue();
 	}
 
+	public I_C_Charge getC_Charge() throws RuntimeException
+    {
+		return (I_C_Charge)MTable.get(getCtx(), I_C_Charge.Table_Name)
+			.getPO(getC_Charge_ID(), get_TrxName());	}
+
+	/** Set Charge.
+		@param C_Charge_ID 
+		Additional document charges
+	  */
+	public void setC_Charge_ID (int C_Charge_ID)
+	{
+		if (C_Charge_ID < 1) 
+			set_Value (COLUMNNAME_C_Charge_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
+	}
+
+	/** Get Charge.
+		@return Additional document charges
+	  */
+	public int getC_Charge_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_C_Currency getC_Currency() throws RuntimeException
     {
 		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
@@ -235,6 +263,26 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Charge amount.
+		@param ChargeAmt 
+		Charge Amount
+	  */
+	public void setChargeAmt (BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	/** Get Charge amount.
+		@return Charge Amount
+	  */
+	public BigDecimal getChargeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Rate.
@@ -565,6 +613,22 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 		return false;
 	}
 
+	/** Set PostedText.
+		@param PostedText 
+		Texto informativo del estado de contabilización de un docuemento.
+	  */
+	public void setPostedText (String PostedText)
+	{
+		throw new IllegalArgumentException ("PostedText is virtual column");	}
+
+	/** Get PostedText.
+		@return Texto informativo del estado de contabilización de un docuemento.
+	  */
+	public String getPostedText () 
+	{
+		return (String)get_Value(COLUMNNAME_PostedText);
+	}
+
 	/** Set Processed.
 		@param Processed 
 		The document has been processed
@@ -807,6 +871,34 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	public int getZ_MedioPagoReplace_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoReplace_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_MedioPagoReplace getZ_MedioPagoReplace_To() throws RuntimeException
+    {
+		return (I_Z_MedioPagoReplace)MTable.get(getCtx(), I_Z_MedioPagoReplace.Table_Name)
+			.getPO(getZ_MedioPagoReplace_To_ID(), get_TrxName());	}
+
+	/** Set Z_MedioPagoReplace_To_ID.
+		@param Z_MedioPagoReplace_To_ID 
+		Reemplazado por este ID de documento de Reemplazo de medio de pago
+	  */
+	public void setZ_MedioPagoReplace_To_ID (int Z_MedioPagoReplace_To_ID)
+	{
+		if (Z_MedioPagoReplace_To_ID < 1) 
+			set_Value (COLUMNNAME_Z_MedioPagoReplace_To_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_MedioPagoReplace_To_ID, Integer.valueOf(Z_MedioPagoReplace_To_ID));
+	}
+
+	/** Get Z_MedioPagoReplace_To_ID.
+		@return Reemplazado por este ID de documento de Reemplazo de medio de pago
+	  */
+	public int getZ_MedioPagoReplace_To_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoReplace_To_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

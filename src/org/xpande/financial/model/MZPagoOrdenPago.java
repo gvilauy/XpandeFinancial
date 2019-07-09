@@ -55,4 +55,5 @@ public class MZPagoOrdenPago extends X_Z_PagoOrdenPago {
 
         return true;
     }
+
 }
