@@ -23,6 +23,7 @@ public class EstadoCuentaRP extends SvrProcess {
     private ProcessInfoParameter paramFechaInicio = null;
     private ProcessInfoParameter paramFechaFin = null;
     private ProcessInfoParameter paramUsuario = null;
+    private ProcessInfoParameter paramInfoMP = null;
 
 
     @Override
@@ -61,6 +62,9 @@ public class EstadoCuentaRP extends SvrProcess {
                     this.estadoCuentaProcessor.startDate = (Timestamp)para[i].getParameter();
                     this.estadoCuentaProcessor.endDate = (Timestamp)para[i].getParameter_To();
                 }
+                else if (name.trim().equalsIgnoreCase("VerInfoMedioPago")) {
+                    this.estadoCuentaProcessor.verInfoMedioPago = (String)para[i].getParameter();
+                }
                 else if (name.trim().equalsIgnoreCase("SinMovConSaldo")) {
                     this.estadoCuentaProcessor.sinMovConSaldoIni = (((String) para[i].getParameter()).trim().equalsIgnoreCase("Y")) ? true : false;
                 }
@@ -81,6 +85,9 @@ public class EstadoCuentaRP extends SvrProcess {
                 }
                 else if (name.trim().equalsIgnoreCase("RP_EndDate")){
                     paramFechaFin = para[i];
+                }
+                else if (name.trim().equalsIgnoreCase("RP_InfoMP")){
+                    paramInfoMP = para[i];
                 }
             }
         }
@@ -144,6 +151,10 @@ public class EstadoCuentaRP extends SvrProcess {
 
         if (paramFechaFin != null){
             paramFechaFin.setParameter(this.estadoCuentaProcessor.endDate);
+        }
+
+        if (paramInfoMP != null){
+            paramInfoMP.setParameter(this.estadoCuentaProcessor.verInfoMedioPago);
         }
     }
 

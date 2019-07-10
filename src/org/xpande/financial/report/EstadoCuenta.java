@@ -28,6 +28,7 @@ public class EstadoCuenta {
     public Timestamp startDate = null;
     public Timestamp endDate = null;
     public boolean sinMovConSaldoIni = true;
+    public String verInfoMedioPago = "N";
 
 
     /***
