@@ -1979,6 +1979,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				pagoResguardo.saveEx();
 			}
 
+			this.updateTotals();
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
@@ -2243,6 +2244,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					MZEmisionMedioPago emisionMedioPago = new MZEmisionMedioPago(getCtx(), 0, get_TrxName());
 					emisionMedioPago.setZ_MedioPago_ID(pagoMedioPago.getZ_MedioPago_ID());
 					emisionMedioPago.setAD_Org_ID(this.getAD_Org_ID());
+					emisionMedioPago.setExtornarAcct(this.isExtornarAcct());
 
 					medioPagoItem.setEmitido(false);
 					medioPagoItem.saveEx();
@@ -2852,6 +2854,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					return "Falta parametrizar Documento por Defecto para Pagos a Proveedores, en Configuraciones Financieras.";
 				}
 				docType = new MDocType(getCtx(), financialConfig.getDefaultDocPPD_ID(), get_TrxName());
+			}
+
+
+			// Si la invoice es una nota de credito marco el recibo a generar para que haga el asiento alreves
+			MDocType docTypeInvoice = (MDocType) invoice.getC_DocTypeTarget();
+			if ((docTypeInvoice.getDocBaseType().equalsIgnoreCase("APC")) || (docTypeInvoice.getDocBaseType().equalsIgnoreCase("ARC"))){
+				this.setExtornarAcct(true);
 			}
 
 			// Seteo atributos del cabezal del documento de pago/cobro.

@@ -33,7 +33,7 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190709L;
+	private static final long serialVersionUID = 20190710L;
 
     /** Standard Constructor */
     public X_Z_EmisionMedioPago (Properties ctx, int Z_EmisionMedioPago_ID, String trxName)
@@ -53,6 +53,8 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 // DR
 			setDocumentNo (null);
 			setDueDate (new Timestamp( System.currentTimeMillis() ));
+			setExtornarAcct (false);
+// N
 			setIsApproved (false);
 // N
 			setModificable (false);
@@ -497,6 +499,30 @@ public class X_Z_EmisionMedioPago extends PO implements I_Z_EmisionMedioPago, I_
 	public Timestamp getDueDate () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DueDate);
+	}
+
+	/** Set ExtornarAcct.
+		@param ExtornarAcct 
+		Si se debe o no dar vuelta el asiento contable de un documento
+	  */
+	public void setExtornarAcct (boolean ExtornarAcct)
+	{
+		set_Value (COLUMNNAME_ExtornarAcct, Boolean.valueOf(ExtornarAcct));
+	}
+
+	/** Get ExtornarAcct.
+		@return Si se debe o no dar vuelta el asiento contable de un documento
+	  */
+	public boolean isExtornarAcct () 
+	{
+		Object oo = get_Value(COLUMNNAME_ExtornarAcct);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Approved.

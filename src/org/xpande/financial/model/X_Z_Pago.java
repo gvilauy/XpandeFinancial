@@ -33,7 +33,7 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190627L;
+	private static final long serialVersionUID = 20190710L;
 
     /** Standard Constructor */
     public X_Z_Pago (Properties ctx, int Z_Pago_ID, String trxName)
@@ -53,6 +53,8 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 			setDocStatus (null);
 // DR
 			setDocumentNo (null);
+			setExtornarAcct (false);
+// N
 			setIsApproved (false);
 // N
 			setIsSOTrx (false);
@@ -501,6 +503,30 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	public Timestamp getDueDateTo () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DueDateTo);
+	}
+
+	/** Set ExtornarAcct.
+		@param ExtornarAcct 
+		Si se debe o no dar vuelta el asiento contable de un documento
+	  */
+	public void setExtornarAcct (boolean ExtornarAcct)
+	{
+		set_Value (COLUMNNAME_ExtornarAcct, Boolean.valueOf(ExtornarAcct));
+	}
+
+	/** Get ExtornarAcct.
+		@return Si se debe o no dar vuelta el asiento contable de un documento
+	  */
+	public boolean isExtornarAcct () 
+	{
+		Object oo = get_Value(COLUMNNAME_ExtornarAcct);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set ID_Virtual.

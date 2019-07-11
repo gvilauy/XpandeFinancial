@@ -308,6 +308,19 @@ public interface I_Z_Pago
 	  */
 	public Timestamp getDueDateTo();
 
+    /** Column name ExtornarAcct */
+    public static final String COLUMNNAME_ExtornarAcct = "ExtornarAcct";
+
+	/** Set ExtornarAcct.
+	  * Si se debe o no dar vuelta el asiento contable de un documento
+	  */
+	public void setExtornarAcct(boolean ExtornarAcct);
+
+	/** Get ExtornarAcct.
+	  * Si se debe o no dar vuelta el asiento contable de un documento
+	  */
+	public boolean isExtornarAcct();
+
     /** Column name ID_Virtual */
     public static final String COLUMNNAME_ID_Virtual = "ID_Virtual";
 

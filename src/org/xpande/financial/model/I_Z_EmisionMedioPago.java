@@ -299,6 +299,19 @@ public interface I_Z_EmisionMedioPago
 	  */
 	public Timestamp getDueDate();
 
+    /** Column name ExtornarAcct */
+    public static final String COLUMNNAME_ExtornarAcct = "ExtornarAcct";
+
+	/** Set ExtornarAcct.
+	  * Si se debe o no dar vuelta el asiento contable de un documento
+	  */
+	public void setExtornarAcct(boolean ExtornarAcct);
+
+	/** Get ExtornarAcct.
+	  * Si se debe o no dar vuelta el asiento contable de un documento
+	  */
+	public boolean isExtornarAcct();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
