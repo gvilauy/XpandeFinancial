@@ -127,7 +127,7 @@ public class SaldoPendiente {
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, enddate, " +
-                    " c_currency_id_to, ad_orgtrx_id, seqno, reference) ";
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, isgasto, z_ordenpago_id, dateordered, z_pago_id, daterefpago) ";
 
             String whereClauseAfecta = "";
 
@@ -177,10 +177,15 @@ public class SaldoPendiente {
                     " where " + whereClauseAfecta + " and c_invoice_id = a.c_invoice_id) end as amtallocated, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
-                    this.adOrgID + ", 0, 'ABIERTA' " +
+                    this.adOrgID + ", 0, 'ABIERTA', " +
+                    " case when (a.issotrx = 'N' and a.subdocbasetype is null) then 'Y' else 'N' end as isgasto, " +
+                    " inva.z_ordenpago_id, op.datedoc, inva.z_pago_id, pago.datedoc " +
                     " from c_invoice a " +
                     " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
                     " left outer join c_invoicepayschedule ips on a.c_invoice_id = ips.c_invoice_id " +
+                    " left outer join z_invoiceafectacion inva on a.c_invoice_id = inva.c_invoice_id " +
+                    " left outer join z_ordenpago op on inva.z_ordenpago_id = op.z_ordenpago_id " +
+                    " left outer join z_pago pago on inva.z_pago_id = pago.z_pago_id " +
                     " where a.docstatus ='CO' " + whereClause +
                     " order by a.dateinvoiced, a.c_bpartner_id ";
 
