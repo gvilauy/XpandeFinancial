@@ -1,8 +1,12 @@
 package org.xpande.financial.report;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.financial.model.X_Z_EmisionMedioPago;
+import org.xpande.financial.model.X_Z_Pago;
+import org.xpande.financial.model.X_Z_TransferSaldo;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -127,7 +131,7 @@ public class SaldoPendiente {
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, enddate, " +
-                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, isgasto, z_ordenpago_id, dateordered, z_pago_id, daterefpago) ";
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, isgasto) ";
 
             String whereClauseAfecta = "";
 
@@ -178,14 +182,10 @@ public class SaldoPendiente {
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA', " +
-                    " case when (a.issotrx = 'N' and a.subdocbasetype is null) then 'Y' else 'N' end as isgasto, " +
-                    " inva.z_ordenpago_id, op.datedoc, inva.z_pago_id, pago.datedoc " +
+                    " case when (a.issotrx = 'N' and a.subdocbasetype is null) then 'Y' else 'N' end as isgasto " +
                     " from c_invoice a " +
                     " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
                     " left outer join c_invoicepayschedule ips on a.c_invoice_id = ips.c_invoice_id " +
-                    " left outer join z_invoiceafectacion inva on a.c_invoice_id = inva.c_invoice_id " +
-                    " left outer join z_ordenpago op on inva.z_ordenpago_id = op.z_ordenpago_id " +
-                    " left outer join z_pago pago on inva.z_pago_id = pago.z_pago_id " +
                     " where a.docstatus ='CO' " + whereClause +
                     " order by a.dateinvoiced, a.c_bpartner_id ";
 
@@ -497,60 +497,114 @@ public class SaldoPendiente {
                     " and docbasetype in ('APC', 'ARC', 'PPA', 'CCA') ";
             DB.executeUpdateEx(action, null);
 
+            // Actualizo información de ultimo recibo y/o orden de pago
+            this.updateInfoPago();
+
+            // Actualizo ordenes de pago y pagos con id 0
+            action = " update " + TABLA_REPORTE +
+                    " set z_ordenpago_id = null " +
+                    " where ad_user_id =" + this.adUserID +
+                    " and z_ordenpago_id = 0";
+            DB.executeUpdateEx(action, null);
+
+            action = " update " + TABLA_REPORTE +
+                    " set z_pago_id = null " +
+                    " where ad_user_id =" + this.adUserID +
+                    " and z_pago_id = 0";
+            DB.executeUpdateEx(action, null);
 
             if (this.tieneAcct){
 
-                // Cuenta contable proveedores
+                // Cuenta contable proveedores API
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
                         " select account_id from fact_acct " +
-                        " where ad_table_id = 318 " +
+                        " where ad_table_id =" + X_C_Invoice.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctcr != 0 " +
                         " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
                         " where ad_user_id =" + this.adUserID +
                         " and c_invoice_id > 0 " +
-                        " and docbasetype in ('API', 'APC') ";
+                        " and docbasetype ='API' ";
                 DB.executeUpdateEx(action, null);
 
-                // Cuenta contable deudores
+                // Cuenta contable proveedores APC
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
                         " select account_id from fact_acct " +
-                        " where ad_table_id = 318 " +
+                        " where ad_table_id =" + X_C_Invoice.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctdr != 0 " +
                         " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
                         " where ad_user_id =" + this.adUserID +
                         " and c_invoice_id > 0 " +
-                        " and docbasetype in ('ARI', 'ARC') ";
+                        " and docbasetype = 'APC' ";
                 DB.executeUpdateEx(action, null);
+
+                // Cuenta contable deudores ARI
+                action = " update " + TABLA_REPORTE +
+                        " set c_elementvalue_id = (" +
+                        " select account_id from fact_acct " +
+                        " where ad_table_id =" + X_C_Invoice.Table_ID +
+                        " and m_product_id is null and c_tax_id is null " +
+                        " and amtacctdr != 0 " +
+                        " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and c_invoice_id > 0 " +
+                        " and docbasetype ='ARI' ";
+                DB.executeUpdateEx(action, null);
+
+                // Cuenta contable deudores ARC
+                action = " update " + TABLA_REPORTE +
+                        " set c_elementvalue_id = (" +
+                        " select account_id from fact_acct " +
+                        " where ad_table_id =" + X_C_Invoice.Table_ID +
+                        " and m_product_id is null and c_tax_id is null " +
+                        " and amtacctcr != 0 " +
+                        " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and c_invoice_id > 0 " +
+                        " and docbasetype ='ARC' ";
+                DB.executeUpdateEx(action, null);
+
 
                 // Cuenta contable transferencias de saldos
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
                         " select account_id from fact_acct " +
-                        " where ad_table_id = 318 " +
+                        " where ad_table_id =" + X_Z_TransferSaldo.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctcr != 0 " +
-                        " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
+                        " and record_id = " + TABLA_REPORTE + ".z_transfersaldo_id) " +
                         " where ad_user_id =" + this.adUserID +
-                        " and z_transfersaldo_id > 0 " +
-                        " and docbasetype in ('TSP') ";
+                        " and z_transfersaldo_id > 0 ";
                 DB.executeUpdateEx(action, null);
 
                 // Cuenta contable anticipos proveedores
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
                         " select account_id from fact_acct " +
-                        " where ad_table_id = 318 " +
+                        " where ad_table_id =" + X_Z_Pago.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctcr != 0 " +
                         " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
                         " where ad_user_id =" + this.adUserID +
                         " and z_pago_id > 0 " +
                         " and docbasetype in ('PPA') ";
-                //DB.executeUpdateEx(action, null);
+                DB.executeUpdateEx(action, null);
+
+                // Cuenta contable Medios de Pago EMITIDOS
+                action = " update " + TABLA_REPORTE +
+                        " set c_elementvalue_id = (" +
+                        " select account_id from fact_acct " +
+                        " where ad_table_id =" + X_Z_EmisionMedioPago.Table_ID +
+                        " and m_product_id is null and c_tax_id is null " +
+                        " and amtacctcr != 0 " +
+                        " and record_id = " + TABLA_REPORTE + ".z_emisionmediopago_id) " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and z_emisionmediopago_id > 0 ";
+                DB.executeUpdateEx(action, null);
+
             }
 
         }
@@ -559,4 +613,165 @@ public class SaldoPendiente {
         }
     }
 
+    private void updateInfoPago(){
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select * from " + TABLA_REPORTE + " where ad_user_id =" + this.adUserID;
+
+        	pstmt = DB.prepareStatement(sql, null);
+        	rs = pstmt.executeQuery();
+
+        	while(rs.next()){
+
+        	    // Actualizo invoices
+        	    if (rs.getInt("c_invoice_id") > 0){
+                    this.updateInfoPagoInvoice(rs.getInt("c_invoice_id"));
+                }
+                // Actualizo transferencias de saldo
+                else if (rs.getInt("z_transfersaldo_id") > 0){
+                    this.updateInfoPagoTransferSaldo(rs.getInt("z_transfersaldo_id"));
+                }
+
+                // Actualizo anticipos
+
+        	}
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+
+    }
+
+    private void updateInfoPagoInvoice(int cInvoiceID){
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.z_ordenpago_id, a.z_pago_id, op.datedoc as dateordered, pago.datedoc as daterefpago " +
+                    " from z_invoiceafectacion a " +
+                    " left outer join z_ordenpago op on a.z_ordenpago_id = op.z_ordenpago_id " +
+                    " left outer join z_pago pago on a.z_pago_id = pago.z_pago_id " +
+                    " where a.c_invoice_id =" + cInvoiceID +
+                    " and a.datedoc >'" + this.endDate + "' " +
+                    " order by a.datedoc desc ";
+
+        	pstmt = DB.prepareStatement(sql, null);
+        	rs = pstmt.executeQuery();
+
+        	if(rs.next()){
+
+        	    if ((rs.getTimestamp("dateordered") != null) && (rs.getTimestamp("daterefpago") != null)){
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                            " dateordered ='" + rs.getTimestamp("dateordered") + "', " +
+                            " daterefpago ='" + rs.getTimestamp("daterefpago") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and c_invoice_id =" + cInvoiceID;
+                    DB.executeUpdateEx(action, null);
+                }
+        	    else if ((rs.getTimestamp("dateordered") == null) && (rs.getTimestamp("daterefpago") != null)){
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                            " daterefpago ='" + rs.getTimestamp("daterefpago") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and c_invoice_id =" + cInvoiceID;
+                    DB.executeUpdateEx(action, null);
+                }
+                else if ((rs.getTimestamp("dateordered") != null) && (rs.getTimestamp("daterefpago") == null)){
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                            " dateordered ='" + rs.getTimestamp("dateordered") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and c_invoice_id =" + cInvoiceID;
+                    DB.executeUpdateEx(action, null);
+                }
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+    }
+
+    private void updateInfoPagoTransferSaldo(int zTransferSaldoID){
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.z_ordenpago_id, a.z_pago_id, op.datedoc as dateordered, pago.datedoc as daterefpago " +
+                    " from z_transferafectacion a " +
+                    " left outer join z_ordenpago op on a.z_ordenpago_id = op.z_ordenpago_id " +
+                    " left outer join z_pago pago on a.z_pago_id = pago.z_pago_id " +
+                    " where a.z_transfersaldo_id =" + zTransferSaldoID +
+                    " and a.datedoc >'" + this.endDate + "' " +
+                    " order by a.datedoc desc ";
+
+            pstmt = DB.prepareStatement(sql, null);
+            rs = pstmt.executeQuery();
+
+            if(rs.next()){
+
+                if ((rs.getTimestamp("dateordered") != null) && (rs.getTimestamp("daterefpago") != null)){
+
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                            " dateordered ='" + rs.getTimestamp("dateordered") + "', " +
+                            " daterefpago ='" + rs.getTimestamp("daterefpago") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and z_transfersaldo_id =" + zTransferSaldoID;
+                    DB.executeUpdateEx(action, null);
+                }
+                else if ((rs.getTimestamp("dateordered") == null) && (rs.getTimestamp("daterefpago") != null)){
+
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                            " daterefpago ='" + rs.getTimestamp("daterefpago") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and z_transfersaldo_id =" + zTransferSaldoID;
+                    DB.executeUpdateEx(action, null);
+
+                }
+                else if ((rs.getTimestamp("dateordered") != null) && (rs.getTimestamp("daterefpago") == null)){
+
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                            " dateordered ='" + rs.getTimestamp("dateordered") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and z_transfersaldo_id =" + zTransferSaldoID;
+                    DB.executeUpdateEx(action, null);
+
+                }
+
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+    }
 }
