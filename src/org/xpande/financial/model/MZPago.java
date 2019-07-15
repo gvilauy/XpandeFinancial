@@ -1122,7 +1122,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and hdr.issotrx='" + ((this.isSOTrx()) ? "Y":"N") + "' " +
 					" and hdr.docstatus='CO' " +
 					" and iop.amtopen > 0 " +
-					" and hdr.c_invoice_id not in (select c_invoice_id from z_pagolin " +
+					" and hdr.c_invoice_id not in (select coalesce(c_invoice_id,0) as inv_id from z_pagolin " +
 					" where c_invoice_id is not null " +
 					" and z_pago_id =" + this.get_ID() + ") " +
 
@@ -1250,7 +1250,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and hdr.issotrx='" + ((this.isSOTrx()) ? "Y":"N") + "' " +
 					" and hdr.docstatus='CO' " +
 					" and iop.amtopen > 0 " +
-					" and hdr.z_transfersaldo_id not in (select z_transfersaldo_id from z_pagolin " +
+					" and hdr.z_transfersaldo_id not in (select coalesce(z_transfersaldo_id,0) as transf_id from z_pagolin " +
 					" where z_transfersaldo_id is not null " +
 					" and z_pago_id =" + this.get_ID() + ") " +
 
@@ -1367,7 +1367,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and hdr.issotrx='" + ((this.isSOTrx()) ? "Y":"N") + "' " +
 					" and hdr.docstatus='CO' " +
 					" and iop.amtopen > 0 " +
-					" and hdr.z_pago_id not in (select l.ref_pago_id from z_pagolin l " +
+					" and hdr.z_pago_id not in (select coalesce(l.ref_pago_id,0) as ref_pago from z_pagolin l " +
 					" where l.z_pago_id is not null " +
 					" and l.z_pago_id =" + this.get_ID() + ") " +
 

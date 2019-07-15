@@ -159,10 +159,16 @@ public class MZMedioPagoItem extends X_Z_MedioPagoItem {
 
             // Desafecto medio de pago
             action = " update z_mediopagoitem set emitido ='N', c_bpartner_id = null, dateemitted = null, duedate = null, " +
-            " leyendaimpresion1 = null, leyendaimpresion2 = null, totalamt = 0, isprinted='N', z_emisionmediopago_id = null " +
-            " where z_mediopagoitem_id =" + this.get_ID();
-
+                        " leyendaimpresion1 = null, leyendaimpresion2 = null, totalamt = 0, isprinted='N', z_emisionmediopago_id = null " +
+                        " where z_mediopagoitem_id =" + this.get_ID();
             DB.executeUpdateEx(action, get_TrxName());
+
+            // Me aseguro de que el folio, si es que tengo uno, quede disponible.
+            if (this.getZ_MedioPagoFolio_ID() > 0){
+                action = " update z_mediopagofolio set disponible ='Y' " +
+                        " where z_mediopagofolio_id =" + this.getZ_MedioPagoFolio_ID();
+                DB.executeUpdateEx(action, get_TrxName());
+            }
 
         }
         catch (Exception e){
