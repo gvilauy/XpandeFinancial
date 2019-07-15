@@ -411,7 +411,8 @@ public class SaldoPendiente {
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "',' " + this.endDate + "', " + this.cCurrencyID + ", "
                     + this.adOrgID + ", 1, 'DOC' " +
                     " from z_mediopagoitem a " +
-                    " where a.anulado ='N' and a.conciliado ='N' and a.depositado ='N' and a.emitido ='Y' and a.entregado ='N' and a.reemplazado ='N' " +
+                    " where a.anulado ='N' and a.conciliado ='N' and a.depositado ='N' and a.emitido ='Y' and a.reemplazado ='N' " +
+                    " and ((a.entregado ='N') or ((a.entregado ='Y') and (a.daterefpago is not null and a.daterefpago >='" + this.endDate + "'))) " +
                     whereClause +
                     " order by a.dateemitted, a.c_bpartner_id ";
 

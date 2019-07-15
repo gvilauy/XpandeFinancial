@@ -33,7 +33,7 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190308L;
+	private static final long serialVersionUID = 20190715L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoItem (Properties ctx, int Z_MedioPagoItem_ID, String trxName)
@@ -297,6 +297,23 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	public Timestamp getDateEmitted () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateEmitted);
+	}
+
+	/** Set DateRefPago.
+		@param DateRefPago 
+		Fecha referencia de un documento de pago / cobro
+	  */
+	public void setDateRefPago (Timestamp DateRefPago)
+	{
+		set_Value (COLUMNNAME_DateRefPago, DateRefPago);
+	}
+
+	/** Get DateRefPago.
+		@return Fecha referencia de un documento de pago / cobro
+	  */
+	public Timestamp getDateRefPago () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateRefPago);
 	}
 
 	/** Set Depositado.

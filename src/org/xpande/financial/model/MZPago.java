@@ -856,7 +856,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 									}
 									else{
 										// Desafecto emision del medio de pago
-										action = " update z_mediopagoitem set z_emisionmediopago_id = null, emitido ='N', entregado='N' " +
+										action = " update z_mediopagoitem set z_emisionmediopago_id = null, emitido ='N', entregado='N', " +
+												" z_pago_id =null, daterefpago =null " +
 												 " where z_mediopagoitem_id =" + medioPagoItem.get_ID();
 										DB.executeUpdateEx(action, get_TrxName());
 									}
@@ -2304,6 +2305,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				// Si es un anticipo, este medio de pago se marcará como entregado al momento de ingresar el recibo correspondiente al anticipo.
 				if (!this.isAnticipo()){
 					medioPagoItem.setEntregado(true);
+					medioPagoItem.setDateRefPago(this.getDateDoc());
 				}
 
 				medioPagoItem.saveEx();

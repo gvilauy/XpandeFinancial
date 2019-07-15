@@ -193,6 +193,19 @@ public interface I_Z_MedioPagoItem
 	  */
 	public Timestamp getDateEmitted();
 
+    /** Column name DateRefPago */
+    public static final String COLUMNNAME_DateRefPago = "DateRefPago";
+
+	/** Set DateRefPago.
+	  * Fecha referencia de un documento de pago / cobro
+	  */
+	public void setDateRefPago(Timestamp DateRefPago);
+
+	/** Get DateRefPago.
+	  * Fecha referencia de un documento de pago / cobro
+	  */
+	public Timestamp getDateRefPago();
+
     /** Column name Depositado */
     public static final String COLUMNNAME_Depositado = "Depositado";
 
