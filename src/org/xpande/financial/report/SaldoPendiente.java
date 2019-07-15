@@ -351,6 +351,7 @@ public class SaldoPendiente {
         catch (Exception e){
             throw new AdempiereException(e);
         }
+        
     }
 
 
