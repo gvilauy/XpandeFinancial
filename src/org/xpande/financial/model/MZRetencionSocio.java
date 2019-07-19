@@ -1,11 +1,13 @@
 package org.xpande.financial.model;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MBPartner;
-import org.compiere.model.MInvoice;
-import org.compiere.model.Query;
+import org.compiere.model.*;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.xpande.core.utils.CurrencyUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
@@ -66,15 +68,15 @@ public class MZRetencionSocio extends X_Z_RetencionSocio {
                 return false;
             }
 
+
+
             // Obtengo retenciones asociadas al socio de negocio de la invoice recibida
             List<MZRetencionSocioBPartner> retencionesBP = MZRetencionSocio.getRetencionesBPartner(ctx, invoice.getC_BPartner_ID(), null);
             for (MZRetencionSocioBPartner retencionBP: retencionesBP){
                 MZRetencionSocio retencionSocio = (MZRetencionSocio) retencionBP.getZ_RetencionSocio();
-                // Si la retencion no es aplicable en impuestos, se asume que esta invoice es aplicable a retenciones. Salgo en true.
-                if (!retencionSocio.getRetencionMontoAplica().equalsIgnoreCase(X_Z_RetencionSocio.RETENCIONMONTOAPLICA_IMPUESTOS)){
-                    return true;
-                }
-                else{
+
+                // Si la retencion no es aplicable en impuestos
+                if (retencionSocio.getRetencionMontoAplica().equalsIgnoreCase(X_Z_RetencionSocio.RETENCIONMONTOAPLICA_IMPUESTOS)){
                     // Verifico que este invoice tenga uno de los impuestos contra los cuales aplica esta retencion
                     // En cuyo caso retorno true.
                     sql = " select count(invt.*) as contador " +
@@ -88,6 +90,33 @@ public class MZRetencionSocio extends X_Z_RetencionSocio {
                     if (contador > 0){
                         return true;
                     }
+                }
+                // Si la retención es aplicable al subtotal
+                else if (retencionSocio.getRetencionMontoAplica().equalsIgnoreCase(X_Z_RetencionSocio.RETENCIONMONTOAPLICA_SUBTOTAL)){
+                    // Si la retención tiene topo en unidades indexadas
+                    if ((retencionSocio.getAmtUnidadIndexada() != null) && (retencionSocio.getAmtUnidadIndexada().compareTo(Env.ZERO) > 0)){
+                        // Obtengo monto en moneda nacional equivalente al monto tope en unidades indexadas
+                        MClient client = new MClient(ctx, invoice.getAD_Client_ID(), null);
+                        MAcctSchema acctSchema = (MAcctSchema) client.getAcctSchema();
+                        BigDecimal multiplyRate = CurrencyUtils.getMultiplyRateToUnidadIndexada(ctx, invoice.getAD_Client_ID(), 0,
+                                acctSchema.getC_Currency_ID(), 114, invoice.getDateInvoiced(), null);
+                        if (multiplyRate != null){
+                            BigDecimal amtUnidIndex = retencionSocio.getAmtUnidadIndexada().multiply(multiplyRate).setScale(2, RoundingMode.HALF_UP);
+                            BigDecimal subTotalInv = (BigDecimal) invoice.get_Value("AmtSubtotal");
+                            if (amtUnidIndex.compareTo(subTotalInv) > 0){
+                                return false;
+                            }
+                        }
+                        else{
+                            return true;
+                        }
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                else {
+                    return true;
                 }
             }
         }

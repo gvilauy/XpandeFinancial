@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Properties;
 
 /**
  * Clase que contiene la Lógica de Ejecución para el Reporte de Estado de Cuenta de Socios de Negocio (RP y RV)
