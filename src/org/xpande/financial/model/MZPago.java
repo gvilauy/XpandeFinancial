@@ -2292,6 +2292,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						return message;
 					}
 					emisionMedioPago.saveEx();
+
+					medioPagoItem.setEmitido(true);
+					medioPagoItem.saveEx();
 				}
 
 

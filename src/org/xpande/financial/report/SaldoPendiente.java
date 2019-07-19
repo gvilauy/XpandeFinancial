@@ -496,7 +496,8 @@ public class SaldoPendiente {
             action = " update " + TABLA_REPORTE +
                     " set amtopen = (amtopen * -1), amtdocument = (amtdocument * -1), amtallocated = (amtallocated * -1) " +
                     " where ad_user_id =" + this.adUserID +
-                    " and docbasetype in ('APC', 'ARC', 'PPA', 'CCA') ";
+                    //" and docbasetype in ('APC', 'ARC', 'PPA', 'CCA') ";
+                    " and docbasetype in ('APC', 'ARC') ";
             DB.executeUpdateEx(action, null);
 
             // Actualizo información de ultimo recibo y/o orden de pago

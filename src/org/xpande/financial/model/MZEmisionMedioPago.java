@@ -243,15 +243,6 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 
 		this.setDateAcct(this.getDateDoc());
 
-		/*
-		// Quito esta validación ya que se pueden emitir manualmente cheques de fechas pasadas en caso de contingencia.
-		// Me aseguro fecha de emisión no menor a hoy
-		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-		if (this.getDateEmitted().before(fechaHoy)){
-			this.setDateEmitted(fechaHoy);
-		}
-		 */
-
 		// Validaciones de este documento
 		m_processMsg = this.validateDocument();
 		if (m_processMsg != null){
@@ -278,12 +269,6 @@ public class MZEmisionMedioPago extends X_Z_EmisionMedioPago implements DocActio
 				medioPagoItem.setZ_MedioPagoReplace_ID(this.getZ_MedioPagoReplace_ID());
 			}
 			medioPagoItem.saveEx();
-		}
-
-		// Si esta emision de medio de pago tiene como origen un documento de reemplazo, no hago el asiento aca, sino que se hace en el
-		// documento mismo del reemplazo.
-		if (this.getZ_MedioPagoReplace_ID() > 0){
-			this.setPosted(true);
 		}
 
 		//	User Validation
