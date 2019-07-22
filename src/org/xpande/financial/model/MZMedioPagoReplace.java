@@ -397,10 +397,12 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 						emisionMedioPago.setZ_Pago_ID(OLD_medioPagoItem.getZ_Pago_ID());
 					}
 
+					/*
 					if (this.getC_Charge_ID() > 0){
 						emisionMedioPago.setC_Charge_ID(this.getC_Charge_ID());
 						emisionMedioPago.setChargeAmt(this.getChargeAmt());
 					}
+					*/
 
 					emisionMedioPago.saveEx();
 

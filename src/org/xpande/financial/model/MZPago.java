@@ -1942,15 +1942,20 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					pagoMedioPago.setZ_MedioPagoFolio_ID(ordenPagoMedio.getZ_MedioPagoFolio_ID());
 				}
 				if (ordenPagoMedio.getZ_MedioPagoItem_ID() > 0){
+					MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) ordenPagoMedio.getZ_MedioPagoItem();
 					pagoMedioPago.setZ_MedioPagoItem_ID(ordenPagoMedio.getZ_MedioPagoItem_ID());
+					pagoMedioPago.setDateEmitted(medioPagoItem.getDateEmitted());
+					pagoMedioPago.setDueDate(medioPagoItem.getDueDate());
+				}
+				else{
+					pagoMedioPago.setDateEmitted(ordenPagoMedio.getDateEmitted());
+					pagoMedioPago.setDueDate(ordenPagoMedio.getDueDate());
 				}
 				pagoMedioPago.setTotalAmtMT(ordenPagoMedio.getTotalAmt());
 				pagoMedioPago.setTotalAmt(ordenPagoMedio.getTotalAmt());
 				pagoMedioPago.setC_BankAccount_ID(ordenPagoMedio.getC_BankAccount_ID());
 				pagoMedioPago.setC_Currency_ID(ordenPagoMedio.getC_Currency_ID());
-				pagoMedioPago.setDateEmitted(ordenPagoMedio.getDateEmitted());
 				pagoMedioPago.setDocumentNoRef(ordenPagoMedio.getDocumentNoRef());
-				pagoMedioPago.setDueDate(ordenPagoMedio.getDueDate());
 				pagoMedioPago.setEmisionManual(false);
 				pagoMedioPago.setMultiplyRate(Env.ONE);
 				pagoMedioPago.setTieneCaja(false);

@@ -1,10 +1,12 @@
 package org.xpande.financial.report;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MSequence;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.utils.CurrencyUtils;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -34,6 +36,7 @@ public class BalanceContable {
 
     private Properties ctx = null;
     private String trxName = null;
+    private BigDecimal currencyRate = null;
 
 
     /***
@@ -55,6 +58,14 @@ public class BalanceContable {
         String message = null;
 
         try{
+
+            // Obtengo tasa de cambio a la fecha hasta del reporte, cuando tengo dos monedas
+            if (this.cCurrencyID_2 > 0){
+                this.currencyRate = CurrencyUtils.getCurrencyRate(this.ctx, this.adClientID, 0, this.cCurrencyID_2, this.cCurrencyID, 114, this.endDate, null);
+                if (this.currencyRate == null){
+                    return "No se pudo obtener Tasa de Cambio entre ambas monedas para la fecha : " + this.endDate;
+                }
+            }
 
             this.deleteData();
             this.getData();
@@ -167,6 +178,9 @@ public class BalanceContable {
             // Moneda del Schema
             MAcctSchema acctSchema = new MAcctSchema(this.ctx, this.cAcctSchemaID, null);
 
+            // Cuentas de diferencia de cambio
+            //MAccount acctDifCambioGanada =
+
             // Armo condiciones según filtros
             String whereClause = " and f.ad_client_id =" + this.adClientID +
                     " and f.ad_org_id =" + this.adOrgID;
@@ -230,6 +244,11 @@ public class BalanceContable {
                 // Actulizo columna de monto por moneda del reporte
                 if (this.cCurrencyID == acctSchema.getC_Currency_ID()){
                     amtCurrency1 = amtCurrency1.add(saldoMN);
+
+                    // Traducir si moneda leída es moneda nacional y no es una cuenta de diferencia de cambio
+                    if (cCurrencyID == acctSchema.getC_Currency_ID()){
+
+                    }
                 }
                 else{
                     if (this.cCurrencyID == cCurrencyID){
@@ -239,6 +258,8 @@ public class BalanceContable {
 
                 if (this.cCurrencyID_2 == acctSchema.getC_Currency_ID()){
                     amtCurrency2 = amtCurrency2.add(saldoMN);
+
+                    // Traducir
                 }
                 else{
                     if (this.cCurrencyID_2 == cCurrencyID){
