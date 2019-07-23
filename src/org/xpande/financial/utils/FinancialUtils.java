@@ -7,6 +7,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.eevolution.model.X_C_TaxGroup;
 import org.xpande.financial.model.*;
 
 import java.math.BigDecimal;
@@ -61,6 +62,17 @@ public final class FinancialUtils {
         String action = "";
 
         try{
+
+            // Si el socio de negocio tiene tipo de identificación OTROS, no impacto nada.
+            MBPartner partner = (MBPartner) model.getC_BPartner();
+            if ((partner != null) && (partner.get_ID() > 0)){
+                if (partner.getC_TaxGroup_ID() > 0){
+                    X_C_TaxGroup taxGroup = (X_C_TaxGroup) partner.getC_TaxGroup();
+                    if ((taxGroup.getValue() != null) && (taxGroup.getValue().equalsIgnoreCase("OTRO"))){
+                        return;
+                    }
+                }
+            }
 
             MDocType docType = (MDocType) model.getC_DocTypeTarget();
             String documentNoRef = model.getDocumentNo();
@@ -462,6 +474,17 @@ public final class FinancialUtils {
         String action = "";
 
         try{
+
+            // Si el socio de negocio tiene tipo de identificación OTROS, no impacto nada.
+            MBPartner partner = (MBPartner) pago.getC_BPartner();
+            if ((partner != null) && (partner.get_ID() > 0)){
+                if (partner.getC_TaxGroup_ID() > 0){
+                    X_C_TaxGroup taxGroup = (X_C_TaxGroup) partner.getC_TaxGroup();
+                    if ((taxGroup.getValue() != null) && (taxGroup.getValue().equalsIgnoreCase("OTRO"))){
+                        return;
+                    }
+                }
+            }
 
             // Si esta completando este documento
             if (onComplete){
