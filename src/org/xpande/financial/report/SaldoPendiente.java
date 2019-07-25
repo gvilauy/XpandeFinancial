@@ -342,7 +342,8 @@ public class SaldoPendiente {
                     " from z_pago a " +
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
                     " where a.docstatus ='CO' " +
-                    " and anticipo ='Y' " +whereClause +
+                    " and anticipo ='Y' " +
+                    " and z_pago_to_id is null " + whereClause +
                     " order by a.datedoc, a.c_bpartner_id ";
 
             DB.executeUpdateEx(action + sql, null);
@@ -590,7 +591,7 @@ public class SaldoPendiente {
                         " where ad_table_id =" + X_Z_Pago.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctcr != 0 " +
-                        " and record_id = " + TABLA_REPORTE + ".c_invoice_id) " +
+                        " and record_id = " + TABLA_REPORTE + ".z_pago_id) " +
                         " where ad_user_id =" + this.adUserID +
                         " and z_pago_id > 0 " +
                         " and docbasetype in ('PPA') ";

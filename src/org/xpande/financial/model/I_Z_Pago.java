@@ -104,6 +104,21 @@ public interface I_Z_Pago
 
 	public I_C_BPartner getC_BPartner() throws RuntimeException;
 
+    /** Column name C_BPartner_Location_ID */
+    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/** Set Partner Location.
+	  * Identifies the (ship to) address for this Business Partner
+	  */
+	public void setC_BPartner_Location_ID(int C_BPartner_Location_ID);
+
+	/** Get Partner Location.
+	  * Identifies the (ship to) address for this Business Partner
+	  */
+	public int getC_BPartner_Location_ID();
+
+	public I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException;
+
     /** Column name C_Charge_ID */
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
