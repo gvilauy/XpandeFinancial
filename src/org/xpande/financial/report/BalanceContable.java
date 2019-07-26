@@ -37,7 +37,7 @@ public class BalanceContable {
 
     private Properties ctx = null;
     private String trxName = null;
-    private BigDecimal currencyRate = null;
+    private BigDecimal currencyRate = Env.ONE;
     private MAcctSchema acctSchema = null;
 
 
@@ -61,22 +61,22 @@ public class BalanceContable {
 
         try{
 
+            int cCurrencyFromID = this.cCurrencyID_2;
+            if (cCurrencyID_2 <= 0) cCurrencyFromID = 100;
+
             // Instancio esquema contable
             this.acctSchema = new MAcctSchema(this.ctx, this.cAcctSchemaID, null);
 
-            // Obtengo tasa de cambio a la fecha hasta del reporte, cuando tengo dos monedas
-            if (this.cCurrencyID_2 > 0){
+            // Obtengo tasa de cambio a la fecha hasta del reporte por ahora siempre para USD
+            if (this.cCurrencyID == this.acctSchema.getC_Currency_ID()){
+                this.currencyRate = CurrencyUtils.getCurrencyRate(this.ctx, this.adClientID, 0, cCurrencyFromID, this.cCurrencyID, 114, this.endDate, null);
+            }
+            else if (this.cCurrencyID_2 == this.acctSchema.getC_Currency_ID()){
+                this.currencyRate = CurrencyUtils.getCurrencyRate(this.ctx, this.adClientID, 0, this.cCurrencyID, cCurrencyFromID,  114, this.endDate, null);
+            }
 
-                if (this.cCurrencyID == this.acctSchema.getC_Currency_ID()){
-                    this.currencyRate = CurrencyUtils.getCurrencyRate(this.ctx, this.adClientID, 0, this.cCurrencyID_2, this.cCurrencyID, 114, this.endDate, null);
-                }
-                else if (this.cCurrencyID_2 == this.acctSchema.getC_Currency_ID()){
-                    this.currencyRate = CurrencyUtils.getCurrencyRate(this.ctx, this.adClientID, 0, this.cCurrencyID, this.cCurrencyID_2,  114, this.endDate, null);
-                }
-
-                if ((this.currencyRate == null) || (this.currencyRate.compareTo(Env.ZERO) == 0)){
-                    return "No se pudo obtener Tasa de Cambio entre ambas monedas para la fecha : " + this.endDate;
-                }
+            if ((this.currencyRate == null) || (this.currencyRate.compareTo(Env.ZERO) == 0)){
+                return "No se pudo obtener Tasa de Cambio para la fecha : " + this.endDate;
             }
 
             this.deleteData();
@@ -124,6 +124,16 @@ public class BalanceContable {
                     " parent_id, node_id, seqno, nrofila, " +
                     " amttotal1, amttotal2) ";
 
+            String whereClause = "";
+
+            // Filtro según tipo de reporte de balance
+            if (this.tipoBalanceAcct.equalsIgnoreCase("PATRIMONIAL")){
+                whereClause = " and f.accounttype in ('A', 'L', 'O') ";
+            }
+            else if (this.tipoBalanceAcct.equalsIgnoreCase("PATRIMONIAL")){
+                whereClause = " and f.accounttype in ('R', 'E') ";
+            }
+
             sql = " select " + this.adClientID + ", " + this.adOrgID + ", " + this.adUserID + ", f.c_elementvalue_id, " + this.cCurrencyID + ", " +
                     " f.value, f.name, f.issummary, f.accounttype, " +
                     " case when f.accounttype='A' then '1' else " +
@@ -139,7 +149,7 @@ public class BalanceContable {
                     " f.parent_id, f.node_id, f.seqno, f.nrofila, 0, 0 " +
                     " from ZV_ElementValueTree f " +
                     " where f.ad_client_id =" + this.adClientID +
-                    " and f.c_acctschema_id =" + this.cAcctSchemaID +
+                    " and f.c_acctschema_id =" + this.cAcctSchemaID + whereClause +
                     " order by f.nrofila ";
             DB.executeUpdateEx(action + sql, null);
 
@@ -205,7 +215,8 @@ public class BalanceContable {
                 whereClause += " and f.c_currency_id in (" + this.cCurrencyID + ", " + this.cCurrencyID_2 + ") ";
             }
             else {
-                whereClause += " and f.c_currency_id =" + this.cCurrencyID;
+                // Si tengo una sola moneda y la misma no es moneda nacional, filtro que traiga movimientos en moneda nacional y en moneda extranjera seleccionaca.
+                whereClause += " and f.c_currency_id in (" + this.cCurrencyID + ", " + this.acctSchema.getC_Currency_ID() + ") ";
             }
 
             sql = " select f.account_id, f.c_currency_id, sum(f.amtsourcedr - f.amtsourcecr) as saldomo, " +
@@ -256,11 +267,13 @@ public class BalanceContable {
                     amtCurrency1 = amtCurrency1.add(saldoMN);
 
                     // Traducir a segunda moneda, si moneda leída es moneda nacional y no es una cuenta de diferencia de cambio
-                    if (cCurrencyID == acctSchema.getC_Currency_ID()){
-                        if ((acctDifCambioGanada != null) && (acctDifCambioPerdida != null)){
-                            if ((accountIDAux != acctDifCambioGanada.getAccount_ID()) && (accountIDAux != acctDifCambioPerdida.getAccount_ID())){
-                                BigDecimal amtConverted = saldoMN.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
-                                amtCurrency2 = amtCurrency2.add(amtConverted);
+                    if (this.cCurrencyID_2 > 0){
+                        if (cCurrencyID == acctSchema.getC_Currency_ID()){
+                            if ((acctDifCambioGanada != null) && (acctDifCambioPerdida != null)){
+                                if ((accountIDAux != acctDifCambioGanada.getAccount_ID()) && (accountIDAux != acctDifCambioPerdida.getAccount_ID())){
+                                    BigDecimal amtConverted = saldoMN.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
+                                    amtCurrency2 = amtCurrency2.add(amtConverted);
+                                }
                             }
                         }
                     }
@@ -269,24 +282,37 @@ public class BalanceContable {
                     if (this.cCurrencyID == cCurrencyID){
                         amtCurrency1 = amtCurrency1.add(saldoMO);
                     }
-                }
-
-                if (this.cCurrencyID_2 == acctSchema.getC_Currency_ID()){
-                    amtCurrency2 = amtCurrency2.add(saldoMN);
-
-                    // Traducir a segunda moneda, si moneda leída es moneda nacional y no es una cuenta de diferencia de cambio
-                    if (cCurrencyID == acctSchema.getC_Currency_ID()){
-                        if ((acctDifCambioGanada != null) && (acctDifCambioPerdida != null)){
-                            if ((accountIDAux != acctDifCambioGanada.getAccount_ID()) && (accountIDAux != acctDifCambioPerdida.getAccount_ID())){
-                                BigDecimal amtConverted = saldoMN.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
-                                amtCurrency1 = amtCurrency1.add(amtConverted);
+                    else{
+                        // Si no tengo segunda moneda, traduzco a la primera
+                        if (this.cCurrencyID_2 <= 0){
+                            if ((acctDifCambioGanada != null) && (acctDifCambioPerdida != null)){
+                                if ((accountIDAux != acctDifCambioGanada.getAccount_ID()) && (accountIDAux != acctDifCambioPerdida.getAccount_ID())){
+                                    BigDecimal amtConverted = saldoMN.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
+                                    amtCurrency1 = amtCurrency1.add(amtConverted);
+                                }
                             }
                         }
                     }
                 }
-                else{
-                    if (this.cCurrencyID_2 == cCurrencyID){
-                        amtCurrency2 = amtCurrency2.add(saldoMO);
+
+                if (this.cCurrencyID_2 > 0){
+                    if (this.cCurrencyID_2 == acctSchema.getC_Currency_ID()){
+                        amtCurrency2 = amtCurrency2.add(saldoMN);
+
+                        // Traducir a segunda moneda, si moneda leída es moneda nacional y no es una cuenta de diferencia de cambio
+                        if (cCurrencyID == acctSchema.getC_Currency_ID()){
+                            if ((acctDifCambioGanada != null) && (acctDifCambioPerdida != null)){
+                                if ((accountIDAux != acctDifCambioGanada.getAccount_ID()) && (accountIDAux != acctDifCambioPerdida.getAccount_ID())){
+                                    BigDecimal amtConverted = saldoMN.divide(this.currencyRate, 2, RoundingMode.HALF_UP);
+                                    amtCurrency1 = amtCurrency1.add(amtConverted);
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        if (this.cCurrencyID_2 == cCurrencyID){
+                            amtCurrency2 = amtCurrency2.add(saldoMO);
+                        }
                     }
                 }
             }

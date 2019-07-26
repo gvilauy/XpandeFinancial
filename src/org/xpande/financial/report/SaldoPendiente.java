@@ -133,8 +133,6 @@ public class SaldoPendiente {
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, enddate, " +
                     " c_currency_id_to, ad_orgtrx_id, seqno, reference, isgasto) ";
 
-            String whereClauseAfecta = "";
-
             String whereClause = " and a.ad_client_id =" + this.adClientID;
 
             if (this.adOrgID > 0){
@@ -151,15 +149,12 @@ public class SaldoPendiente {
 
             if (this.tipoFecha.equalsIgnoreCase("VALOR")){
                 whereClause += " and a.dateinvoiced <='" + this.endDate + "'";
-                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
             }
             else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
                 whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(a.C_PaymentTerm_ID, a.DateInvoiced)), a.dateinvoiced) <='" + this.endDate + "' ";
-                whereClauseAfecta += " duedate <='" + this.endDate + "' ";
             }
             else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
                 whereClause += " and a.dateacct <='" + this.endDate + "'";
-                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
             }
 
             if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
@@ -173,16 +168,7 @@ public class SaldoPendiente {
                     " (coalesce(a.documentserie, '') || a.documentno) as documentnoref, a.c_currency_id, a.dateinvoiced, " +
                     " coalesce(coalesce(ips.duedate, paymentTermDueDate(a.C_PaymentTerm_ID, a.DateInvoiced)), a.dateinvoiced)::timestamp without time zone as duedate, " +
                     " a.dateacct, a.issotrx, doc.docbasetype, " +
-                    " coalesce(ips.dueamt, a.grandtotal) as amtdocument, coalesce(ips.dueamt, a.grandtotal) as amtopen, " +
-                    " case when ips.c_invoicepayschedule_id > 0 then " +
-                    " (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_invoiceafectacion " +
-                    " where " + whereClauseAfecta +
-                    " and (z_pago_id is not null or z_transfersaldo_id is not null) " +
-                    " and c_invoicepayschedule_id = ips.c_invoicepayschedule_id) " +
-                    " else (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_invoiceafectacion " +
-                    " where " + whereClauseAfecta +
-                    " and (z_pago_id is not null or z_transfersaldo_id is not null) " +
-                    " and z_pago_id is not null and c_invoice_id = a.c_invoice_id) end as amtallocated, " +
+                    " coalesce(ips.dueamt, a.grandtotal) as amtdocument, coalesce(ips.dueamt, a.grandtotal) as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA', " +
@@ -218,7 +204,6 @@ public class SaldoPendiente {
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, enddate, " +
                     " c_currency_id_to, ad_orgtrx_id, seqno, reference) ";
 
-            String whereClauseAfecta = "";
 
             String whereClause = " and a.ad_client_id =" + this.adClientID;
 
@@ -236,15 +221,12 @@ public class SaldoPendiente {
 
             if (this.tipoFecha.equalsIgnoreCase("VALOR")){
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
-                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
             }
             else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
                 whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(inv.C_PaymentTerm_ID, inv.DateInvoiced)), a.datedoc) <='" + this.endDate + "' ";
-                whereClauseAfecta += " duedate <='" + this.endDate + "' ";
             }
             else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
-                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
             }
 
             if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
@@ -258,12 +240,7 @@ public class SaldoPendiente {
                     " a.documentno, a.c_currency_id, a.datedoc, " +
                     " coalesce(coalesce(ips.duedate, paymentTermDueDate(inv.C_PaymentTerm_ID, inv.DateInvoiced)), a.datedoc)::timestamp without time zone as duedate, " +
                     " a.datedoc, a.issotrx, doc.docbasetype, " +
-                    " coalesce(ips.dueamt, a.grandtotal) as amtdocument, coalesce(ips.dueamt, a.grandtotal) as amtopen, " +
-                    " case when ips.c_invoicepayschedule_id > 0 then " +
-                    " (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_transferafectacion " +
-                    " where " + whereClauseAfecta + " and c_invoicepayschedule_id = ips.c_invoicepayschedule_id) " +
-                    " else (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_transferafectacion " +
-                    " where " + whereClauseAfecta + " and z_transfersaldo_id = a.z_transfersaldo_id) end as amtallocated, " +
+                    " coalesce(ips.dueamt, a.grandtotal) as amtdocument, coalesce(ips.dueamt, a.grandtotal) as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA' " +
@@ -485,6 +462,9 @@ public class SaldoPendiente {
 
         try{
 
+            // Actualizo saldo afectacion
+            this.updateSaldoAfectacion();
+
             // Actualizo saldos pendientes
             action = " update " + TABLA_REPORTE +
                     " set amtopen = amtdocument - amtallocated " +
@@ -618,6 +598,130 @@ public class SaldoPendiente {
         }
         catch (Exception e){
             throw new AdempiereException(e);
+        }
+    }
+
+    private void updateSaldoAfectacion() {
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            String whereClauseAfecta = "";
+
+            if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+                whereClauseAfecta = " and case when b.z_pago_id is null then a.datedoc <='" + this.endDate + "' else b.datedoc <='" + this.endDate + "' end ";
+            }
+            else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+                whereClauseAfecta = " and a.duedate <='" + this.endDate + "' ";
+            }
+            else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+                whereClauseAfecta = " and case when b.z_pago_id is null then a.datedoc <='" + this.endDate + "' else b.datedoc <='" + this.endDate + "' end ";
+            }
+
+            // Descarto actualizar saldo de afectacion de anticipos ya que lo calculo de una cuando se cargan los anticipos.
+            sql = " select * from " + TABLA_REPORTE + " where ad_user_id =" + this.adUserID +
+                    " and z_pago_id is null ";
+
+        	pstmt = DB.prepareStatement(sql, null);
+        	rs = pstmt.executeQuery();
+
+        	BigDecimal amtAllocation = Env.ZERO;
+
+        	while(rs.next()){
+
+                amtAllocation = Env.ZERO;
+
+        	    if (rs.getInt("c_invoice_id") > 0){
+
+                    if (rs.getInt("c_invoicepayschedule_id") > 0){
+
+                        sql = " select round(coalesce(sum(a.amtallocation),0),4) as amtallocated " +
+                                " from z_invoiceafectacion a " +
+                                " left outer join z_pago b on a.z_pago_id = b.z_pago_id " +
+                                " where a.c_invoicepayschedule_id =" + rs.getInt("c_invoicepayschedule_id")  +
+                                " and (a.z_pago_id is not null or a.z_transfersaldo_id is not null) " + whereClauseAfecta;
+
+                        amtAllocation = DB.getSQLValueBDEx(null, sql);
+                        if (amtAllocation == null) amtAllocation = Env.ZERO;
+
+                        action = " update " + TABLA_REPORTE +
+                                " set amtallocated =" + amtAllocation +
+                                " where ad_user_id =" + this.adUserID +
+                                " and c_invoice_id =" + rs.getInt("c_invoice_id") +
+                                " and c_invoicepayschedule_id =" + rs.getInt("c_invoicepayschedule_id");
+                        DB.executeUpdateEx(action, null);
+                    }
+                    else{
+                        sql = " select round(coalesce(sum(a.amtallocation),0),4) as amtallocated " +
+                                " from z_invoiceafectacion a " +
+                                " left outer join z_pago b on a.z_pago_id = b.z_pago_id " +
+                                " where a.c_invoice_id =" + rs.getInt("c_invoice_id")  +
+                                " and (a.z_pago_id is not null or a.z_transfersaldo_id is not null) " + whereClauseAfecta;
+
+                        amtAllocation = DB.getSQLValueBDEx(null, sql);
+                        if (amtAllocation == null) amtAllocation = Env.ZERO;
+
+                        action = " update " + TABLA_REPORTE +
+                                " set amtallocated =" + amtAllocation +
+                                " where ad_user_id =" + this.adUserID +
+                                " and c_invoice_id =" + rs.getInt("c_invoice_id") +
+                                " and c_invoicepayschedule_id is null ";
+                        DB.executeUpdateEx(action, null);
+
+                    }
+                }
+                else if (rs.getInt("z_transfersaldo_id") > 0){
+
+                    if (rs.getInt("c_invoicepayschedule_id") > 0){
+
+                        sql = " select round(coalesce(sum(a.amtallocation),0),4) as amtallocated " +
+                                " from z_transferafectacion a " +
+                                " left outer join z_pago b on a.z_pago_id = b.z_pago_id " +
+                                " where a.c_invoicepayschedule_id =" + rs.getInt("c_invoicepayschedule_id")  +
+                                " and a.z_pago_id is not null " + whereClauseAfecta;
+
+                        amtAllocation = DB.getSQLValueBDEx(null, sql);
+                        if (amtAllocation == null) amtAllocation = Env.ZERO;
+
+                        action = " update " + TABLA_REPORTE +
+                                " set amtallocated =" + amtAllocation +
+                                " where ad_user_id =" + this.adUserID +
+                                " and z_transfersaldo_id =" + rs.getInt("z_transfersaldo_id") +
+                                " and c_invoicepayschedule_id =" + rs.getInt("c_invoicepayschedule_id");
+                        DB.executeUpdateEx(action, null);
+
+                    }
+                    else{
+                        sql = " select round(coalesce(sum(a.amtallocation),0),4) as amtallocated " +
+                                " from z_transferafectacion a " +
+                                " left outer join z_pago b on a.z_pago_id = b.z_pago_id " +
+                                " where a.z_transfersaldo_id =" + rs.getInt("z_transfersaldo_id")  +
+                                " and a.z_pago_id is not null " + whereClauseAfecta;
+
+                        amtAllocation = DB.getSQLValueBDEx(null, sql);
+                        if (amtAllocation == null) amtAllocation = Env.ZERO;
+
+                        action = " update " + TABLA_REPORTE +
+                                " set amtallocated =" + amtAllocation +
+                                " where ad_user_id =" + this.adUserID +
+                                " and z_transfersaldo_id =" + rs.getInt("z_transfersaldo_id") +
+                                " and c_invoicepayschedule_id is null ";
+                        DB.executeUpdateEx(action, null);
+
+                    }
+
+                }
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
         }
     }
 
