@@ -176,9 +176,13 @@ public class SaldoPendiente {
                     " coalesce(ips.dueamt, a.grandtotal) as amtdocument, coalesce(ips.dueamt, a.grandtotal) as amtopen, " +
                     " case when ips.c_invoicepayschedule_id > 0 then " +
                     " (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_invoiceafectacion " +
-                    " where " + whereClauseAfecta + " and c_invoicepayschedule_id = ips.c_invoicepayschedule_id) " +
+                    " where " + whereClauseAfecta +
+                    " and (z_pago_id is not null or z_transfersaldo_id is not null) " +
+                    " and c_invoicepayschedule_id = ips.c_invoicepayschedule_id) " +
                     " else (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_invoiceafectacion " +
-                    " where " + whereClauseAfecta + " and c_invoice_id = a.c_invoice_id) end as amtallocated, " +
+                    " where " + whereClauseAfecta +
+                    " and (z_pago_id is not null or z_transfersaldo_id is not null) " +
+                    " and z_pago_id is not null and c_invoice_id = a.c_invoice_id) end as amtallocated, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA', " +
