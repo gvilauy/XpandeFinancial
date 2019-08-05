@@ -774,7 +774,7 @@ public class SaldoPendiente {
                     " left outer join z_ordenpago op on a.z_ordenpago_id = op.z_ordenpago_id " +
                     " left outer join z_pago pago on a.z_pago_id = pago.z_pago_id " +
                     " where a.c_invoice_id =" + cInvoiceID +
-                    " and a.datedoc >'" + this.endDate + "' " +
+                    " and pago.datedoc >'" + this.endDate + "' " +
                     " order by a.datedoc desc ";
 
         	pstmt = DB.prepareStatement(sql, null);
