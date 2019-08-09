@@ -1538,6 +1538,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
                 // Actualizo monto total de orden de pago
                 ordenPago.setTotalAmt(totalPago);
+                ordenPago.setProcessing(false);
                 ordenPago.saveEx();
 
                 // Si no tengo marca de sugerir medios de pago emitidos y cargados al sistema de manera masiva por interface

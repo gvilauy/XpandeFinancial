@@ -332,7 +332,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		}
 		//	Set Definitive Document No
 		setDefiniteDocumentNo();
-
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
@@ -1088,7 +1087,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
 			return false;
-
 
 		this.setProcessed(false);
 		this.setDocStatus(DOCSTATUS_InProgress);
