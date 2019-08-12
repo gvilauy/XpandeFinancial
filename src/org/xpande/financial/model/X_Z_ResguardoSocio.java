@@ -33,7 +33,7 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180312L;
+	private static final long serialVersionUID = 20190812L;
 
     /** Standard Constructor */
     public X_Z_ResguardoSocio (Properties ctx, int Z_ResguardoSocio_ID, String trxName)
@@ -59,8 +59,8 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 // N
 			setPeriodoControlado (false);
 // N
-			setPosted (true);
-// Y
+			setPosted (false);
+// N
 			setProcessed (false);
 // N
 			setProcessing (false);
@@ -207,6 +207,23 @@ public class X_Z_ResguardoSocio extends PO implements I_Z_ResguardoSocio, I_Pers
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Account Date.
+		@param DateAcct 
+		Accounting Date
+	  */
+	public void setDateAcct (Timestamp DateAcct)
+	{
+		set_Value (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	/** Get Account Date.
+		@return Accounting Date
+	  */
+	public Timestamp getDateAcct () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
 	/** Set Document Date.
