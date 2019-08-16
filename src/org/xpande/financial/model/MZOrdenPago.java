@@ -456,6 +456,10 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					// Marca transferencia de saldo como paga sino le queda monto pendiente
 					if (pagoLin.getAmtAllocation().compareTo(pagoLin.getAmtOpen()) == 0){
 						MZTransferSaldo transferSaldo = (MZTransferSaldo) pagoLin.getZ_TransferSaldo();
+						if ((transferSaldo == null) || (transferSaldo.get_ID() <= 0)){
+							return "La Transferencia de Saldo número : " + pagoLin.getDocumentNoRef() + " fue eliminada del sistema. " +
+									"Debe eliminarla de esta Orden de Pago para poder completarla.";
+						}
 						transferSaldo.setIsPaid(true);
 						transferSaldo.saveEx();
 					}
