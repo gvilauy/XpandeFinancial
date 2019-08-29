@@ -75,7 +75,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
 			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
-			options[newIndex++] = DocumentEngine.ACTION_Void;
+			//options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
 		return newIndex;
