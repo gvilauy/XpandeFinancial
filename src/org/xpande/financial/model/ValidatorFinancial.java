@@ -92,9 +92,11 @@ public class ValidatorFinancial implements ModelValidator {
             if (!model.isSOTrx()) {
 
                 // Para comprobantes de compra, valido que no este asociado a un resguardo.
-                message = this.validateInvoiceResguardo(model);
-                if (message != null) {
-                    return message;
+                if (financialConfig.isControlaResguardos()){
+                    message = this.validateInvoiceResguardo(model);
+                    if (message != null) {
+                        return message;
+                    }
                 }
 
                 // Para comprobantes de compra, valido que no este asociado a una orden de pago.

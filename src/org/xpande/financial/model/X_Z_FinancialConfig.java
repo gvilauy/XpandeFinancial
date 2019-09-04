@@ -30,7 +30,7 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190321L;
+	private static final long serialVersionUID = 20190902L;
 
     /** Standard Constructor */
     public X_Z_FinancialConfig (Properties ctx, int Z_FinancialConfig_ID, String trxName)
@@ -40,6 +40,8 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
         {
 			setControlaPagos (true);
 // Y
+			setControlaResguardos (false);
+// N
 			setValue (null);
 			setZ_FinancialConfig_ID (0);
         } */
@@ -88,6 +90,30 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	public boolean isControlaPagos () 
 	{
 		Object oo = get_Value(COLUMNNAME_ControlaPagos);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set ControlaResguardos.
+		@param ControlaResguardos 
+		Si se controla o no que un documento tenga asociado un Resguardo
+	  */
+	public void setControlaResguardos (boolean ControlaResguardos)
+	{
+		set_Value (COLUMNNAME_ControlaResguardos, Boolean.valueOf(ControlaResguardos));
+	}
+
+	/** Get ControlaResguardos.
+		@return Si se controla o no que un documento tenga asociado un Resguardo
+	  */
+	public boolean isControlaResguardos () 
+	{
+		Object oo = get_Value(COLUMNNAME_ControlaResguardos);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

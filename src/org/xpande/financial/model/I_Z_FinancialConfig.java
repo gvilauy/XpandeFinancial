@@ -76,6 +76,19 @@ public interface I_Z_FinancialConfig
 	  */
 	public boolean isControlaPagos();
 
+    /** Column name ControlaResguardos */
+    public static final String COLUMNNAME_ControlaResguardos = "ControlaResguardos";
+
+	/** Set ControlaResguardos.
+	  * Si se controla o no que un documento tenga asociado un Resguardo
+	  */
+	public void setControlaResguardos(boolean ControlaResguardos);
+
+	/** Get ControlaResguardos.
+	  * Si se controla o no que un documento tenga asociado un Resguardo
+	  */
+	public boolean isControlaResguardos();
+
     /** Column name C_PaymentTerm_ID */
     public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
