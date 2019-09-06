@@ -20,6 +20,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -29,6 +30,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 /** Generated Model for Z_DepositoMedioPago
  *  @author Adempiere (generated) 
@@ -229,7 +231,38 @@ public class MZDepositoMedioPago extends X_Z_DepositoMedioPago implements DocAct
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		// Me aseguro que fecha del documento y fecha contable no sean mayor a hoy
+		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+		if (this.getDateDoc().after(fechaHoy)){
+			this.setDateDoc(fechaHoy);
+		}
+		if (this.getDateAcct().after(fechaHoy)){
+			this.setDateAcct(fechaHoy);
+		}
+
+		// Obtengo lineas del documento.
+		List<MZDepositoMPagoLin> depositoMPagoLinList = this.getLines();
+
+		// Validaciones del documento
+		m_processMsg = this.validateDocument(depositoMPagoLinList);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
+		// Recorro medios de pago
+		for (MZDepositoMPagoLin depositoMPagoLin: depositoMPagoLinList){
+
+			// Marco item de medio de pago como depositado
+			if (depositoMPagoLin.getZ_MedioPagoItem_ID() > 0){
+				MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) depositoMPagoLin.getZ_MedioPagoItem();
+				medioPagoItem.setDepositado(true);
+				medioPagoItem.setZ_DepositoMedioPago_ID(this.get_ID());
+				medioPagoItem.setDateRefDeposito(this.getDateDoc());
+				medioPagoItem.saveEx();
+			}
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -350,6 +383,10 @@ public class MZDepositoMedioPago extends X_Z_DepositoMedioPago implements DocAct
 		// Elimino asientos contables
 		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
+		String action = " update z_mediopagoitem set depositado='N', z_depositomediopago_id =null, daterefdeposito =null " +
+				" where z_depositomediopago_id =" + this.get_ID();
+		DB.executeUpdateEx(action, get_TrxName());
+
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
@@ -450,6 +487,51 @@ public class MZDepositoMedioPago extends X_Z_DepositoMedioPago implements DocAct
 		catch (Exception e){
 			throw new AdempiereException(e);
 		}
+	}
+
+
+	/***
+	 * Obtiene y retorna lineas de este documento.
+	 * Xpande. Created by Gabriel Vila on 9/6/19.
+	 * @return
+	 */
+    public List<MZDepositoMPagoLin> getLines() {
+
+		String whereClause = X_Z_DepositoMPagoLin.COLUMNNAME_Z_DepositoMedioPago_ID + " =" + this.get_ID();
+
+		List<MZDepositoMPagoLin> lines = new Query(getCtx(), I_Z_DepositoMPagoLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+    }
+
+	/***
+	 * Validaciones del documento al completar.
+	 * Xpande. Created by Gabriel Vila on 9/6/19.
+	 * @param depositoMPagoLinList
+	 * @return
+	 */
+	private String validateDocument(List<MZDepositoMPagoLin> depositoMPagoLinList){
+
+    	String message = null;
+
+    	try{
+
+    		// Si no tengo monto total a depositar, aviso y salgo
+			if ((this.getTotalAmt() == null) || (this.getTotalAmt().compareTo(Env.ZERO) <= 0)){
+				return "No hay importe a Depositar.";
+			}
+
+			// Si el documento no tiene lineas, aviso y salgo
+			if (depositoMPagoLinList.size() <= 0){
+				return "El documento no tiene lineas.";
+			}
+
+    	}
+    	catch (Exception e){
+    	    throw new AdempiereException(e);
+    	}
+
+    	return message;
 	}
 
 }

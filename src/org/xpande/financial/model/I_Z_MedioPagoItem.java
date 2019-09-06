@@ -193,6 +193,19 @@ public interface I_Z_MedioPagoItem
 	  */
 	public Timestamp getDateEmitted();
 
+    /** Column name DateRefDeposito */
+    public static final String COLUMNNAME_DateRefDeposito = "DateRefDeposito";
+
+	/** Set DateRefDeposito.
+	  * Fecha referencia de un documento de Deposito de Medio de Pago
+	  */
+	public void setDateRefDeposito(Timestamp DateRefDeposito);
+
+	/** Get DateRefDeposito.
+	  * Fecha referencia de un documento de Deposito de Medio de Pago
+	  */
+	public Timestamp getDateRefDeposito();
+
     /** Column name DateRefPago */
     public static final String COLUMNNAME_DateRefPago = "DateRefPago";
 
@@ -429,6 +442,17 @@ public interface I_Z_MedioPagoItem
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
+
+    /** Column name Z_DepositoMedioPago_ID */
+    public static final String COLUMNNAME_Z_DepositoMedioPago_ID = "Z_DepositoMedioPago_ID";
+
+	/** Set Z_DepositoMedioPago ID	  */
+	public void setZ_DepositoMedioPago_ID(int Z_DepositoMedioPago_ID);
+
+	/** Get Z_DepositoMedioPago ID	  */
+	public int getZ_DepositoMedioPago_ID();
+
+	public I_Z_DepositoMedioPago getZ_DepositoMedioPago() throws RuntimeException;
 
     /** Column name Z_EmisionMedioPago_ID */
     public static final String COLUMNNAME_Z_EmisionMedioPago_ID = "Z_EmisionMedioPago_ID";

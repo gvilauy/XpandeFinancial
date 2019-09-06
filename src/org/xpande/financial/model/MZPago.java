@@ -240,10 +240,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		String action = "";
 
-		// Me aseguro que la fecha del documento no sea mayor a hoy
+		// Me aseguro que fecha del documento y fecha contable no sean mayor a hoy
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 		if (this.getDateDoc().after(fechaHoy)){
 			this.setDateDoc(fechaHoy);
+		}
+		if (this.getDateAcct().after(fechaHoy)){
+			this.setDateAcct(fechaHoy);
 		}
 
 		if (this.isAnticipo()){
@@ -617,7 +620,16 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
         // Control de período contable
         MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
 
-        // Elimino asientos contables
+		// Obtengo medios de pago de este documento
+		List<MZPagoMedioPago> pagoMedioPagoList = this.getMediosPago();
+
+		// Valido documento para anular
+		m_processMsg = this.validateReactivate(pagoMedioPagoList);
+		if (m_processMsg != null){
+			return false;
+		}
+
+		// Elimino asientos contables
         MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
 		// Obtengo ordenes de pago asociadas a este documento (si existen)
@@ -630,7 +642,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
         if (!this.isSOTrx()){
 			if (!this.isTieneOrdenPago()){
 				// Anulo medios de pago emitidos en este pago/anticipo
-				List<MZPagoMedioPago> pagoMedioPagoList = this.getMediosPago();
 				for (MZPagoMedioPago pagoMedioPago: pagoMedioPagoList){
 					if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
 						MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
@@ -812,7 +823,16 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
         // Control de período contable
         MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
 
-        // Elimino asientos contables
+		// Obtengo medios de pago de este documento
+		List<MZPagoMedioPago> pagoMedioPagoList = this.getMediosPago();
+
+		// Valido documento para reactivar
+		m_processMsg = this.validateReactivate(pagoMedioPagoList);
+		if (m_processMsg != null){
+			return false;
+		}
+
+		// Elimino asientos contables
         MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
 		// Obtengo ordenes de pago asociadas a este documento (si existen)
@@ -826,7 +846,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		if (!this.isSOTrx()){
 			if (!this.isTieneOrdenPago()){
 				// Anulo emision de medios de pago emitidos en este recibo que no tengan folio asociado (esto para no anular cheques por ejemplo, pero si transferencias.)
-				List<MZPagoMedioPago> pagoMedioPagoList = this.getMediosPago();
 				for (MZPagoMedioPago pagoMedioPago: pagoMedioPagoList){
 					if (pagoMedioPago.getZ_OrdenPago_ID() <= 0){
 						if (pagoMedioPago.getZ_MedioPagoFolio_ID() <= 0){
@@ -890,8 +909,44 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		return true;
 	}	//	reActivateIt
-	
-	
+
+
+	/***
+	 * Validaciones del documento al reactivarlo o anularlo.
+	 * Xpande. Created by Gabriel Vila on 9/6/19.
+	 * @param pagoMedioPagoList
+	 * @return
+	 */
+	private String validateReactivate(List<MZPagoMedioPago> pagoMedioPagoList) {
+
+		String message = null;
+
+		try{
+
+			// Recorro medios de pago
+			for (MZPagoMedioPago pagoMedioPago: pagoMedioPagoList){
+				// Si tengo item de medio de pago
+				if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+
+					MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+
+					// Valido que este medio de pago no tenga acciones posteriores
+					if (medioPagoItem.isDepositado()){
+						return "El Medio de Pago Número " + medioPagoItem.getNroMedioPago() + " esta Depositado." +
+								" Debe anular dicho depósito antes de continuar con esta acción.";
+					}
+				}
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return message;
+	}
+
+
 	/*************************************************************************
 	 * 	Get Summary
 	 *	@return Summary of Document

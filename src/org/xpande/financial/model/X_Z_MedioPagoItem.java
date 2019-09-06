@@ -33,7 +33,7 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190715L;
+	private static final long serialVersionUID = 20190906L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoItem (Properties ctx, int Z_MedioPagoItem_ID, String trxName)
@@ -297,6 +297,23 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	public Timestamp getDateEmitted () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateEmitted);
+	}
+
+	/** Set DateRefDeposito.
+		@param DateRefDeposito 
+		Fecha referencia de un documento de Deposito de Medio de Pago
+	  */
+	public void setDateRefDeposito (Timestamp DateRefDeposito)
+	{
+		set_Value (COLUMNNAME_DateRefDeposito, DateRefDeposito);
+	}
+
+	/** Get DateRefDeposito.
+		@return Fecha referencia de un documento de Deposito de Medio de Pago
+	  */
+	public Timestamp getDateRefDeposito () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateRefDeposito);
 	}
 
 	/** Set DateRefPago.
@@ -626,6 +643,31 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	public I_Z_DepositoMedioPago getZ_DepositoMedioPago() throws RuntimeException
+    {
+		return (I_Z_DepositoMedioPago)MTable.get(getCtx(), I_Z_DepositoMedioPago.Table_Name)
+			.getPO(getZ_DepositoMedioPago_ID(), get_TrxName());	}
+
+	/** Set Z_DepositoMedioPago ID.
+		@param Z_DepositoMedioPago_ID Z_DepositoMedioPago ID	  */
+	public void setZ_DepositoMedioPago_ID (int Z_DepositoMedioPago_ID)
+	{
+		if (Z_DepositoMedioPago_ID < 1) 
+			set_Value (COLUMNNAME_Z_DepositoMedioPago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_DepositoMedioPago_ID, Integer.valueOf(Z_DepositoMedioPago_ID));
+	}
+
+	/** Get Z_DepositoMedioPago ID.
+		@return Z_DepositoMedioPago ID	  */
+	public int getZ_DepositoMedioPago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_DepositoMedioPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_EmisionMedioPago getZ_EmisionMedioPago() throws RuntimeException
