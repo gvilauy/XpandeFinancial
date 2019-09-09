@@ -238,6 +238,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		log.info(toString());
 		//
 
+		if (this.getDateAcct() == null) this.setDateAcct(this.getDateDoc());
+
 		String action = "";
 
 		// Me aseguro que fecha del documento y fecha contable no sean mayor a hoy
@@ -2727,6 +2729,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			}
 		}
 
+		if (this.getDateAcct() == null) this.setDateAcct(this.getDateDoc());
 
 		return true;
 	}
