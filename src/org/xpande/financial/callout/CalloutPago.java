@@ -119,6 +119,12 @@ public class CalloutPago extends CalloutEngine {
                         mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DocumentNoRef, null);
                     }
 
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneIdent, medioPago.isTieneIdent());
+                    if (!medioPago.isTieneIdent()){
+                        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_Z_MedioPagoIdent_ID, null);
+                    }
+
+
                 } else {
 
                     mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmiCobro());
@@ -128,6 +134,7 @@ public class CalloutPago extends CalloutEngine {
                     mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFolio, medioPago.isTieneFolioCobro());
                     mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneBanco, medioPago.isTieneBancoCobro());
                     mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneNroRef, medioPago.isTieneNroRefCobro());
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneIdent, medioPago.isTieneIdentCobro());
                 }
             }
 

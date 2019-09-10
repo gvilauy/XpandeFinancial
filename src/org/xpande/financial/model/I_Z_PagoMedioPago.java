@@ -308,6 +308,19 @@ public interface I_Z_PagoMedioPago
 	  */
 	public boolean isTieneFolio();
 
+    /** Column name TieneIdent */
+    public static final String COLUMNNAME_TieneIdent = "TieneIdent";
+
+	/** Set TieneIdent.
+	  * Si un medio de pago tiene o no identificadores para pagos
+	  */
+	public void setTieneIdent(boolean TieneIdent);
+
+	/** Get TieneIdent.
+	  * Si un medio de pago tiene o no identificadores para pagos
+	  */
+	public boolean isTieneIdent();
+
     /** Column name TieneNroRef */
     public static final String COLUMNNAME_TieneNroRef = "TieneNroRef";
 
@@ -384,6 +397,17 @@ public interface I_Z_PagoMedioPago
 	public int getZ_MedioPago_ID();
 
 	public I_Z_MedioPago getZ_MedioPago() throws RuntimeException;
+
+    /** Column name Z_MedioPagoIdent_ID */
+    public static final String COLUMNNAME_Z_MedioPagoIdent_ID = "Z_MedioPagoIdent_ID";
+
+	/** Set Z_MedioPagoIdent ID	  */
+	public void setZ_MedioPagoIdent_ID(int Z_MedioPagoIdent_ID);
+
+	/** Get Z_MedioPagoIdent ID	  */
+	public int getZ_MedioPagoIdent_ID();
+
+	public I_Z_MedioPagoIdent getZ_MedioPagoIdent() throws RuntimeException;
 
     /** Column name Z_MedioPagoItem_ID */
     public static final String COLUMNNAME_Z_MedioPagoItem_ID = "Z_MedioPagoItem_ID";

@@ -566,6 +566,10 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					medioPagoItem.setEntregado(true);
 				}
 
+				if (pagoMedioPago.getZ_MedioPagoIdent_ID() > 0){
+					medioPagoItem.setZ_MedioPagoIdent_ID(pagoMedioPago.getZ_MedioPagoIdent_ID());
+				}
+
 				medioPagoItem.saveEx();
 
 				// Me aseguro de dejar asociado el medio de pago de este documento con el item de medio de pago.
@@ -700,7 +704,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		try{
 			// Marco medios de pago como no entregados y los desasocio de esta documento de pago/cobro
-			action = " update z_mediopagoitem set entregado='N', z_pago_id = null where z_pago_id =" + this.get_ID();
+			action = " update z_mediopagoitem set entregado='N', z_pago_id = null, z_mediopagoident_id = null where z_pago_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
 			// Para pagos, me aseguro que si tengo medios de pago recibidos de terceros, les deje la referencia del documento de cobro.

@@ -509,6 +509,17 @@ public interface I_Z_EmisionMedioPago
 
 	public I_Z_MedioPago getZ_MedioPago() throws RuntimeException;
 
+    /** Column name Z_MedioPagoIdent_ID */
+    public static final String COLUMNNAME_Z_MedioPagoIdent_ID = "Z_MedioPagoIdent_ID";
+
+	/** Set Z_MedioPagoIdent ID	  */
+	public void setZ_MedioPagoIdent_ID(int Z_MedioPagoIdent_ID);
+
+	/** Get Z_MedioPagoIdent ID	  */
+	public int getZ_MedioPagoIdent_ID();
+
+	public I_Z_MedioPagoIdent getZ_MedioPagoIdent() throws RuntimeException;
+
     /** Column name Z_MedioPagoItem_ID */
     public static final String COLUMNNAME_Z_MedioPagoItem_ID = "Z_MedioPagoItem_ID";
 

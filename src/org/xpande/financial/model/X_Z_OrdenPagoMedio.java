@@ -33,7 +33,7 @@ public class X_Z_OrdenPagoMedio extends PO implements I_Z_OrdenPagoMedio, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190319L;
+	private static final long serialVersionUID = 20190910L;
 
     /** Standard Constructor */
     public X_Z_OrdenPagoMedio (Properties ctx, int Z_OrdenPagoMedio_ID, String trxName)
@@ -41,7 +41,6 @@ public class X_Z_OrdenPagoMedio extends PO implements I_Z_OrdenPagoMedio, I_Pers
       super (ctx, Z_OrdenPagoMedio_ID, trxName);
       /** if (Z_OrdenPagoMedio_ID == 0)
         {
-			setC_BankAccount_ID (0);
 			setC_Currency_ID (0);
 			setTieneBanco (false);
 // N
@@ -54,6 +53,8 @@ public class X_Z_OrdenPagoMedio extends PO implements I_Z_OrdenPagoMedio, I_Pers
 			setTieneFecVenc (false);
 // N
 			setTieneFolio (false);
+// N
+			setTieneIdent (false);
 // N
 			setTieneNroRef (false);
 // N
@@ -427,6 +428,30 @@ public class X_Z_OrdenPagoMedio extends PO implements I_Z_OrdenPagoMedio, I_Pers
 		return false;
 	}
 
+	/** Set TieneIdent.
+		@param TieneIdent 
+		Si un medio de pago tiene o no identificadores para pagos
+	  */
+	public void setTieneIdent (boolean TieneIdent)
+	{
+		set_Value (COLUMNNAME_TieneIdent, Boolean.valueOf(TieneIdent));
+	}
+
+	/** Get TieneIdent.
+		@return Si un medio de pago tiene o no identificadores para pagos
+	  */
+	public boolean isTieneIdent () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneIdent);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set TieneNroRef.
 		@param TieneNroRef 
 		Si requiere o no numero de referencia
@@ -541,6 +566,31 @@ public class X_Z_OrdenPagoMedio extends PO implements I_Z_OrdenPagoMedio, I_Pers
 	public int getZ_MedioPago_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_MedioPagoIdent getZ_MedioPagoIdent() throws RuntimeException
+    {
+		return (I_Z_MedioPagoIdent)MTable.get(getCtx(), I_Z_MedioPagoIdent.Table_Name)
+			.getPO(getZ_MedioPagoIdent_ID(), get_TrxName());	}
+
+	/** Set Z_MedioPagoIdent ID.
+		@param Z_MedioPagoIdent_ID Z_MedioPagoIdent ID	  */
+	public void setZ_MedioPagoIdent_ID (int Z_MedioPagoIdent_ID)
+	{
+		if (Z_MedioPagoIdent_ID < 1) 
+			set_Value (COLUMNNAME_Z_MedioPagoIdent_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_MedioPagoIdent_ID, Integer.valueOf(Z_MedioPagoIdent_ID));
+	}
+
+	/** Get Z_MedioPagoIdent ID.
+		@return Z_MedioPagoIdent ID	  */
+	public int getZ_MedioPagoIdent_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoIdent_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
