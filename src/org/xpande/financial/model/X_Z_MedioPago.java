@@ -30,7 +30,7 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190308L;
+	private static final long serialVersionUID = 20190910L;
 
     /** Standard Constructor */
     public X_Z_MedioPago (Properties ctx, int Z_MedioPago_ID, String trxName)
@@ -43,6 +43,8 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 			setAplicaEnPago (true);
 // Y
 			setCarteraCobro (false);
+// N
+			setIdentificable (false);
 // N
 			setName (null);
 			setTieneBanco (false);
@@ -72,6 +74,10 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 			setTieneFolio (false);
 // N
 			setTieneFolioCobro (false);
+// N
+			setTieneIdent (false);
+// N
+			setTieneIdentCobro (false);
 // N
 			setTieneNroRef (false);
 // N
@@ -197,6 +203,30 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	public String getDescription () 
 	{
 		return (String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Identificable.
+		@param Identificable 
+		Si un concepto es identificable o no
+	  */
+	public void setIdentificable (boolean Identificable)
+	{
+		set_Value (COLUMNNAME_Identificable, Boolean.valueOf(Identificable));
+	}
+
+	/** Get Identificable.
+		@return Si un concepto es identificable o no
+	  */
+	public boolean isIdentificable () 
+	{
+		Object oo = get_Value(COLUMNNAME_Identificable);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Name.
@@ -543,6 +573,54 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	public boolean isTieneFolioCobro () 
 	{
 		Object oo = get_Value(COLUMNNAME_TieneFolioCobro);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneIdent.
+		@param TieneIdent 
+		Si un medio de pago tiene o no identificadores para pagos
+	  */
+	public void setTieneIdent (boolean TieneIdent)
+	{
+		set_Value (COLUMNNAME_TieneIdent, Boolean.valueOf(TieneIdent));
+	}
+
+	/** Get TieneIdent.
+		@return Si un medio de pago tiene o no identificadores para pagos
+	  */
+	public boolean isTieneIdent () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneIdent);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set TieneIdentCobro.
+		@param TieneIdentCobro 
+		Si un medio de pago tiene o no identificadores para cobros
+	  */
+	public void setTieneIdentCobro (boolean TieneIdentCobro)
+	{
+		set_Value (COLUMNNAME_TieneIdentCobro, Boolean.valueOf(TieneIdentCobro));
+	}
+
+	/** Get TieneIdentCobro.
+		@return Si un medio de pago tiene o no identificadores para cobros
+	  */
+	public boolean isTieneIdentCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_TieneIdentCobro);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

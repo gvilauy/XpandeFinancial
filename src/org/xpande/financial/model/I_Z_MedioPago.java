@@ -131,6 +131,19 @@ public interface I_Z_MedioPago
 	  */
 	public String getDescription();
 
+    /** Column name Identificable */
+    public static final String COLUMNNAME_Identificable = "Identificable";
+
+	/** Set Identificable.
+	  * Si un concepto es identificable o no
+	  */
+	public void setIdentificable(boolean Identificable);
+
+	/** Get Identificable.
+	  * Si un concepto es identificable o no
+	  */
+	public boolean isIdentificable();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -338,6 +351,32 @@ public interface I_Z_MedioPago
 	  * Si requiere o no un folio asociado de medios de pago en un documento de cobro
 	  */
 	public boolean isTieneFolioCobro();
+
+    /** Column name TieneIdent */
+    public static final String COLUMNNAME_TieneIdent = "TieneIdent";
+
+	/** Set TieneIdent.
+	  * Si un medio de pago tiene o no identificadores para pagos
+	  */
+	public void setTieneIdent(boolean TieneIdent);
+
+	/** Get TieneIdent.
+	  * Si un medio de pago tiene o no identificadores para pagos
+	  */
+	public boolean isTieneIdent();
+
+    /** Column name TieneIdentCobro */
+    public static final String COLUMNNAME_TieneIdentCobro = "TieneIdentCobro";
+
+	/** Set TieneIdentCobro.
+	  * Si un medio de pago tiene o no identificadores para cobros
+	  */
+	public void setTieneIdentCobro(boolean TieneIdentCobro);
+
+	/** Get TieneIdentCobro.
+	  * Si un medio de pago tiene o no identificadores para cobros
+	  */
+	public boolean isTieneIdentCobro();
 
     /** Column name TieneNroRef */
     public static final String COLUMNNAME_TieneNroRef = "TieneNroRef";

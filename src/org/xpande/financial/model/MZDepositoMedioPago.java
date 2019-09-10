@@ -259,6 +259,7 @@ public class MZDepositoMedioPago extends X_Z_DepositoMedioPago implements DocAct
 				medioPagoItem.setDepositado(true);
 				medioPagoItem.setZ_DepositoMedioPago_ID(this.get_ID());
 				medioPagoItem.setDateRefDeposito(this.getDateDoc());
+				medioPagoItem.setC_BankAccount_ID(this.getC_BankAccount_ID());
 				medioPagoItem.saveEx();
 			}
 		}
@@ -383,7 +384,8 @@ public class MZDepositoMedioPago extends X_Z_DepositoMedioPago implements DocAct
 		// Elimino asientos contables
 		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
-		String action = " update z_mediopagoitem set depositado='N', z_depositomediopago_id =null, daterefdeposito =null " +
+		String action = " update z_mediopagoitem set depositado='N', z_depositomediopago_id =null, " +
+				" daterefdeposito =null, c_bankaccount_id =null " +
 				" where z_depositomediopago_id =" + this.get_ID();
 		DB.executeUpdateEx(action, get_TrxName());
 
