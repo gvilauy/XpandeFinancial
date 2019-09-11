@@ -333,6 +333,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		//	Set Definitive Document No
 		setDefiniteDocumentNo();
 		setProcessed(true);
+		setProcessing(false);
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
@@ -1093,6 +1094,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			return false;
 
 		this.setProcessed(false);
+		this.setProcessing(false);
 		this.setDocStatus(DOCSTATUS_InProgress);
 		this.setDocAction(DOCACTION_Complete);
 
