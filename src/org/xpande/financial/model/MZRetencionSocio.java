@@ -61,14 +61,11 @@ public class MZRetencionSocio extends X_Z_RetencionSocio {
         String sql = "";
 
         try{
-
             // Instancio invoice recibida
             MInvoice invoice = new MInvoice(ctx, cInvoiceID, trxName);
             if ((invoice == null) || (invoice.get_ID() <= 0)){
                 return false;
             }
-
-
 
             // Obtengo retenciones asociadas al socio de negocio de la invoice recibida
             List<MZRetencionSocioBPartner> retencionesBP = MZRetencionSocio.getRetencionesBPartner(ctx, invoice.getC_BPartner_ID(), null);

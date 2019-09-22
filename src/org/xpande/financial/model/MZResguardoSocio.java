@@ -852,4 +852,51 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 
 		return value;
     }
+
+	/***
+	 * Metodo que obtiene y retorna modelo de resguardo asociado a una determinada invoice.
+	 * En caso de no tener retorna null.
+	 * Xpande. Created by Gabriel Vila on 9/19/19.
+	 * @param ctx
+	 * @param cInvoiceID : ID de la invoice a considerar
+	 * @param trxName
+	 * @return
+	 */
+	public static MZResguardoSocioDoc getByInvoice(Properties ctx, int cInvoiceID, String trxName) {
+
+		MZResguardoSocioDoc resguardoSocioDoc = null;
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+			sql = " select rgd.z_resguardosociodoc_id " +
+					" from z_resguardosociodoc rgd " +
+					" inner join z_resguardosocio rg on rgd.z_resguardosocio_id = rg.z_resguardosocio_id " +
+					" inner join c_doctype doc on rg.c_doctype_id = doc.c_doctype_id " +
+					" where rg.docstatus='CO' " +
+					" and doc.docbasetype='RGU' " +
+					" and rgd.c_invoice_id =" + cInvoiceID +
+					" and rg.z_resguardosocio_id not in " +
+					" (select coalesce(z_resguardosocio_ref_id,0) from z_resguardosocio " +
+					" where docstatus='CO')";
+
+			pstmt = DB.prepareStatement(sql, trxName);
+			rs = pstmt.executeQuery();
+
+			if (rs.next()){
+				resguardoSocioDoc = new MZResguardoSocioDoc(ctx, rs.getInt("z_resguardosociodoc_id"), trxName);
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return resguardoSocioDoc;
+	}
 }

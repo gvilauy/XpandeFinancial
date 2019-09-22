@@ -225,6 +225,15 @@ public interface I_Z_RetencionSocio
 	  */
 	public int getUpdatedBy();
 
+    /** Column name Z_AcctConfigRubroDGI_ID */
+    public static final String COLUMNNAME_Z_AcctConfigRubroDGI_ID = "Z_AcctConfigRubroDGI_ID";
+
+	/** Set Z_AcctConfigRubroDGI ID	  */
+	public void setZ_AcctConfigRubroDGI_ID(int Z_AcctConfigRubroDGI_ID);
+
+	/** Get Z_AcctConfigRubroDGI ID	  */
+	public int getZ_AcctConfigRubroDGI_ID();
+
     /** Column name Z_RetencionSocio_ID */
     public static final String COLUMNNAME_Z_RetencionSocio_ID = "Z_RetencionSocio_ID";
 

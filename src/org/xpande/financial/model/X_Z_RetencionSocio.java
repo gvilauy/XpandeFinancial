@@ -32,7 +32,7 @@ public class X_Z_RetencionSocio extends PO implements I_Z_RetencionSocio, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170801L;
+	private static final long serialVersionUID = 20190920L;
 
     /** Standard Constructor */
     public X_Z_RetencionSocio (Properties ctx, int Z_RetencionSocio_ID, String trxName)
@@ -268,6 +268,26 @@ public class X_Z_RetencionSocio extends PO implements I_Z_RetencionSocio, I_Pers
 	public String getRetencionMontoAplica () 
 	{
 		return (String)get_Value(COLUMNNAME_RetencionMontoAplica);
+	}
+
+	/** Set Z_AcctConfigRubroDGI ID.
+		@param Z_AcctConfigRubroDGI_ID Z_AcctConfigRubroDGI ID	  */
+	public void setZ_AcctConfigRubroDGI_ID (int Z_AcctConfigRubroDGI_ID)
+	{
+		if (Z_AcctConfigRubroDGI_ID < 1) 
+			set_Value (COLUMNNAME_Z_AcctConfigRubroDGI_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_AcctConfigRubroDGI_ID, Integer.valueOf(Z_AcctConfigRubroDGI_ID));
+	}
+
+	/** Get Z_AcctConfigRubroDGI ID.
+		@return Z_AcctConfigRubroDGI ID	  */
+	public int getZ_AcctConfigRubroDGI_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_AcctConfigRubroDGI_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Z_RetencionSocio ID.
