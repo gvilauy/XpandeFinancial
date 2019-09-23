@@ -139,4 +139,22 @@ public class MZRetencionSocio extends X_Z_RetencionSocio {
         return model;
     }
 
+
+    /***
+     * Obtiene y retorna modelo según codigo de DGI de la retención.
+     * Xpande. Created by Gabriel Vila on 9/23/19.
+     * @param ctx
+     * @param codigoDGI
+     * @param trxName
+     * @return
+     */
+    public static MZRetencionSocio getByCodigoDGI(Properties ctx, String codigoDGI, String trxName){
+
+        String whereClause = X_Z_RetencionSocio.COLUMNNAME_CodigoDGI + " ='" + codigoDGI + "'";
+
+        MZRetencionSocio model = new Query(ctx, I_Z_RetencionSocio.Table_Name, whereClause, trxName).first();
+
+        return model;
+    }
+
 }
