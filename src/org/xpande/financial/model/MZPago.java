@@ -1072,7 +1072,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			if (hashCurrency.size() > 0){
 
 				// Cargo monedas con tasa de cambio a la fecha de este documento
-				message = MZPagoMoneda.setMonedas(getCtx(), this.get_ID(), hashCurrency, get_TrxName());
+				message = MZPagoMoneda.setMonedasPago(getCtx(), this.get_ID(), hashCurrency, get_TrxName());
 				if (message != null){
 					return message;
 				}
@@ -1080,7 +1080,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				// Actualizo tasa de cambio y monto en moneda transacción, en lineas y resguardos asociados a este documento.
 				this.updateRates(false);
 			}
-
 
 		}
 		catch (Exception e){
@@ -2077,7 +2076,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						pagoMoneda = hashCurrency.get(pagoMedioPago.getC_Currency_ID());
 					}
 					else{
-						pagoMoneda = MZPagoMoneda.getByCurrency(getCtx(), this.get_ID(), pagoMedioPago.getC_Currency_ID(), get_TrxName());
+						pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.get_ID(), pagoMedioPago.getC_Currency_ID(), get_TrxName());
 						hashCurrency.put(pagoMedioPago.getC_Currency_ID(), pagoMoneda);
 					}
 					if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
@@ -2099,7 +2098,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					pagoMoneda = hashCurrency.get(pagoLin.getC_Currency_ID());
 				}
 				else{
-					pagoMoneda = MZPagoMoneda.getByCurrency(getCtx(), this.get_ID(), pagoLin.getC_Currency_ID(), get_TrxName());
+					pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.get_ID(), pagoLin.getC_Currency_ID(), get_TrxName());
 					hashCurrency.put(pagoLin.getC_Currency_ID(), pagoMoneda);
 				}
 				if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
@@ -2117,7 +2116,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					pagoMoneda = hashCurrency.get(pagoResguardo.getC_Currency_ID());
 				}
 				else{
-					pagoMoneda = MZPagoMoneda.getByCurrency(getCtx(), this.get_ID(), pagoResguardo.getC_Currency_ID(), get_TrxName());
+					pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.get_ID(), pagoResguardo.getC_Currency_ID(), get_TrxName());
 					hashCurrency.put(pagoResguardo.getC_Currency_ID(), pagoMoneda);
 				}
 				if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
@@ -2875,7 +2874,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			if (hashCurrency.size() > 0){
 
 				// Cargo monedas con tasa de cambio a la fecha de este documento
-				message = MZPagoMoneda.setMonedas(getCtx(), this.get_ID(), hashCurrency, get_TrxName());
+				message = MZPagoMoneda.setMonedasPago(getCtx(), this.get_ID(), hashCurrency, get_TrxName());
 				if (message != null){
 					return message;
 				}

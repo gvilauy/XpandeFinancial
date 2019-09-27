@@ -303,16 +303,28 @@ public class MZTransferSaldo extends X_Z_TransferSaldo implements DocAction, Doc
 		if (m_processMsg != null)
 			return false;
 
-		// Valido que no este asociado a una orden de pago.
-		m_processMsg = this.validateInOrdenPago();
-		if (m_processMsg != null){
+
+		MZFinancialConfig financialConfig = MZFinancialConfig.getDefault(getCtx(), null);
+		if (financialConfig == null){
+			m_processMsg = "Falta información de Configuración Financiera.";
 			return false;
 		}
 
+
+		// Valido que no este asociado a una orden de pago.
+		if (financialConfig.isControlaPagos()){
+			m_processMsg = this.validateInOrdenPago();
+			if (m_processMsg != null){
+				return false;
+			}
+		}
+
 		// Valido que no este asociado a un pago.
-		m_processMsg = this.validateInPago();
-		if (m_processMsg != null){
-			return false;
+		if (financialConfig.isControlaPagos()){
+			m_processMsg = this.validateInPago();
+			if (m_processMsg != null){
+				return false;
+			}
 		}
 
 		// Control de período contable

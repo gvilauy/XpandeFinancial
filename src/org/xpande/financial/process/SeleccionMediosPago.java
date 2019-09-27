@@ -101,7 +101,7 @@ public class SeleccionMediosPago extends SeleccionMediosPagoAbstract
 			if (hashCurrency.size() > 0){
 
 				// Cargo monedas con tasa de cambio a la fecha de este documento
-				message = MZPagoMoneda.setMonedas(getCtx(), this.pago.get_ID(), hashCurrency, get_TrxName());
+				message = MZPagoMoneda.setMonedasPago(getCtx(), this.pago.get_ID(), hashCurrency, get_TrxName());
 				if (message != null){
 					return "@Error@ " + message;
 				}

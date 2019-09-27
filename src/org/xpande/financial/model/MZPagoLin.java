@@ -33,26 +33,11 @@ public class MZPagoLin extends X_Z_PagoLin {
                 return false;
             }
 
-            // Si se modifica el monto a pagar o la tasa de cambio, debo recalcular el monto a pagar en moneda de la transacción.
-            if ((is_ValueChanged(X_Z_PagoLin.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoLin.COLUMNNAME_AmtAllocation))){
-                if (this.getMultiplyRate().compareTo(Env.ONE) == 0){
-                    this.setAmtAllocationMT(this.getAmtAllocation());
-                }
-                else{
-
-                    MAcctSchema schema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
-                    if (this.getC_Currency_ID() != schema.getC_Currency_ID()){
-                        this.setAmtAllocationMT(this.getAmtAllocation().multiply(this.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
-                    }
-                    else{
-                        this.setAmtAllocationMT(this.getAmtAllocation().divide(this.getMultiplyRate(), 2, RoundingMode.HALF_UP));
-                    }
-                }
-            }
         }
 
         return true;
     }
+
 
     @Override
     protected boolean beforeDelete() {
@@ -70,6 +55,25 @@ public class MZPagoLin extends X_Z_PagoLin {
     protected boolean afterSave(boolean newRecord, boolean success) {
 
         if (!success) return success;
+
+        if (!newRecord){
+            // Si se modifica el monto a pagar o la tasa de cambio, debo recalcular el monto a pagar en moneda de la transacción.
+            if ((is_ValueChanged(X_Z_PagoLin.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoLin.COLUMNNAME_AmtAllocation))){
+                if (this.getMultiplyRate().compareTo(Env.ONE) == 0){
+                    this.setAmtAllocationMT(this.getAmtAllocation());
+                }
+                else{
+
+                    MAcctSchema schema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
+                    if (this.getC_Currency_ID() != schema.getC_Currency_ID()){
+                        this.setAmtAllocationMT(this.getAmtAllocation().multiply(this.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
+                    }
+                    else{
+                        this.setAmtAllocationMT(this.getAmtAllocation().divide(this.getMultiplyRate(), 2, RoundingMode.HALF_UP));
+                    }
+                }
+            }
+        }
 
         if ((is_ValueChanged(X_Z_PagoLin.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoLin.COLUMNNAME_AmtAllocation))
                 || (is_ValueChanged(X_Z_PagoLin.COLUMNNAME_IsSelected))){

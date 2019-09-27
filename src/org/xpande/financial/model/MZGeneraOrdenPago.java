@@ -1364,6 +1364,9 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
             // Moneda de las ordenes de pago = moneda de la cuenta bancaria seleccionada en la generacion
             int cCurrencyBankAccount = ((MBankAccount) this.getC_BankAccount()).getC_Currency_ID();
 
+            // Hash para cotizaciones de monedas
+            HashMap<Integer, Integer> hashCurrency = new HashMap<Integer, Integer>();
+
             // Obtengo y recorro socios de negocio considerados en este proceso
             List<MZGeneraOrdenPagoSocio> ordenPagoSocios = this.getSocios();
             for (MZGeneraOrdenPagoSocio ordenPagoSocio: ordenPagoSocios){
@@ -1473,6 +1476,11 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                         ordenPagoLin.setZ_Pago_ID(generaLin.getZ_Pago_ID());
                     }
 
+                    // Agrego moneda para cotizaciones
+                    if (!hashCurrency.containsKey(generaLin.getC_Currency_ID())){
+                        hashCurrency.put(generaLin.getC_Currency_ID(), generaLin.getC_Currency_ID());
+                    }
+
                     // Pagos multimoneda.
                     // Si este documento tiene moneda distinta a la moneda de la Orden de Pago,
                     // dabo traducir monto a pagar desde moneda documento a moneda orden de pago.
@@ -1579,6 +1587,14 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
                 }
 
+                // Si tengo monedas, actualizo tabla de monedas de este pago/cobro
+                if (hashCurrency.size() > 0){
+                    // Cargo monedas con tasa de cambio a la fecha para esta orden de pago
+                    message = MZPagoMoneda.setMonedasOrdenPago(getCtx(), ordenPago.get_ID(), hashCurrency, get_TrxName());
+                    if (message != null){
+                        return message;
+                    }
+                }
             }
 
         }

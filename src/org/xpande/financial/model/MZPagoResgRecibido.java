@@ -35,7 +35,7 @@ public class MZPagoResgRecibido extends X_Z_PagoResgRecibido {
         if (newRecord){
 
             // Obtengo moneda de pago a considerarse para esta moneda de medio de pago
-            MZPagoMoneda pagoMoneda = MZPagoMoneda.setByCurrency(getCtx(), this.getZ_Pago_ID(), this.getC_Currency_ID(), get_TrxName());
+            MZPagoMoneda pagoMoneda = MZPagoMoneda.setByCurrencyPago(getCtx(), this.getZ_Pago_ID(), this.getC_Currency_ID(), get_TrxName());
             if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
                 this.setMultiplyRate(pagoMoneda.getMultiplyRate());
             }

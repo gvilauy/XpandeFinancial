@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -850,6 +851,19 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		return lines;
 	}
 
+	/***
+	 * Obtiene y retorna lineas de este documento.
+	 * Xpande. Created by Gabriel Vila on 9/27/19.
+	 * @return
+	 */
+	public List<MZOrdenPagoLin> getLines(){
+
+		String whereClause = X_Z_OrdenPagoLin.COLUMNNAME_Z_OrdenPago_ID + " =" + this.get_ID();
+
+		List<MZOrdenPagoLin> lines = new Query(getCtx(), I_Z_OrdenPagoLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
 
 	/***
 	 * Obtiene y retorna lineas de orden de pago que se corresponden a transferencias de saldos.
@@ -1360,5 +1374,38 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		}
 	}
 
+	/***
+	 * Actualiza tasa de cambio y como consecuencia monto a pagar en moneda de transacción en lineas de este documento.
+	 * Xpande. Created by Gabriel Vila on 9/27/19.
+	 */
+	public void updateRates() {
+
+		try{
+
+			HashMap<Integer, MZPagoMoneda> hashCurrency = new HashMap<Integer, MZPagoMoneda>();
+
+			// Lineas
+			List<MZOrdenPagoLin> ordenPagoLinList = this.getLines();
+			for (MZOrdenPagoLin ordenPagoLin: ordenPagoLinList){
+
+				MZPagoMoneda pagoMoneda = null;
+				if (hashCurrency.containsKey(ordenPagoLin.getC_Currency_ID())){
+					pagoMoneda = hashCurrency.get(ordenPagoLin.getC_Currency_ID());
+				}
+				else{
+					pagoMoneda = MZPagoMoneda.getByCurrencyOrdenPago(getCtx(), this.get_ID(), ordenPagoLin.getC_Currency_ID(), get_TrxName());
+					hashCurrency.put(ordenPagoLin.getC_Currency_ID(), pagoMoneda);
+				}
+				if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
+					ordenPagoLin.setMultiplyRate(pagoMoneda.getMultiplyRate());
+					ordenPagoLin.saveEx();
+				}
+			}
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+	}
 
 }
