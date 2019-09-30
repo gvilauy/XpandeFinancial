@@ -623,7 +623,7 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 					BigDecimal totalBaseDoc = this.getTotalBaseRetencion(retencionSocio, resguardoSocioDoc.get_ID());
 
 					// Aplico porcentaje de retencion a este comprobante
-					BigDecimal amtRetencionDoc = totalBaseDoc.multiply(retencionSocio.getPorcRetencion()).setScale(2, BigDecimal.ROUND_HALF_UP);
+					BigDecimal amtRetencionDoc = totalBaseDoc.multiply(retencionSocio.getPorcRetencion()).setScale(0, BigDecimal.ROUND_HALF_UP);
 
 					// Acumulo monto a retener en este comprobante en moneda del resguardo
 					resguardoSocioDoc.setAmtRetencion(resguardoSocioDoc.getAmtRetencion().add(amtRetencionDoc));
