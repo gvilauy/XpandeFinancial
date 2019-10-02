@@ -72,14 +72,21 @@ public class MZPagoLin extends X_Z_PagoLin {
 
         if (!success) return success;
 
-        if ((is_ValueChanged(X_Z_PagoLin.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoLin.COLUMNNAME_AmtAllocation))
-                || (is_ValueChanged(X_Z_PagoLin.COLUMNNAME_IsSelected))){
+        MZPago pago = (MZPago) this.getZ_Pago();
 
+        if (newRecord){
             // Actualizo totales del documento
-            MZPago pago = (MZPago) this.getZ_Pago();
             pago.updateTotals();
-
         }
+        else{
+            if ((is_ValueChanged(X_Z_PagoLin.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoLin.COLUMNNAME_AmtAllocation))
+                    || (is_ValueChanged(X_Z_PagoLin.COLUMNNAME_IsSelected))){
+
+                // Actualizo totales del documento
+                pago.updateTotals();
+            }
+        }
+
 
         return true;
     }
