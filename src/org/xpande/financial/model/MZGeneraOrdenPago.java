@@ -1196,6 +1196,17 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                 BigDecimal amtDocument = rs.getBigDecimal("grandtotal");
                 BigDecimal amtOpen = rs.getBigDecimal("amtopen");
 
+                // Si la invoice asociada a esta transferencia es del tipo nota de credito, tengo que cambiar
+                // el signo del monto de esta linea (esta transferencia se comporta como una nota de credito)
+                MInvoice invoice = new MInvoice(getCtx(), rs.getInt("c_invoice_id"), null);
+                if ((invoice != null) && (invoice.get_ID() > 0)){
+                    MDocType docTypeInvoice = (MDocType) invoice.getC_DocTypeTarget();
+                    if (docTypeInvoice.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APCredit)){
+                        amtDocument = amtDocument.negate();
+                        amtOpen = amtOpen.negate();
+                    }
+                }
+
                 MZGeneraOrdenPagoLin ordenPagoLin = new MZGeneraOrdenPagoLin(getCtx(), 0, get_TrxName());
                 ordenPagoLin.setZ_GeneraOrdenPago_ID(this.get_ID());
                 ordenPagoLin.setZ_GeneraOrdenPagoSocio_ID(ordenPagoSocio.get_ID());

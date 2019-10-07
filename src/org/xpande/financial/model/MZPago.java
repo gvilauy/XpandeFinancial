@@ -1341,6 +1341,17 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				BigDecimal amtDocument = rs.getBigDecimal("grandtotal");
 				BigDecimal amtOpen = rs.getBigDecimal("amtopen");
 
+				// Si la invoice asociada a esta transferencia es del tipo nota de credito, tengo que cambiar
+				// el signo del monto de esta linea (esta transferencia se comporta como una nota de credito)
+				MInvoice invoice = new MInvoice(getCtx(), rs.getInt("c_invoice_id"), null);
+				if ((invoice != null) && (invoice.get_ID() > 0)){
+					MDocType docTypeInvoice = (MDocType) invoice.getC_DocTypeTarget();
+					if (docTypeInvoice.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APCredit)){
+						amtDocument = amtDocument.negate();
+						amtOpen = amtOpen.negate();
+					}
+				}
+
 				MZPagoLin pagoLin = new MZPagoLin(getCtx(), 0, get_TrxName());
 				pagoLin.setZ_Pago_ID(this.get_ID());
 				pagoLin.setAmtDocument(amtDocument);
