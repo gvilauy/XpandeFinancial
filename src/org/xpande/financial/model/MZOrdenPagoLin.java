@@ -67,4 +67,25 @@ public class MZOrdenPagoLin extends X_Z_OrdenPagoLin {
 
         return true;
     }
+
+    @Override
+    protected boolean afterSave(boolean newRecord, boolean success) {
+
+        if (!success) return success;
+
+        try{
+
+            if (!newRecord){
+                if ((is_ValueChanged(X_Z_PagoLin.COLUMNNAME_MultiplyRate)) || (is_ValueChanged(X_Z_PagoLin.COLUMNNAME_AmtAllocation))){
+                    MZOrdenPago ordenPago = (MZOrdenPago) this.getZ_OrdenPago();
+                    ordenPago.updateTotals();
+                }
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+        return true;
+    }
 }
