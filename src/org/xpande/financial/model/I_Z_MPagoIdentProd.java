@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_MedioPagoIdent
+/** Generated Interface for Z_MPagoIdentProd
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0
  */
-public interface I_Z_MedioPagoIdent 
+public interface I_Z_MPagoIdentProd 
 {
 
-    /** TableName=Z_MedioPagoIdent */
-    public static final String Table_Name = "Z_MedioPagoIdent";
+    /** TableName=Z_MPagoIdentProd */
+    public static final String Table_Name = "Z_MPagoIdentProd";
 
-    /** AD_Table_ID=1000317 */
+    /** AD_Table_ID=1000327 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -63,21 +63,6 @@ public interface I_Z_MedioPagoIdent
 	  */
 	public int getAD_Org_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/** Set Business Partner .
-	  * Identifies a Business Partner
-	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
-
-	/** Get Business Partner .
-	  * Identifies a Business Partner
-	  */
-	public int getC_BPartner_ID();
-
-	public I_C_BPartner getC_BPartner() throws RuntimeException;
-
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -94,19 +79,6 @@ public interface I_Z_MedioPagoIdent
 	  */
 	public int getCreatedBy();
 
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
-
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription(String Description);
-
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
-
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -120,18 +92,20 @@ public interface I_Z_MedioPagoIdent
 	  */
 	public boolean isActive();
 
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
+	/** Set Product.
+	  * Product, Service, Item
 	  */
-	public void setName(String Name);
+	public void setM_Product_ID(int M_Product_ID);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
+	/** Get Product.
+	  * Product, Service, Item
 	  */
-	public String getName();
+	public int getM_Product_ID();
+
+	public I_M_Product getM_Product() throws RuntimeException;
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -162,17 +136,6 @@ public interface I_Z_MedioPagoIdent
 	  */
 	public String getUUID();
 
-    /** Column name Z_MedioPago_ID */
-    public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";
-
-	/** Set Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID(int Z_MedioPago_ID);
-
-	/** Get Z_MedioPago ID	  */
-	public int getZ_MedioPago_ID();
-
-	public I_Z_MedioPago getZ_MedioPago() throws RuntimeException;
-
     /** Column name Z_MedioPagoIdent_ID */
     public static final String COLUMNNAME_Z_MedioPagoIdent_ID = "Z_MedioPagoIdent_ID";
 
@@ -181,4 +144,15 @@ public interface I_Z_MedioPagoIdent
 
 	/** Get Z_MedioPagoIdent ID	  */
 	public int getZ_MedioPagoIdent_ID();
+
+	public I_Z_MedioPagoIdent getZ_MedioPagoIdent() throws RuntimeException;
+
+    /** Column name Z_MPagoIdentProd_ID */
+    public static final String COLUMNNAME_Z_MPagoIdentProd_ID = "Z_MPagoIdentProd_ID";
+
+	/** Set Z_MPagoIdentProd ID	  */
+	public void setZ_MPagoIdentProd_ID(int Z_MPagoIdentProd_ID);
+
+	/** Get Z_MPagoIdentProd ID	  */
+	public int getZ_MPagoIdentProd_ID();
 }
