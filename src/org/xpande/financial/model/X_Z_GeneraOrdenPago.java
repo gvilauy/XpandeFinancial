@@ -31,7 +31,7 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190510L;
+	private static final long serialVersionUID = 20191010L;
 
     /** Standard Constructor */
     public X_Z_GeneraOrdenPago (Properties ctx, int Z_GeneraOrdenPago_ID, String trxName)
@@ -57,6 +57,8 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 // N
 			setProcessed (false);
 // N
+			setSugerirFecha (true);
+// Y
 			setTipoFiltroSocioPago (null);
 // INCLUIR
 			setZ_GeneraOrdenPago_ID (0);
@@ -486,6 +488,8 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 	public static final String PAYMENTRULEPO_CANJE = "J";
 	/** TRANSFERENCIA BANCARIA = R */
 	public static final String PAYMENTRULEPO_TRANSFERENCIABANCARIA = "R";
+	/** CERTIFICADOS DE CREDITO DGI = A */
+	public static final String PAYMENTRULEPO_CERTIFICADOSDECREDITODGI = "A";
 	/** Set Payment Rule.
 		@param PaymentRulePO 
 		Purchase payment option
@@ -629,6 +633,30 @@ public class X_Z_GeneraOrdenPago extends PO implements I_Z_GeneraOrdenPago, I_Pe
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set SugerirFecha.
+		@param SugerirFecha 
+		Si sugiere o no valor para un determinado campo fecha
+	  */
+	public void setSugerirFecha (boolean SugerirFecha)
+	{
+		set_Value (COLUMNNAME_SugerirFecha, Boolean.valueOf(SugerirFecha));
+	}
+
+	/** Get SugerirFecha.
+		@return Si sugiere o no valor para un determinado campo fecha
+	  */
+	public boolean isSugerirFecha () 
+	{
+		Object oo = get_Value(COLUMNNAME_SugerirFecha);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

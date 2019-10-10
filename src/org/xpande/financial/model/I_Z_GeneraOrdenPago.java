@@ -391,6 +391,19 @@ public interface I_Z_GeneraOrdenPago
 	/** Get Process Now	  */
 	public boolean isProcessing();
 
+    /** Column name SugerirFecha */
+    public static final String COLUMNNAME_SugerirFecha = "SugerirFecha";
+
+	/** Set SugerirFecha.
+	  * Si sugiere o no valor para un determinado campo fecha
+	  */
+	public void setSugerirFecha(boolean SugerirFecha);
+
+	/** Get SugerirFecha.
+	  * Si sugiere o no valor para un determinado campo fecha
+	  */
+	public boolean isSugerirFecha();
+
     /** Column name TipoFiltroSocioPago */
     public static final String COLUMNNAME_TipoFiltroSocioPago = "TipoFiltroSocioPago";
 

@@ -1585,6 +1585,20 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                             ordenPagoMedio.setTieneFecVenc(medioPago.isTieneFecVenc());
                             ordenPagoMedio.setTieneFolio(medioPago.isTieneFolio());
                             ordenPagoMedio.setTieneNroRef(medioPago.isTieneNroRef());
+
+                            if (this.isSugerirFecha()){
+                                if (ordenPagoMedio.isTieneFecEmi()){
+                                    if (ordenPagoMedio.getDueDate() != null){
+                                        if (!ordenPagoMedio.getDueDate().before(this.getDateDoc())){
+                                            ordenPagoMedio.setDateEmitted(ordenPago.getDateDoc());
+                                        }
+                                    }
+                                    else{
+                                        ordenPagoMedio.setDateEmitted(ordenPago.getDateDoc());
+                                    }
+                                }
+                            }
+
                             ordenPagoMedio.saveEx();
                         }
                     }
