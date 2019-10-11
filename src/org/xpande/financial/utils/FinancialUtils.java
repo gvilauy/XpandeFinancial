@@ -1,10 +1,7 @@
 package org.xpande.financial.utils;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MBPartner;
-import org.compiere.model.MDocType;
-import org.compiere.model.MInvoice;
-import org.compiere.model.MInvoicePaySchedule;
+import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.model.X_C_TaxGroup;
@@ -894,6 +891,24 @@ public final class FinancialUtils {
         catch (Exception e){
             throw new AdempiereException(e);
         }
+    }
+
+
+    /***
+     * Obtiene término de pago por defecto sin importar la compañia.
+     * Xpande. Created by Gabriel Vila on 10/10/19.
+     * @param ctx
+     * @param trxName
+     * @return
+     */
+    public static MPaymentTerm getPaymentTermByDefault(Properties ctx , String trxName) {
+        StringBuilder whereClause = new StringBuilder();
+        whereClause.append(I_C_PaymentTerm.COLUMNNAME_IsDefault).append("=?");
+
+        return new Query(ctx, I_C_PaymentTerm.Table_Name, whereClause.toString(), trxName)
+                .setOnlyActiveRecords(true)
+                .setParameters(true)
+                .first();
     }
 
 }
