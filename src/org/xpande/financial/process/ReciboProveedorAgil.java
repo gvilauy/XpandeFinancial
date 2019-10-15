@@ -257,6 +257,11 @@ public class ReciboProveedorAgil extends SvrProcess {
                 for (MZOrdenPago ordenPago: ordenPagoList){
                     pago.setFromOrdenPago(ordenPago);
                 }
+                pago.saveEx();
+
+                // Instancio de nuevo el modelo de pago porque se actulizaron datos del mismo via DB directo y no quedan en el modelo
+                int pagoIDAux = pago.get_ID();
+                pago = new MZPago(getCtx(), pagoIDAux, get_TrxName());
 
                 // Completo recibo
                 if (!pago.processIt(DocAction.ACTION_Complete)){
