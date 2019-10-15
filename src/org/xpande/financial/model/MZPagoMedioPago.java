@@ -52,10 +52,12 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
                 if (this.getDueDate() == null) this.setDueDate(medioPagoItem.getDueDate());
                 if ((this.getTotalAmt() == null) || (this.getTotalAmt().compareTo(Env.ZERO) <= 0)) this.setTotalAmt(medioPagoItem.getTotalAmt());
 
-                if ((!this.getDateEmitted().equals(medioPagoItem.getDateEmitted())) || (!this.getDueDate().equals(medioPagoItem.getDueDate()))
-                        || (this.getTotalAmt().compareTo(medioPagoItem.getTotalAmt()) != 0)){
-                    log.saveError("ATENCIÓN", "No es posible modificar datos de este medio de pago ya que el mismo esta emitido.");
-                    return false;
+                if ((this.getDateEmitted() != null) && (this.getDueDate() != null) && (this.getTotalAmt() != null)){
+                    if ((!this.getDateEmitted().equals(medioPagoItem.getDateEmitted())) || (!this.getDueDate().equals(medioPagoItem.getDueDate()))
+                            || (this.getTotalAmt().compareTo(medioPagoItem.getTotalAmt()) != 0)){
+                        log.saveError("ATENCIÓN", "No es posible modificar datos de este medio de pago ya que el mismo esta emitido.");
+                        return false;
+                    }
                 }
             }
         }
