@@ -353,7 +353,26 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		try{
 			for (MZOrdenPagoLin pagoLin: pagoLinList){
 				if (pagoLin.getZ_ResguardoSocio_ID() > 0){
+
+					// Valido que este resguardo siga existiendo y que el misma esta completo.
 					MZResguardoSocio resguardoSocio = (MZResguardoSocio) pagoLin.getZ_ResguardoSocio();
+					if ((resguardoSocio == null) || (resguardoSocio.get_ID() <= 0)){
+						MBPartner partner = (MBPartner) this.getC_BPartner();
+						return "No se pudo completar la Orden Número : " + this.getDocumentNo() +
+								" para el Socio de Negocio : " + partner.getName() +
+								", ya que el Resguardo Número : " + pagoLin.getDocumentNoRef() +
+								" fue eliminado. Debe quitar este Resguardo de la orden para poder completarla.";
+					}
+					else {
+						if (!resguardoSocio.getDocStatus().equalsIgnoreCase(DOCSTATUS_Completed)){
+							MBPartner partner = (MBPartner) this.getC_BPartner();
+							return "No se pudo completar la Orden Número : " + this.getDocumentNo() +
+									" para el Socio de Negocio : " + partner.getName() +
+									", ya que el Resguardo Número : " + pagoLin.getDocumentNoRef() +
+									" no esta en estado Completo. Debe completar este Resguardo o quitarlo de la orden para continuar.";
+						}
+					}
+
 					resguardoSocio.setZ_OrdenPago_ID(this.get_ID());
 					resguardoSocio.setIsPaid(true);
 					resguardoSocio.saveEx();
@@ -379,6 +398,25 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 		try{
 			for (MZOrdenPagoLin pagoLin: pagoLinList){
 				if (pagoLin.getC_Invoice_ID() > 0){
+
+					// Valido que esta invoice siga existiendo y que la misma esta completa.
+					MInvoice invoice = (MInvoice) pagoLin.getC_Invoice();
+					if ((invoice == null) || (invoice.get_ID() <= 0)){
+						MBPartner partner = (MBPartner) this.getC_BPartner();
+						return "No se pudo completar la Orden Número : " + this.getDocumentNo() +
+								" para el Socio de Negocio : " + partner.getName() +
+								", ya que el Comprobante Número : " + pagoLin.getDocumentNoRef() +
+								" fue eliminado. Debe quitar este comprobante de la orden para poder completarla.";
+					}
+					else {
+						if (!invoice.getDocStatus().equalsIgnoreCase(DOCSTATUS_Completed)){
+							MBPartner partner = (MBPartner) this.getC_BPartner();
+							return "No se pudo completar la Orden Número : " + this.getDocumentNo() +
+									" para el Socio de Negocio : " + partner.getName() +
+									", ya que el Comprobante Número : " + pagoLin.getDocumentNoRef() +
+									" no esta en estado Completo. Debe completar este comprobante o quitarlo de la orden para continuar.";
+						}
+					}
 
 					BigDecimal amtAllocation = pagoLin.getAmtAllocation();
 					if (amtAllocation.compareTo(Env.ZERO) < 0){
@@ -407,7 +445,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 					// Marca invoice como paga si ya no tengo monto pendiente de pago
 					if (pagoLin.getAmtAllocation().compareTo(pagoLin.getAmtOpen()) == 0){
-						MInvoice invoice = (MInvoice) pagoLin.getC_Invoice();
 						invoice.setIsPaid(true);
 						invoice.saveEx();
 					}
@@ -435,6 +472,25 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 			for (MZOrdenPagoLin pagoLin: pagoLinList){
 				if (pagoLin.getZ_TransferSaldo_ID() > 0){
 
+					// Valido que esta transferencia de salgo siga existiendo y que la misma esta completa.
+					MZTransferSaldo transferSaldo = (MZTransferSaldo) pagoLin.getZ_TransferSaldo();
+					if ((transferSaldo == null) || (transferSaldo.get_ID() <= 0)){
+						MBPartner partner = (MBPartner) this.getC_BPartner();
+						return "No se pudo completar la Orden Número : " + this.getDocumentNo() +
+								" para el Socio de Negocio : " + partner.getName() +
+								", ya que la Transferencia de Saldo Número : " + pagoLin.getDocumentNoRef() +
+								" fue eliminado. Debe quitar este documento de la orden para poder completarla.";
+					}
+					else {
+						if (!transferSaldo.getDocStatus().equalsIgnoreCase(DOCSTATUS_Completed)){
+							MBPartner partner = (MBPartner) this.getC_BPartner();
+							return "No se pudo completar la Orden Número : " + this.getDocumentNo() +
+									" para el Socio de Negocio : " + partner.getName() +
+									", ya que la Transferencia de Saldo Número : " + pagoLin.getDocumentNoRef() +
+									" no esta en estado Completo. Debe completar este documento o quitarlo de la orden para continuar.";
+						}
+					}
+
 					BigDecimal amtAllocation = pagoLin.getAmtAllocation();
 					if (amtAllocation.compareTo(Env.ZERO) < 0){
 						amtAllocation = amtAllocation.negate();
@@ -457,7 +513,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 					// Marca transferencia de saldo como paga sino le queda monto pendiente
 					if (pagoLin.getAmtAllocation().compareTo(pagoLin.getAmtOpen()) == 0){
-						MZTransferSaldo transferSaldo = (MZTransferSaldo) pagoLin.getZ_TransferSaldo();
+
 						if ((transferSaldo == null) || (transferSaldo.get_ID() <= 0)){
 							return "La Transferencia de Saldo número : " + pagoLin.getDocumentNoRef() + " fue eliminada del sistema. " +
 									"Debe eliminarla de esta Orden de Pago para poder completarla.";
@@ -491,6 +547,25 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 				if (pagoLin.getZ_Pago_ID() > 0){
 
+					// Valido que este anticipo siga existiendo y que el mismo esta completo.
+					MZPago anticipo = (MZPago) pagoLin.getZ_Pago();
+					if ((anticipo == null) || (anticipo.get_ID() <= 0)){
+						MBPartner partner = (MBPartner) this.getC_BPartner();
+						return "No se pudo completar la Orden Número : " + this.getDocumentNo() +
+								" para el Socio de Negocio : " + partner.getName() +
+								", ya que el Anticipo Número : " + pagoLin.getDocumentNoRef() +
+								" fue eliminado. Debe quitar este Anticipo de la orden para poder completarla.";
+					}
+					else {
+						if (!anticipo.getDocStatus().equalsIgnoreCase(DOCSTATUS_Completed)){
+							MBPartner partner = (MBPartner) this.getC_BPartner();
+							return "No se pudo completar la Orden Número : " + this.getDocumentNo() +
+									" para el Socio de Negocio : " + partner.getName() +
+									", ya que el Anticipo Número : " + pagoLin.getDocumentNoRef() +
+									" no esta en estado Completo. Debe completar este Anticipo o quitarlo de la orden para continuar.";
+						}
+					}
+
 					// Si es una orden normal, consumo los anticipos y su saldo.
 					if (!this.isOrdPagoAnticipo()){
 						BigDecimal amtAllocation = pagoLin.getAmtAllocation();
@@ -516,7 +591,6 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					}
 					else{ // Es una orden de pago para pagar anticipos en etapa 1.
 
-						MZPago anticipo = (MZPago) pagoLin.getZ_Pago();
 						anticipo.setZ_OrdenPago_To_ID(this.get_ID());
 						anticipo.saveEx();
 					}
@@ -744,6 +818,10 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 					}
 				}
 			}
+
+			// Valido que los documentos asociados a las lineas de esta orden sigan existiendo y esten completos
+
+
 
 			/*
 			// Valido que los documentos sigan con monto abierto sin cambios
