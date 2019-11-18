@@ -159,6 +159,19 @@ public interface I_Z_LoadExtBancoLin
 	  */
 	public String getDescription();
 
+    /** Column name Description2 */
+    public static final String COLUMNNAME_Description2 = "Description2";
+
+	/** Set Description2.
+	  * Observaciones secundarias
+	  */
+	public void setDescription2(String Description2);
+
+	/** Get Description2.
+	  * Observaciones secundarias
+	  */
+	public String getDescription2();
+
     /** Column name DocumentNoRef */
     public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
 
@@ -263,6 +276,32 @@ public interface I_Z_LoadExtBancoLin
 
 	/** Get LineNumber	  */
 	public int getLineNumber();
+
+    /** Column name NomMoneda */
+    public static final String COLUMNNAME_NomMoneda = "NomMoneda";
+
+	/** Set NomMoneda.
+	  * Nombre de Moneda
+	  */
+	public void setNomMoneda(String NomMoneda);
+
+	/** Get NomMoneda.
+	  * Nombre de Moneda
+	  */
+	public String getNomMoneda();
+
+    /** Column name NroCuenta */
+    public static final String COLUMNNAME_NroCuenta = "NroCuenta";
+
+	/** Set NroCuenta.
+	  * Número de Cuenta
+	  */
+	public void setNroCuenta(String NroCuenta);
+
+	/** Get NroCuenta.
+	  * Número de Cuenta
+	  */
+	public String getNroCuenta();
 
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";

@@ -209,6 +209,23 @@ public class X_Z_LoadExtBancoLin extends PO implements I_Z_LoadExtBancoLin, I_Pe
 		return (String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Description2.
+		@param Description2 
+		Observaciones secundarias
+	  */
+	public void setDescription2 (String Description2)
+	{
+		set_Value (COLUMNNAME_Description2, Description2);
+	}
+
+	/** Get Description2.
+		@return Observaciones secundarias
+	  */
+	public String getDescription2 () 
+	{
+		return (String)get_Value(COLUMNNAME_Description2);
+	}
+
 	/** Set DocumentNoRef.
 		@param DocumentNoRef 
 		Numero de documento referenciado
@@ -358,6 +375,40 @@ public class X_Z_LoadExtBancoLin extends PO implements I_Z_LoadExtBancoLin, I_Pe
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set NomMoneda.
+		@param NomMoneda 
+		Nombre de Moneda
+	  */
+	public void setNomMoneda (String NomMoneda)
+	{
+		set_Value (COLUMNNAME_NomMoneda, NomMoneda);
+	}
+
+	/** Get NomMoneda.
+		@return Nombre de Moneda
+	  */
+	public String getNomMoneda () 
+	{
+		return (String)get_Value(COLUMNNAME_NomMoneda);
+	}
+
+	/** Set NroCuenta.
+		@param NroCuenta 
+		Número de Cuenta
+	  */
+	public void setNroCuenta (String NroCuenta)
+	{
+		set_Value (COLUMNNAME_NroCuenta, NroCuenta);
+	}
+
+	/** Get NroCuenta.
+		@return Número de Cuenta
+	  */
+	public String getNroCuenta () 
+	{
+		return (String)get_Value(COLUMNNAME_NroCuenta);
 	}
 
 	/** Set Processed.
