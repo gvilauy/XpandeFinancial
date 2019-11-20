@@ -16,16 +16,25 @@
  *****************************************************************************/
 package org.xpande.financial.model;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.impexp.ImpFormat;
+import org.compiere.impexp.MImpFormat;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.xpande.core.utils.DateUtils;
 
 /** Generated Model for Z_LoadExtBanco
  *  @author Adempiere (generated) 
@@ -388,4 +397,250 @@ public class MZLoadExtBanco extends X_Z_LoadExtBanco implements DocAction, DocOp
         .append(getSummary()).append("]");
       return sb.toString();
     }
+
+	/***
+	 * Obtiene y retorna lineas de este documento.
+	 * Xpande. Created by Gabriel Vila on 11/20/19.
+	 * @return
+	 */
+	public List<MZLoadExtBancoLin> getLines(){
+
+		String whereClause = X_Z_LoadExtBancoLin.COLUMNNAME_Z_LoadExtBanco_ID + " =" + this.get_ID();
+
+		List<MZLoadExtBancoLin> lines = new Query(getCtx(), I_Z_LoadExtBancoLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
+	/***
+	 * Metodo que ejecuta el proceso de interface desde archivo para carga de extractos bancarios.
+	 * Xpande. Created by Gabriel Vila on 11/20/19.
+	 */
+	public String executeInterface(){
+
+		try{
+
+			// Instancio modelo de banco asociado a la cuenta bancaria seleccionada
+			MBank bank = (MBank) ((MBankAccount) this.getC_BankAccount()).getC_Bank();
+			if (bank.get_ValueAsInt("AD_ImpFormat_ID") <= 0){
+				return "El banco : " + bank.getName() + ", no tiene configurado un Formato para carga de Extractos Bancarios";
+			}
+
+			// Formato de importación de archivo de interface para carga de extractos bancarios
+			MImpFormat mimp = new MImpFormat(getCtx(), bank.get_ValueAsInt("AD_ImpFormat_ID"), null);
+			ImpFormat formatoImpArchivo = ImpFormat.load(mimp.getName().trim());
+
+			// Elimino información anterior.
+			this.deleteFileData();
+
+			// Lee lineas de archivo
+			this.getDataFromFile(formatoImpArchivo);
+
+			// Valida lineas de archivo y trae información asociada.
+			this.setDataFromFile(mimp.getName());
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return null;
+	}
+
+	/***
+	 * Elimina información leída desde archivo.
+	 * Xpande. Created by Gabriel Vila on 4/2/19.
+	 */
+	private void deleteFileData() {
+
+		String action = "";
+
+		try{
+			action = " delete from " + I_Z_LoadExtBancoLin.Table_Name +
+					" where " + X_Z_LoadExtBancoLin.COLUMNNAME_Z_LoadExtBanco_ID + " =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+	}
+
+	/***
+	 * Lee archivo con extractos bancarios y procesa según de que banco se trate.
+	 * Xpande. Created by Gabriel Vila on 11/20/19.
+	 * @param formatoImpArchivo
+	 */
+	private String getDataFromFile(ImpFormat formatoImpArchivo) {
+
+		FileReader fReader = null;
+		BufferedReader bReader = null;
+
+		String action = "";
+		String lineaArchivo = null;
+
+		try {
+
+			// Abro archivo
+			File archivo = new File(this.getFileName());
+			fReader = new FileReader(archivo);
+			bReader = new BufferedReader(fReader);
+
+			int contLineas = 0;
+			int lineaID = 0;
+
+			// Leo lineas del archivo
+			lineaArchivo = bReader.readLine();
+
+			while (lineaArchivo != null) {
+
+				lineaArchivo = lineaArchivo.replace(",\"", ";\"");
+				lineaArchivo = lineaArchivo.replace("'", "");
+				lineaArchivo = lineaArchivo.replace("\"", "");
+				//lineaArchivo = lineaArchivo.replace(",", "");
+
+				contLineas++;
+
+				lineaID = formatoImpArchivo.updateDB(lineaArchivo, getCtx(), get_TrxName());
+
+				if (lineaID <= 0){
+
+					MZLoadExtBancoLin extBancoLin = new MZLoadExtBancoLin(getCtx(), 0, get_TrxName());
+					extBancoLin.setZ_LoadExtBanco_ID(this.get_ID());
+					extBancoLin.setLineNumber(contLineas);
+					extBancoLin.setFileLineText(lineaArchivo);
+					extBancoLin.setIsConfirmed(false);
+					extBancoLin.setErrorMsg("Formato de Linea Incorrecto.");
+					extBancoLin.saveEx();
+				}
+				else{
+					// Seteo atributos de linea procesada en tabla
+					action = " update " + I_Z_LoadExtBancoLin.Table_Name +
+							" set " + X_Z_LoadExtBancoLin.COLUMNNAME_Z_LoadExtBanco_ID + " = " + this.get_ID() + ", " +
+							" LineNumber =" + contLineas + ", " +
+							" FileLineText ='" + lineaArchivo + "' " +
+							" where " + X_Z_LoadExtBancoLin.COLUMNNAME_Z_LoadExtBancoLin_ID + " = " + lineaID;
+					DB.executeUpdateEx(action, get_TrxName());
+				}
+
+				lineaArchivo = bReader.readLine();
+			}
+
+			this.setQtyCount(contLineas);
+			this.saveEx();
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			if (bReader != null){
+				try{
+					bReader.close();
+					if (fReader != null){
+						fReader.close();
+					}
+				}
+				catch (Exception e){
+					log.log(Level.SEVERE, e.getMessage());
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/***
+	 * Valida lineas leídas desde archivo y carga información asociada.
+	 * Xpande. Created by Gabriel Vila on 4/2/19.
+	 */
+	private void setDataFromFile(String nombreFormatoImpArchivo) {
+
+		try{
+
+			int contadorOK = 0;
+			int contadorError = 0;
+
+			List<MZLoadExtBancoLin> extBancoLinList = this.getLines();
+			for (MZLoadExtBancoLin extBancoLin : extBancoLinList){
+
+				if (extBancoLin.getErrorMsg() != null){
+					contadorError++;
+					continue;
+				}
+
+				extBancoLin.setIsConfirmed(true);
+
+				// Valido fecha del movimiento
+				if ((extBancoLin.getFechaCadena() == null) || (extBancoLin.getFechaCadena().trim().equalsIgnoreCase(""))){
+					extBancoLin.setIsConfirmed(false);
+					extBancoLin.setErrorMsg("No se pudo obtener Fecha de Movimiento");
+				}
+				else{
+
+					Timestamp fecDoc = null;
+
+					// El formato de la fecha depende del banco.
+					if (nombreFormatoImpArchivo.toUpperCase().contains("BBVA")){
+						// Ej: 2019-12-31
+						fecDoc = DateUtils.convertStringToTimestamp_yyyyMMdd(extBancoLin.getFechaCadena(), "-");
+					}
+					if (nombreFormatoImpArchivo.toUpperCase().contains("ITAU")){
+						// Ej: 01DIC19
+						String dia = extBancoLin.getFechaCadena().substring(0,1);
+
+						String mes = extBancoLin.getFechaCadena().substring(2,4);
+						if (mes.equalsIgnoreCase("ENE")) mes = "01";
+						else if (mes.equalsIgnoreCase("FEB")) mes = "02";
+						else if (mes.equalsIgnoreCase("MAR")) mes = "03";
+						else if (mes.equalsIgnoreCase("ABR")) mes = "04";
+						else if (mes.equalsIgnoreCase("MAY")) mes = "05";
+						else if (mes.equalsIgnoreCase("JUN")) mes = "06";
+						else if (mes.equalsIgnoreCase("JUL")) mes = "07";
+						else if (mes.equalsIgnoreCase("AGO")) mes = "08";
+						else if (mes.equalsIgnoreCase("SEP")) mes = "09";
+						else if (mes.equalsIgnoreCase("OCT")) mes = "10";
+						else if (mes.equalsIgnoreCase("NOV")) mes = "11";
+						else if (mes.equalsIgnoreCase("DIC")) mes = "12";
+
+						String anio = "20" + extBancoLin.getFechaCadena().substring(5,6);
+						String fechaAux = anio + "-" + mes + "-" + dia;
+
+						fecDoc = DateUtils.convertStringToTimestamp_yyyyMMdd(fechaAux, "-");
+					}
+					if (nombreFormatoImpArchivo.toUpperCase().contains("HSBC")){
+						fecDoc = DateUtils.convertStringToTimestamp_ddMMyyyy(extBancoLin.getFechaCadena(), "");
+					}
+					if (nombreFormatoImpArchivo.toUpperCase().contains("SANTANDER")){
+						fecDoc = DateUtils.convertStringToTimestamp_ddMMyyyy(extBancoLin.getFechaCadena(), "/");
+					}
+;
+					if (fecDoc == null){
+						extBancoLin.setIsConfirmed(false);
+						extBancoLin.setErrorMsg("Formato de Fecha de Movimiento inválido : " + extBancoLin.getFechaCadena());
+					}
+					extBancoLin.setDateTrx(fecDoc);
+				}
+
+				if (extBancoLin.isConfirmed()){
+					contadorOK++;
+				}
+				else{
+					contadorError++;
+				}
+
+				extBancoLin.saveEx();
+			}
+
+			this.setQty(contadorOK);
+			this.setQtyReject(contadorError);
+			this.saveEx();
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+	}
+
+
 }
