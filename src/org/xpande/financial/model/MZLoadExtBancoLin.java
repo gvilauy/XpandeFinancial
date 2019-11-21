@@ -17,4 +17,10 @@ public class MZLoadExtBancoLin extends X_Z_LoadExtBancoLin {
     public MZLoadExtBancoLin(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
     }
+
+    @Override
+    protected boolean beforeDelete() {
+        log.saveError("ATENCIÓN", "No es posible Eliminar una linea de carga de extracto. Si no quiere considerarla debe desmarcar el check de Procesar.");
+        return false;
+    }
 }

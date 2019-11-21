@@ -33,7 +33,7 @@ public class X_Z_LoadExtBancoLin extends PO implements I_Z_LoadExtBancoLin, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191115L;
+	private static final long serialVersionUID = 20191121L;
 
     /** Standard Constructor */
     public X_Z_LoadExtBancoLin (Properties ctx, int Z_LoadExtBancoLin_ID, String trxName)
@@ -41,17 +41,16 @@ public class X_Z_LoadExtBancoLin extends PO implements I_Z_LoadExtBancoLin, I_Pe
       super (ctx, Z_LoadExtBancoLin_ID, trxName);
       /** if (Z_LoadExtBancoLin_ID == 0)
         {
-			setAmtSourceCr (Env.ZERO);
-			setAmtSourceDr (Env.ZERO);
 			setI_IsImported (false);
 // N
 			setIsConfirmed (false);
 // N
 			setIsOmitted (false);
 // N
+			setIsSelected (true);
+// Y
 			setProcessed (false);
 // N
-			setZ_LoadExtBanco_ID (0);
 			setZ_LoadExtBancoLin_ID (0);
         } */
     }
@@ -351,6 +350,27 @@ public class X_Z_LoadExtBancoLin extends PO implements I_Z_LoadExtBancoLin, I_Pe
 	public boolean isOmitted () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsOmitted);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Selected.
+		@param IsSelected Selected	  */
+	public void setIsSelected (boolean IsSelected)
+	{
+		set_Value (COLUMNNAME_IsSelected, Boolean.valueOf(IsSelected));
+	}
+
+	/** Get Selected.
+		@return Selected	  */
+	public boolean isSelected () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSelected);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

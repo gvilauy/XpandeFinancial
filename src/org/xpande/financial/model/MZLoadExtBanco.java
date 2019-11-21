@@ -387,7 +387,7 @@ public class MZLoadExtBanco extends X_Z_LoadExtBanco implements DocAction, DocOp
 	{
 	//	MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID());
 	//	return pl.getC_Currency_ID();
-		return 0;
+		return super.getC_Currency_ID();
 	}	//	getC_Currency_ID
 
     @Override
@@ -510,6 +510,7 @@ public class MZLoadExtBanco extends X_Z_LoadExtBanco implements DocAction, DocOp
 					extBancoLin.setLineNumber(contLineas);
 					extBancoLin.setFileLineText(lineaArchivo);
 					extBancoLin.setIsConfirmed(false);
+					extBancoLin.setIsSelected(false);
 					extBancoLin.setErrorMsg("Formato de Linea Incorrecto.");
 					extBancoLin.saveEx();
 				}
@@ -517,6 +518,7 @@ public class MZLoadExtBanco extends X_Z_LoadExtBanco implements DocAction, DocOp
 					// Seteo atributos de linea procesada en tabla
 					action = " update " + I_Z_LoadExtBancoLin.Table_Name +
 							" set " + X_Z_LoadExtBancoLin.COLUMNNAME_Z_LoadExtBanco_ID + " = " + this.get_ID() + ", " +
+							" C_Currency_ID =" + this.getC_Currency_ID() + ", " +
 							" LineNumber =" + contLineas + ", " +
 							" FileLineText ='" + lineaArchivo + "' " +
 							" where " + X_Z_LoadExtBancoLin.COLUMNNAME_Z_LoadExtBancoLin_ID + " = " + lineaID;
@@ -587,26 +589,29 @@ public class MZLoadExtBanco extends X_Z_LoadExtBanco implements DocAction, DocOp
 					}
 					if (nombreFormatoImpArchivo.toUpperCase().contains("ITAU")){
 						// Ej: 01DIC19
-						String dia = extBancoLin.getFechaCadena().substring(0,1);
 
-						String mes = extBancoLin.getFechaCadena().substring(2,4);
-						if (mes.equalsIgnoreCase("ENE")) mes = "01";
-						else if (mes.equalsIgnoreCase("FEB")) mes = "02";
-						else if (mes.equalsIgnoreCase("MAR")) mes = "03";
-						else if (mes.equalsIgnoreCase("ABR")) mes = "04";
-						else if (mes.equalsIgnoreCase("MAY")) mes = "05";
-						else if (mes.equalsIgnoreCase("JUN")) mes = "06";
-						else if (mes.equalsIgnoreCase("JUL")) mes = "07";
-						else if (mes.equalsIgnoreCase("AGO")) mes = "08";
-						else if (mes.equalsIgnoreCase("SEP")) mes = "09";
-						else if (mes.equalsIgnoreCase("OCT")) mes = "10";
-						else if (mes.equalsIgnoreCase("NOV")) mes = "11";
-						else if (mes.equalsIgnoreCase("DIC")) mes = "12";
+						if (extBancoLin.getFechaCadena().length() == 7){
+							String dia = extBancoLin.getFechaCadena().substring(0,2);
 
-						String anio = "20" + extBancoLin.getFechaCadena().substring(5,6);
-						String fechaAux = anio + "-" + mes + "-" + dia;
+							String mes = extBancoLin.getFechaCadena().substring(2,5);
+							if (mes.equalsIgnoreCase("ENE")) mes = "01";
+							else if (mes.equalsIgnoreCase("FEB")) mes = "02";
+							else if (mes.equalsIgnoreCase("MAR")) mes = "03";
+							else if (mes.equalsIgnoreCase("ABR")) mes = "04";
+							else if (mes.equalsIgnoreCase("MAY")) mes = "05";
+							else if (mes.equalsIgnoreCase("JUN")) mes = "06";
+							else if (mes.equalsIgnoreCase("JUL")) mes = "07";
+							else if (mes.equalsIgnoreCase("AGO")) mes = "08";
+							else if (mes.equalsIgnoreCase("SEP")) mes = "09";
+							else if (mes.equalsIgnoreCase("OCT")) mes = "10";
+							else if (mes.equalsIgnoreCase("NOV")) mes = "11";
+							else if (mes.equalsIgnoreCase("DIC")) mes = "12";
 
-						fecDoc = DateUtils.convertStringToTimestamp_yyyyMMdd(fechaAux, "-");
+							String anio = "20" + extBancoLin.getFechaCadena().substring(5,7);
+							String fechaAux = anio + "-" + mes + "-" + dia;
+
+							fecDoc = DateUtils.convertStringToTimestamp_yyyyMMdd(fechaAux, "-");
+						}
 					}
 					if (nombreFormatoImpArchivo.toUpperCase().contains("HSBC")){
 						fecDoc = DateUtils.convertStringToTimestamp_ddMMyyyy(extBancoLin.getFechaCadena(), "");

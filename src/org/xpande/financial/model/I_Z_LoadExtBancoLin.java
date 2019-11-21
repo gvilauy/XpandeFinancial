@@ -268,6 +268,15 @@ public interface I_Z_LoadExtBancoLin
 	  */
 	public boolean isOmitted();
 
+    /** Column name IsSelected */
+    public static final String COLUMNNAME_IsSelected = "IsSelected";
+
+	/** Set Selected	  */
+	public void setIsSelected(boolean IsSelected);
+
+	/** Get Selected	  */
+	public boolean isSelected();
+
     /** Column name LineNumber */
     public static final String COLUMNNAME_LineNumber = "LineNumber";
 
