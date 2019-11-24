@@ -771,10 +771,9 @@ public class SaldoPendiente {
         try{
             sql = " select a.z_ordenpago_id, a.z_pago_id, op.datedoc as dateordered, pago.datedoc as daterefpago " +
                     " from z_invoiceafectacion a " +
-                    " left outer join z_ordenpago op on a.z_ordenpago_id = op.z_ordenpago_id " +
-                    " left outer join z_pago pago on a.z_pago_id = pago.z_pago_id " +
+                    " left outer join z_ordenpago op on (a.z_ordenpago_id = op.z_ordenpago_id and op.datedoc >'" + this.endDate + "')  " +
+                    " left outer join z_pago pago on (a.z_pago_id = pago.z_pago_id and pago.datedoc >'" + this.endDate + "')  " +
                     " where a.c_invoice_id =" + cInvoiceID +
-                    " and pago.datedoc >'" + this.endDate + "' " +
                     " order by a.datedoc desc ";
 
         	pstmt = DB.prepareStatement(sql, null);
@@ -830,10 +829,9 @@ public class SaldoPendiente {
         try{
             sql = " select a.z_ordenpago_id, a.z_pago_id, op.datedoc as dateordered, pago.datedoc as daterefpago " +
                     " from z_transferafectacion a " +
-                    " left outer join z_ordenpago op on a.z_ordenpago_id = op.z_ordenpago_id " +
-                    " left outer join z_pago pago on a.z_pago_id = pago.z_pago_id " +
+                    " left outer join z_ordenpago op on (a.z_ordenpago_id = op.z_ordenpago_id and op.datedoc >'" + this.endDate + "')  " +
+                    " left outer join z_pago pago on (a.z_pago_id = pago.z_pago_id and pago.datedoc >'" + this.endDate + "')  " +
                     " where a.z_transfersaldo_id =" + zTransferSaldoID +
-                    " and a.datedoc >'" + this.endDate + "' " +
                     " order by a.datedoc desc ";
 
             pstmt = DB.prepareStatement(sql, null);
