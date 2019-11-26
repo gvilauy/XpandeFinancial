@@ -619,6 +619,9 @@ public class MZLoadExtBanco extends X_Z_LoadExtBanco implements DocAction, DocOp
 					if (nombreFormatoImpArchivo.toUpperCase().contains("SANTANDER")){
 						fecDoc = DateUtils.convertStringToTimestamp_ddMMyyyy(extBancoLin.getFechaCadena(), "/");
 					}
+					if (nombreFormatoImpArchivo.toUpperCase().contains("BROU")){
+						fecDoc = DateUtils.convertStringToTimestamp_MMddyyyy(extBancoLin.getFechaCadena(), "/");
+					}
 ;
 					if (fecDoc == null){
 						extBancoLin.setIsConfirmed(false);
