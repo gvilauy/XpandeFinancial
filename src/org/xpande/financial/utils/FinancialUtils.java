@@ -139,6 +139,7 @@ public final class FinancialUtils {
                         estadoCuenta.setIsSOTrx(model.isSOTrx());
                         estadoCuenta.setRecord_ID(model.get_ID());
                         estadoCuenta.setAD_Org_ID(model.getAD_Org_ID());
+                        estadoCuenta.set_ValueOfColumn("AD_Client_ID", model.getAD_Client_ID());
 
                         if ((transferSaldo != null) && (transferSaldo.get_ID() > 0)){
                             estadoCuenta.setZ_TransferSaldo_To_ID(transferSaldo.get_ID());
@@ -215,6 +216,7 @@ public final class FinancialUtils {
                     estadoCuenta.setIsSOTrx(model.isSOTrx());
                     estadoCuenta.setRecord_ID(model.get_ID());
                     estadoCuenta.setAD_Org_ID(model.getAD_Org_ID());
+                    estadoCuenta.set_ValueOfColumn("AD_Client_ID", model.getAD_Client_ID());
 
                     if ((transferSaldo != null) && (transferSaldo.get_ID() > 0)){
                         estadoCuenta.setZ_TransferSaldo_To_ID(transferSaldo.get_ID());
