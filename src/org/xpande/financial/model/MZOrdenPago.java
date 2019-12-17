@@ -638,6 +638,8 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 				ordenMedioPago.setDateEmitted(this.getDateDoc());
 
+				if (ordenMedioPago.getDueDate() == null) ordenMedioPago.setDueDate(ordenMedioPago.getDateEmitted());
+
 				// Si no tengo item de medio de pago, y en caso de que este medio de pago requiera folio,
 				// entonces obtengo el siguiente disponible del folio
 				MZMedioPagoItem medioPagoItem = null;
