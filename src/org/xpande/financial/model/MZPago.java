@@ -2945,6 +2945,10 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				this.setExtornarAcct(true);
 			}
 
+			BigDecimal amtRounding = (BigDecimal) invoice.get_Value("AmtRounding");
+			if (amtRounding == null) amtRounding = Env.ZERO;
+			BigDecimal amtTotal = invoice.getGrandTotal().add(amtRounding);
+
 			// Seteo atributos del cabezal del documento de pago/cobro.
 			this.setAD_Client_ID(invoice.getAD_Client_ID());
 			this.setAD_Org_ID(invoice.getAD_Org_ID());
@@ -2953,8 +2957,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			this.setC_BPartner_ID(invoice.getC_BPartner_ID());
 			this.setC_Currency_ID(invoice.getC_Currency_ID());
 			this.setDateDoc(invoice.getDateInvoiced());
-			this.setPayAmt(invoice.getGrandTotal());
-			this.setTotalMediosPago(invoice.getGrandTotal());
+			this.setPayAmt(amtTotal);
+			this.setTotalMediosPago(amtTotal);
 			this.setTieneOrdenPago(false);
 			this.setTieneRecibo(false);
 			this.saveEx();
