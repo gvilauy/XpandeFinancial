@@ -100,6 +100,11 @@ public class SaldoPendiente {
 
                 // Incluyo anticipos a socios de negocio
                 this.getDataAnticipos();
+
+                // Si el reporte es para proveedores, incluyo resguardos que no esten asociados a ordenes de pago o recibos.
+                if (this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
+                    this.getDataResguardos();
+                }
             }
 
             // Si el usuario indica incluír todos los documentos o solamente cuenta documentada
@@ -186,7 +191,6 @@ public class SaldoPendiente {
             throw new AdempiereException(e);
         }
     }
-
 
     /***
      * Obtiene información de documentos de Transferencia de Saldo para el reporte.
@@ -336,6 +340,47 @@ public class SaldoPendiente {
 
     }
 
+    /***
+     * Obtiene información de resguardos para el reporte.
+     * Xpande. Created by Gabriel Vila on 1/9/20.
+     */
+    private void getDataResguardos(){
+
+        String sql = "", action = "";
+
+        try{
+
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, c_invoice_id, c_invoicepayschedule_id, " +
+                    " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
+                    " amtdocument, amtopen, amtallocated,  " +
+                    " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, enddate, " +
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, isgasto) ";
+
+            String whereClause = " and a.ad_client_id =" + this.adClientID;
+
+            if (this.adOrgID > 0){
+                whereClause += " and a.ad_org_id =" + this.adOrgID;
+            }
+
+            if (this.cBPartnerID > 0){
+                whereClause += " and a.c_bpartner_id =" + this.cBPartnerID;
+            }
+
+            if (this.cCurrencyID > 0){
+                whereClause += " and a.c_currency_id =" + this.cCurrencyID;
+            }
+
+            whereClause += " and a.docdate <='" + this.endDate + "'";
+
+            sql = " ";
+
+            //DB.executeUpdateEx(action + sql, null);
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
 
     /***
      * Obtiene información de medios de pago emitidos pero no entregados para el reporte.
