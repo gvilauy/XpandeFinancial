@@ -349,12 +349,14 @@ public class SaldoPendiente {
         String sql = "", action = "";
 
         try{
-
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, c_invoice_id, c_invoicepayschedule_id, " +
+            // Incluyo Resguardos
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, z_resguardosocio_id, " +
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, enddate, " +
-                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, isgasto) ";
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference) ";
+
+            String whereClauseAfecta = "";
 
             String whereClause = " and a.ad_client_id =" + this.adClientID;
 
@@ -370,11 +372,32 @@ public class SaldoPendiente {
                 whereClause += " and a.c_currency_id =" + this.cCurrencyID;
             }
 
-            whereClause += " and a.docdate <='" + this.endDate + "'";
+            if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+                whereClause += " and a.datedoc <='" + this.endDate + "'";
+                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
+            }
+            else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+                whereClause += " and a.datedoc <='" + this.endDate + "'";
+                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
+            }
+            else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+                whereClause += " and a.datedoc <='" + this.endDate + "'";
+                whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
+            }
 
-            sql = " ";
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_resguardosocio_id, a.c_doctype_id, " +
+                    " a.documentno, a.c_currency_id, a.datedoc, a.datedoc, a.datedoc, 'N', doc.docbasetype, " +
+                    " a.totalamt as amtdocument, a.totalamt as amtopen, 0, " +
+                    this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
+                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
+                    this.adOrgID + ", 0, 'ABIERTA' " +
+                    " from z_resguardosocio a " +
+                    " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
+                    " where a.docstatus ='CO' " +
+                    " and z_resguarsosocio_id not in (select z_resguardosocio_id from z_resguardosociodoc where z_resguardosocio_id is not null) " +
+                    " order by a.datedoc, a.c_bpartner_id ";
 
-            //DB.executeUpdateEx(action + sql, null);
+            DB.executeUpdateEx(action + sql, null);
 
         }
         catch (Exception e){
@@ -527,7 +550,7 @@ public class SaldoPendiente {
                     " set amtopen = (amtopen * -1), amtdocument = (amtdocument * -1), amtallocated = (amtallocated * -1) " +
                     " where ad_user_id =" + this.adUserID +
                     //" and docbasetype in ('APC', 'ARC', 'PPA', 'CCA') ";
-                    " and docbasetype in ('APC', 'ARC') ";
+                    " and docbasetype in ('APC', 'ARC', 'RGU') ";
             DB.executeUpdateEx(action, null);
 
             // Actualizo información de ultimo recibo y/o orden de pago
