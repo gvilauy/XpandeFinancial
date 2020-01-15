@@ -394,7 +394,7 @@ public class SaldoPendiente {
                     " from z_resguardosocio a " +
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
                     " where a.docstatus ='CO' " +
-                    " and z_resguarsosocio_id not in (select z_resguardosocio_id from z_resguardosociodoc where z_resguardosocio_id is not null) " +
+                    " and z_resguardosocio_id not in (select z_resguardosocio_id from z_resguardosociodoc where z_resguardosocio_id is not null) " +
                     " order by a.datedoc, a.c_bpartner_id ";
 
             DB.executeUpdateEx(action + sql, null);
