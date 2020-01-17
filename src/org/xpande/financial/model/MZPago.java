@@ -2421,6 +2421,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
 					MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
 					medioPagoItem.setZ_Pago_ID(this.get_ID());
+					medioPagoItem.setDateRefPago(this.getDateDoc());
 					medioPagoItem.setEntregado(true);
 					medioPagoItem.saveEx();
 				}
@@ -2460,7 +2461,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				int idAnticipo = rs.getInt("ref_pago_id");
 				if (idAnticipo > 0){
 
-					action = " update z_mediopagoitem set entregado ='Y', z_pago_id =" + this.get_ID() +
+					action = " update z_mediopagoitem set entregado ='Y', z_pago_id =" + this.get_ID() + ", " +
+							" daterefpago ='" + this.getDateDoc() + "' " +
 							" where z_mediopagoitem_id in " +
 							" (select z_mediopagoitem_id from z_pagomediopago where z_pago_id =" + idAnticipo +
 							" and z_mediopagoitem_id is not null) ";

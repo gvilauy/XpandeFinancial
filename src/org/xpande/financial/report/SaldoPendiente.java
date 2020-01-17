@@ -393,8 +393,17 @@ public class SaldoPendiente {
                     this.adOrgID + ", 0, 'ABIERTA' " +
                     " from z_resguardosocio a " +
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
-                    " where a.docstatus ='CO' " +
-                    " and z_resguardosocio_id not in (select z_resguardosocio_id from z_resguardosociodoc where z_resguardosocio_id is not null) " +
+                    " where a.docstatus ='CO' " + whereClause +
+                    " and z_resguardosocio_id not in " +
+                    " (select b.z_resguardosocio_id " +
+                    " from z_pagoresguardo b " +
+                    " inner join z_pago c on b.z_pago_id = c.z_pago_id " +
+                    " where b.z_resguardosocio_id is not null and c.docstatus='CO' and c.datedoc <='" + this.endDate + "') " +
+                    " and z_resguardosocio_id not in " +
+                    " (select b.z_resguardosocio_id " +
+                    " from Z_OrdenPagoLin b " +
+                    " inner join z_ordenpago c on b.z_ordenpago_id = c.z_ordenpago_id " +
+                    " where b.z_resguardosocio_id is not null and c.docstatus='CO' and c.datedoc <='" + this.endDate + "') " +
                     " order by a.datedoc, a.c_bpartner_id ";
 
             DB.executeUpdateEx(action + sql, null);
