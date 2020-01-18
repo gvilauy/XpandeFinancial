@@ -6,6 +6,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.financial.model.X_Z_EmisionMedioPago;
 import org.xpande.financial.model.X_Z_Pago;
+import org.xpande.financial.model.X_Z_ResguardoSocio;
 import org.xpande.financial.model.X_Z_TransferSaldo;
 
 import java.math.BigDecimal;
@@ -670,6 +671,18 @@ public class SaldoPendiente {
                         " and z_emisionmediopago_id > 0 ";
                 DB.executeUpdateEx(action, null);
 
+                // Cuenta contable resguardos
+                action = " update " + TABLA_REPORTE +
+                        " set c_elementvalue_id = (" +
+                        " select distinct account_id from fact_acct " +
+                        " where ad_table_id =" + X_Z_ResguardoSocio.Table_ID +
+                        " and m_product_id is null and c_tax_id is null " +
+                        " and amtacctcr != 0 " +
+                        " and record_id = " + TABLA_REPORTE + ".z_resguardosocio_id) " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and z_resguardosocio_id > 0 ";
+                DB.executeUpdateEx(action, null);
+
             }
 
         }
@@ -824,8 +837,10 @@ public class SaldoPendiente {
                 else if (rs.getInt("z_transfersaldo_id") > 0){
                     this.updateInfoPagoTransferSaldo(rs.getInt("z_transfersaldo_id"));
                 }
-
-                // Actualizo anticipos
+                // Actualizo resguardos
+                else if (rs.getInt("z_resguardosocio_id") > 0){
+                    this.updateInfoPagoResguardo(rs.getInt("z_resguardosocio_id"));
+                }
 
         	}
         }
@@ -961,4 +976,73 @@ public class SaldoPendiente {
         }
 
     }
+
+    /***
+     * Actualiza información de pagos asociados a un determinado resguardo.
+     * Xpande. Created by Gabriel Vila on 1/17/20.
+     * @param zResguardoSocioID
+     */
+    private void updateInfoPagoResguardo(int zResguardoSocioID){
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            // Ordenes de pago
+            sql = "  select a.z_resguardosocio_id, op.z_ordenpago_id, op.datedoc as dateordered " +
+                    " from z_resguardosocio a " +
+                    " inner join z_ordenpagolin opl on a.z_resguardosocio_id = opl.z_resguardosocio_id " +
+                    " inner join z_ordenpago op on (opl.z_ordenpago_id = op.z_ordenpago_id and op.datedoc >'" + this.endDate + "') " +
+                    " where a.z_resguardosocio_id =" + zResguardoSocioID +
+                    " order by a.datedoc desc ";
+
+            pstmt = DB.prepareStatement(sql, null);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " dateordered ='" + rs.getTimestamp("dateordered") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and z_resguardosocio_id =" + zResguardoSocioID;
+                    DB.executeUpdateEx(action, null);
+            }
+
+            DB.close(rs, pstmt);
+
+            // Pagos
+            sql = " select a.z_resguardosocio_id, pago.z_pago_id, pago.datedoc as daterefpago " +
+                    " from z_resguardosocio a " +
+                    " inner join z_pagoresguardo pr on a.z_resguardosocio_id = pr.z_resguardosocio_id " +
+                    " inner join z_pago pago on (pr.z_pago_id = pago.z_pago_id and pago.datedoc >'" + this.endDate + "') " +
+                    " where a.z_resguardosocio_id =" + zResguardoSocioID +
+                    " order by a.datedoc desc ";
+
+            pstmt = DB.prepareStatement(sql, null);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()){
+
+                action = " update " + TABLA_REPORTE +
+                        " set z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                        " daterefpago ='" + rs.getTimestamp("daterefpago") + "' " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and z_resguardosocio_id =" + zResguardoSocioID;
+                DB.executeUpdateEx(action, null);
+            }
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+    }
+
 }
