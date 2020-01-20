@@ -2,7 +2,9 @@ package org.xpande.financial.model;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -35,10 +37,13 @@ public class MZGeneraOrdenPagoLin extends X_Z_GeneraOrdenPagoLin {
 
         try{
 
-            action = " update z_generaordenpagosocio set totalamt = " +
-                        " (select sum(coalesce(amtallocation,0)) from z_generaordenpagolin " +
-                        " where z_generaordenpagosocio_id =" + this.getZ_GeneraOrdenPagoSocio_ID() +
-                        " and isselected ='Y') " +
+            String sql = " select sum(coalesce(amtallocation,0)) from z_generaordenpagolin " +
+                            " where z_generaordenpagosocio_id =" + this.getZ_GeneraOrdenPagoSocio_ID() +
+                            " and isselected ='Y' ";
+            BigDecimal amt = DB.getSQLValueBDEx(get_TrxName(), sql);
+            if (amt == null) amt = Env.ZERO;
+
+            action = " update z_generaordenpagosocio set totalamt =" + amt +
                         " where z_generaordenpagosocio_id =" + this.getZ_GeneraOrdenPagoSocio_ID();
 
             DB.executeUpdateEx(action, get_TrxName());
