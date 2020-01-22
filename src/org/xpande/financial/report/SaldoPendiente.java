@@ -841,7 +841,10 @@ public class SaldoPendiente {
                 else if (rs.getInt("z_resguardosocio_id") > 0){
                     this.updateInfoPagoResguardo(rs.getInt("z_resguardosocio_id"));
                 }
-
+                // Actualizo medio de pago
+                else if (rs.getInt("z_mediopagoitem_id") > 0){
+                    this.updateInfoPagoMediosPago(rs.getInt("z_mediopagoitem_id"));
+                }
         	}
         }
         catch (Exception e){
@@ -976,6 +979,92 @@ public class SaldoPendiente {
         }
 
     }
+
+
+    private void updateInfoPagoMediosPago(int zMedioPagoItemID){
+
+        String sql = "", action = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.z_ordenpago_id, a.z_pago_id, op.datedoc as dateordered, pago.datedoc as daterefpago " +
+                    " from z_mediopagoitem a " +
+                    " left outer join z_ordenpago op on a.z_ordenpago_id = op.z_ordenpago_id " +
+                    " left outer join z_pago pago on (a.z_pago_id = pago.z_pago_id and pago.datedoc >'" + this.endDate + "')  " +
+                    " where a.z_mediopagoitem_id =" + zMedioPagoItemID +
+                    " order by a.dateemitted desc ";
+
+            pstmt = DB.prepareStatement(sql, null);
+            rs = pstmt.executeQuery();
+
+            if(rs.next()){
+
+                if ((rs.getTimestamp("dateordered") != null) && (rs.getTimestamp("daterefpago") != null)){
+
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                            " dateordered ='" + rs.getTimestamp("dateordered") + "', " +
+                            " daterefpago ='" + rs.getTimestamp("daterefpago") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and z_mediopagoitem_id =" + zMedioPagoItemID;
+                    DB.executeUpdateEx(action, null);
+                }
+                else if ((rs.getTimestamp("dateordered") == null) && (rs.getTimestamp("daterefpago") != null)){
+
+                    /*
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                            " daterefpago ='" + rs.getTimestamp("daterefpago") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and z_mediopagoitem_id =" + zMedioPagoItemID;
+                    DB.executeUpdateEx(action, null);
+                    */
+
+                    action = " update " + TABLA_REPORTE +
+                            " set z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                            " daterefpago ='" + rs.getTimestamp("daterefpago") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and z_mediopagoitem_id =" + zMedioPagoItemID;
+                    DB.executeUpdateEx(action, null);
+
+
+                }
+                else if ((rs.getTimestamp("dateordered") != null) && (rs.getTimestamp("daterefpago") == null)){
+
+                    /*
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " z_pago_id =" + rs.getInt("z_pago_id") + ", " +
+                            " dateordered ='" + rs.getTimestamp("dateordered") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and z_mediopagoitem_id =" + zMedioPagoItemID;
+                    DB.executeUpdateEx(action, null);
+                    */
+
+                    action = " update " + TABLA_REPORTE +
+                            " set z_ordenpago_id =" + rs.getInt("z_ordenpago_id") + ", " +
+                            " dateordered ='" + rs.getTimestamp("dateordered") + "' " +
+                            " where ad_user_id =" + this.adUserID +
+                            " and z_mediopagoitem_id =" + zMedioPagoItemID;
+                    DB.executeUpdateEx(action, null);
+
+                }
+
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+
+    }
+
 
     /***
      * Actualiza información de pagos asociados a un determinado resguardo.
