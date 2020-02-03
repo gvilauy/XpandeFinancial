@@ -182,7 +182,8 @@ public class SaldoPendiente {
                     " from c_invoice a " +
                     " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
                     " left outer join c_invoicepayschedule ips on a.c_invoice_id = ips.c_invoice_id " +
-                    " where a.docstatus ='CO' " + whereClause +
+                    " where a.docstatus ='CO' " +
+                    " and a.IsForzedPaid ='N' " + whereClause +
                     " order by a.dateinvoiced, a.c_bpartner_id ";
 
             DB.executeUpdateEx(action + sql, null);
@@ -253,7 +254,8 @@ public class SaldoPendiente {
                     " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
                     " inner join c_invoice inv on a.c_invoice_id = inv.c_invoice_id " +
                     " left outer join c_invoicepayschedule ips on inv.c_invoice_id = ips.c_invoice_id " +
-                    " where a.docstatus ='CO' " + whereClause +
+                    " where a.docstatus ='CO' " +
+                    " and a.IsForzedPaid ='N' " + whereClause +
                     " order by a.datedoc, a.c_bpartner_id ";
 
             DB.executeUpdateEx(action + sql, null);
@@ -394,7 +396,8 @@ public class SaldoPendiente {
                     this.adOrgID + ", 0, 'ABIERTA' " +
                     " from z_resguardosocio a " +
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
-                    " where a.docstatus ='CO' " + whereClause +
+                    " where a.docstatus ='CO' " +
+                    " and a.IsForzedPaid ='N' " + whereClause +
                     " and z_resguardosocio_id not in " +
                     " (select b.z_resguardosocio_id " +
                     " from z_pagoresguardo b " +
