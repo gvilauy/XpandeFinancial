@@ -258,7 +258,7 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 
 			// Genero recibo a partir de este array de ordenes de pago
 			MZPago pago = new MZPago(getCtx(), 0, get_TrxName());
-			pago.setAD_Org_ID(loadPagoFile.getAD_Org_ID());
+			pago.setAD_Org_ID(loadPagoFile.getAD_OrgTrx_ID());
 			pago.setIsSOTrx(this.isSOTrx());
 			pago.setC_BPartner_ID(loadPagoFile.getC_BPartner_ID());
 			pago.setC_Currency_ID(loadPagoFile.getC_Currency_ID());
@@ -269,6 +269,7 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 			pago.setPayAmt(loadPagoFile.getTotalAmt());
 			pago.setTotalMediosPago(loadPagoFile.getTotalAmt());
 			pago.setDescription("Generada Automáticamente desde Generación de Recibos Cta.Cte.");
+			pago.setAnticipo(true);
 			pago.saveEx();
 
 			// Cargo medio de pago
@@ -293,6 +294,7 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 			// Instancio de nuevo el modelo de pago porque se actulizaron datos del mismo via DB directo y no quedan en el modelo
 			int pagoIDAux = pago.get_ID();
 			pago = new MZPago(getCtx(), pagoIDAux, get_TrxName());
+			//pago.setPayAmt(pago.getTotalMediosPago());
 
 			// Completo recibo
 			if (!pago.processIt(DocAction.ACTION_Complete)){
