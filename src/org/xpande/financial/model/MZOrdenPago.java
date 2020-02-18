@@ -1234,8 +1234,11 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 					// Marca transferencia de saldo como no paga
 					MZTransferSaldo transferSaldo = (MZTransferSaldo) pagoLin.getZ_TransferSaldo();
-					transferSaldo.setIsPaid(false);
-					transferSaldo.saveEx();
+
+					if ((transferSaldo != null) && (transferSaldo.get_ID() > 0)){
+						transferSaldo.setIsPaid(false);
+						transferSaldo.saveEx();
+					}
 
 					// Anulo afectacion para esta transferencia de saldo
 					action = " delete from z_transferafectacion where z_ordenpago_id =" + this.get_ID() +

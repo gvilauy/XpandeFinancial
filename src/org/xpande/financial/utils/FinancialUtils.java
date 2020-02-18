@@ -494,8 +494,22 @@ public final class FinancialUtils {
 
                 // Si es un anticipo, impacto en estado de cuenta para parte acreedora y deudora
                 if (pago.isAnticipo()){
-                    FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), isVendor, trxName);
-                    FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), !isVendor, trxName);
+
+                    if (!isVendor){
+                        FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), isVendor, trxName);
+                        FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), !isVendor, trxName);
+                    }
+                    else {
+
+                        // Si es anticipo de cobros a empleados
+                        if (partner.isEmployee()){
+                            FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), isVendor, trxName);
+                        }
+                        else{
+                            FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), isVendor, trxName);
+                            FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), !isVendor, trxName);
+                        }
+                    }
                 }
                 else{
                     // Si es un recibo para pago de anticipo
@@ -624,6 +638,7 @@ public final class FinancialUtils {
         try{
 
             MDocType docType = (MDocType) pago.getC_DocType();
+            MBPartner partner = (MBPartner) pago.getC_BPartner();
 
             // Impacto documento en estado de cuenta
             MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(ctx, 0, trxName);
@@ -679,8 +694,15 @@ public final class FinancialUtils {
                         estadoCuenta.setAmtSourceDr(Env.ZERO);
                     }
                     else{
-                        estadoCuenta.setAmtSourceDr(amt);
-                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        // Si es recibo de cobro marcado como anticipo, y es de un empleado
+                        if (partner.isEmployee()){
+                            estadoCuenta.setAmtSourceCr(amt);
+                            estadoCuenta.setAmtSourceDr(Env.ZERO);
+                        }
+                        else{
+                            estadoCuenta.setAmtSourceDr(amt);
+                            estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        }
                     }
                 }
                 else{  // Parte Acreedora
