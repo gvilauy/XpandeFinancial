@@ -33,7 +33,7 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190626L;
+	private static final long serialVersionUID = 20200226L;
 
     /** Standard Constructor */
     public X_Z_EstadoCuenta (Properties ctx, int Z_EstadoCuenta_ID, String trxName)
@@ -293,6 +293,23 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 		return ii.intValue();
 	}
 
+	/** Set Account Date.
+		@param DateAcct 
+		Accounting Date
+	  */
+	public void setDateAcct (Timestamp DateAcct)
+	{
+		set_Value (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	/** Get Account Date.
+		@return Accounting Date
+	  */
+	public Timestamp getDateAcct () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateAcct);
+	}
+
 	/** Set Document Date.
 		@param DateDoc 
 		Date of the Document
@@ -502,6 +519,18 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	public static final String DOCBASETYPE_CIJCargaInicialAsientosContables = "CIJ";
 	/** AVG Generacion de Asientos de Venta POS = AVG */
 	public static final String DOCBASETYPE_AVGGeneracionDeAsientosDeVentaPOS = "AVG";
+	/** DFC Diferencia de Cambio = DFC */
+	public static final String DOCBASETYPE_DFCDiferenciaDeCambio = "DFC";
+	/** FME Formulario Movimiento Efectivo = FME */
+	public static final String DOCBASETYPE_FMEFormularioMovimientoEfectivo = "FME";
+	/** DPT Deposito Medio Pago Tercero = DPT */
+	public static final String DOCBASETYPE_DPTDepositoMedioPagoTercero = "DPT";
+	/** AVR Asiento de Reclasificación de Medios de Pago = AVR */
+	public static final String DOCBASETYPE_AVRAsientoDeReclasificaciónDeMediosDePago = "AVR";
+	/** CEX Carga Extractos Bancarios = CEX */
+	public static final String DOCBASETYPE_CEXCargaExtractosBancarios = "CEX";
+	/** CIP Carga Inicial de Pagoa / Cobros = CIP */
+	public static final String DOCBASETYPE_CIPCargaInicialDePagoaCobros = "CIP";
 	/** Set Document BaseType.
 		@param DocBaseType 
 		Logical type of document

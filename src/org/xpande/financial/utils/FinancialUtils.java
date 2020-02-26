@@ -132,6 +132,7 @@ public final class FinancialUtils {
                         estadoCuenta.setC_Currency_ID(model.getC_Currency_ID());
                         estadoCuenta.setC_DocType_ID(model.getC_DocTypeTarget_ID());
                         estadoCuenta.setDateDoc(model.getDateInvoiced());
+                        estadoCuenta.setDateAcct(model.getDateAcct());
                         estadoCuenta.setDocBaseType(docType.getDocBaseType());
                         estadoCuenta.setDocumentNoRef(documentNoRef);
                         estadoCuenta.setDueDate(ips.getDueDate());
@@ -209,6 +210,7 @@ public final class FinancialUtils {
                     estadoCuenta.setC_Currency_ID(model.getC_Currency_ID());
                     estadoCuenta.setC_DocType_ID(model.getC_DocTypeTarget_ID());
                     estadoCuenta.setDateDoc(model.getDateInvoiced());
+                    estadoCuenta.setDateAcct(model.getDateAcct());
                     estadoCuenta.setDocBaseType(docType.getDocBaseType());
                     estadoCuenta.setDocumentNoRef(documentNoRef);
                     estadoCuenta.setDueDate(dueDate);
@@ -307,6 +309,7 @@ public final class FinancialUtils {
                 estadoCuenta.setC_Currency_ID(transferSaldo.getC_Currency_ID());
                 estadoCuenta.setC_DocType_ID(transferSaldo.getC_DocType_ID());
                 estadoCuenta.setDateDoc(transferSaldo.getDateDoc());
+                estadoCuenta.setDateAcct(transferSaldo.getDateDoc());
                 estadoCuenta.setDocBaseType(docType.getDocBaseType());
                 estadoCuenta.setDocumentNoRef(transferSaldo.getDocumentNo());
                 estadoCuenta.setDueDate(dueDate);
@@ -361,6 +364,7 @@ public final class FinancialUtils {
                 estadoCuentaInv.setC_Currency_ID(transferSaldo.getC_Currency_ID());
                 estadoCuentaInv.setC_DocType_ID(transferSaldo.getC_DocType_ID());
                 estadoCuentaInv.setDateDoc(transferSaldo.getDateDoc());
+                estadoCuentaInv.setDateAcct(transferSaldo.getDateDoc());
                 estadoCuentaInv.setDocBaseType(docType.getDocBaseType());
                 estadoCuentaInv.setDocumentNoRef(transferSaldo.getDocumentNo());
                 estadoCuentaInv.setDueDate(dueDate);
@@ -435,6 +439,7 @@ public final class FinancialUtils {
                 estadoCuenta.setC_Currency_ID(resguardoSocio.getC_Currency_ID());
                 estadoCuenta.setC_DocType_ID(resguardoSocio.getC_DocType_ID());
                 estadoCuenta.setDateDoc(resguardoSocio.getDateDoc());
+                estadoCuenta.setDateAcct(resguardoSocio.getDateDoc());
                 estadoCuenta.setDocBaseType(docType.getDocBaseType());
                 estadoCuenta.setDocumentNoRef(resguardoSocio.getDocumentNo());
                 estadoCuenta.setIsSOTrx(false);
@@ -648,6 +653,7 @@ public final class FinancialUtils {
             estadoCuenta.setC_Currency_ID(pago.getC_Currency_ID());
             estadoCuenta.setC_DocType_ID(pago.getC_DocType_ID());
             estadoCuenta.setDateDoc(pago.getDateDoc());
+            estadoCuenta.setDateAcct(pago.getDateDoc());
             estadoCuenta.setDocBaseType(docType.getDocBaseType());
             if ((pago.getNroRecibo() != null) && (!pago.getNroRecibo().trim().equalsIgnoreCase(""))){
                 estadoCuenta.setDocumentNoRef(pago.getNroRecibo());
@@ -905,6 +911,7 @@ public final class FinancialUtils {
             estadoCuenta.setC_Currency_ID(ordenPago.getC_Currency_ID());
             estadoCuenta.setC_DocType_ID(ordenPago.getC_DocType_ID());
             estadoCuenta.setDateDoc(ordenPago.getDateDoc());
+            estadoCuenta.setDateAcct(ordenPago.getDateDoc());
             estadoCuenta.setDocBaseType(docType.getDocBaseType());
             estadoCuenta.setDocumentNoRef(ordenPago.getDocumentNo());
             estadoCuenta.setIsSOTrx(false);

@@ -203,6 +203,9 @@ public class EstadoCuenta {
         else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
             whereClause += " and duedate between '" + this.startDate + "' AND '" + this.endDate + "'";
         }
+        else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+            whereClause += " and dateacct between '" + this.startDate + "' AND '" + this.endDate + "'";
+        }
 
         if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
             whereClause += " and TipoSocioNegocio ='CLIENTES'";
@@ -321,6 +324,9 @@ public class EstadoCuenta {
             }
             else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
                 whereClause += " and duedate < '" + this.startDate + "'";
+            }
+            else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+                whereClause += " and dateacct < '" + this.startDate + "'";
             }
 
             if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
