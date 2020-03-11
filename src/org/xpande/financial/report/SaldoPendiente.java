@@ -403,11 +403,15 @@ public class SaldoPendiente {
                     " from z_pagoresguardo b " +
                     " inner join z_pago c on b.z_pago_id = c.z_pago_id " +
                     " where b.z_resguardosocio_id is not null and c.docstatus='CO' and c.datedoc <='" + this.endDate + "') " +
+
+                    /*
                     " and z_resguardosocio_id not in " +
                     " (select b.z_resguardosocio_id " +
                     " from Z_OrdenPagoLin b " +
                     " inner join z_ordenpago c on b.z_ordenpago_id = c.z_ordenpago_id " +
                     " where b.z_resguardosocio_id is not null and c.docstatus='CO' and c.datedoc <='" + this.endDate + "') " +
+                     */
+
                     " order by a.datedoc, a.c_bpartner_id ";
 
             DB.executeUpdateEx(action + sql, null);
@@ -1082,7 +1086,7 @@ public class SaldoPendiente {
             sql = "  select a.z_resguardosocio_id, op.z_ordenpago_id, op.datedoc as dateordered " +
                     " from z_resguardosocio a " +
                     " inner join z_ordenpagolin opl on a.z_resguardosocio_id = opl.z_resguardosocio_id " +
-                    " inner join z_ordenpago op on (opl.z_ordenpago_id = op.z_ordenpago_id and op.datedoc >'" + this.endDate + "') " +
+                    " inner join z_ordenpago op on opl.z_ordenpago_id = op.z_ordenpago_id " +
                     " where a.z_resguardosocio_id =" + zResguardoSocioID +
                     " order by a.datedoc desc ";
 
