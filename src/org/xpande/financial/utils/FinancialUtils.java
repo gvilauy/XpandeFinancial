@@ -9,6 +9,7 @@ import org.xpande.financial.model.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -501,18 +502,18 @@ public final class FinancialUtils {
                 if (pago.isAnticipo()){
 
                     if (!isVendor){
-                        FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), isVendor, trxName);
-                        FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), !isVendor, trxName);
+                        FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), isVendor, trxName);
+                        FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), !isVendor, trxName);
                     }
                     else {
 
                         // Si es anticipo de cobros a empleados
                         if (partner.isEmployee()){
-                            FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), isVendor, trxName);
+                            FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), isVendor, trxName);
                         }
                         else{
-                            FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), isVendor, trxName);
-                            FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), !isVendor, trxName);
+                            FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), isVendor, trxName);
+                            FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), !isVendor, trxName);
                         }
                     }
                 }
@@ -520,7 +521,7 @@ public final class FinancialUtils {
                     // Si es un recibo para pago de anticipo
                     if (pago.isReciboAnticipo()){
                         // Impacto solamente parte acreedora para pagos y parte deudora para cobros
-                        FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), isVendor, trxName);
+                        FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), isVendor, trxName);
                     }
                     else{
 
@@ -528,11 +529,11 @@ public final class FinancialUtils {
                         if (amtAnticipo == null) amtAnticipo = Env.ZERO;
 
                         // Impacto parte acreedora para pagos y deudora para cobros, por monto total menos anticipos
-                        FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt().add(amtAnticipo), isVendor, trxName);
+                        FinancialUtils.setEstadoCtaPago(ctx, pago, true, pago.getPayAmt().add(amtAnticipo), isVendor, trxName);
 
                         // Impacto parte deudora para pagos y acreedora para cobros por monto anticipos (si es mayor a cero)
                         if (amtAnticipo.compareTo(Env.ZERO) > 0){
-                            FinancialUtils.setEstadoCtaPago(ctx, pago, amtAnticipo, !isVendor, trxName);
+                            FinancialUtils.setEstadoCtaPago(ctx, pago, true, amtAnticipo, !isVendor, trxName);
                         }
                     }
                 }
@@ -638,104 +639,188 @@ public final class FinancialUtils {
      * @param isVendor
      * @param trxName
      */
-    private static void setEstadoCtaPago(Properties ctx, MZPago pago, BigDecimal amt, boolean isVendor, String trxName){
+    private static void setEstadoCtaPago(Properties ctx, MZPago pago, Boolean considerarAmt, BigDecimal amt, boolean isVendor, String trxName){
 
         try{
 
             MDocType docType = (MDocType) pago.getC_DocType();
             MBPartner partner = (MBPartner) pago.getC_BPartner();
 
-            // Impacto documento en estado de cuenta
-            MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(ctx, 0, trxName);
-            estadoCuenta.setZ_Pago_ID(pago.get_ID());
-            estadoCuenta.setAD_Table_ID(pago.get_Table_ID());
-            estadoCuenta.setC_BPartner_ID(pago.getC_BPartner_ID());
-            estadoCuenta.setC_Currency_ID(pago.getC_Currency_ID());
-            estadoCuenta.setC_DocType_ID(pago.getC_DocType_ID());
-            estadoCuenta.setDateDoc(pago.getDateDoc());
-            estadoCuenta.setDateAcct(pago.getDateDoc());
-            estadoCuenta.setDocBaseType(docType.getDocBaseType());
-            if ((pago.getNroRecibo() != null) && (!pago.getNroRecibo().trim().equalsIgnoreCase(""))){
-                estadoCuenta.setDocumentNoRef(pago.getNroRecibo());
+            // Hago tantos impactos de este pago como monedas tengan sus lineas
+            HashMap<Integer, InfoMultiCurrency> hashPagosMoneda = new HashMap<Integer, InfoMultiCurrency>();
+            List<MZPagoLin> pagoLinList = pago.getSelectedLines();
+            for (MZPagoLin pagoLin: pagoLinList){
+                // Sumarizo por moneda para contabilizacion CR por cuenta de Socio de Negocio y Moneda.
+                if (!hashPagosMoneda.containsKey(pagoLin.getC_Currency_ID())){
+                    hashPagosMoneda.put(pagoLin.getC_Currency_ID(), new InfoMultiCurrency());
+                    hashPagosMoneda.get(pagoLin.getC_Currency_ID()).cuurencyID = pagoLin.getC_Currency_ID();
+                }
+                hashPagosMoneda.get(pagoLin.getC_Currency_ID()).amtSource = hashPagosMoneda.get(pagoLin.getC_Currency_ID()).amtSource.add(pagoLin.getAmtAllocation());
+                hashPagosMoneda.get(pagoLin.getC_Currency_ID()).amtAcct = hashPagosMoneda.get(pagoLin.getC_Currency_ID()).amtAcct.add(pagoLin.getAmtAllocationMT());
             }
-            else{
-                estadoCuenta.setDocumentNoRef(pago.getDocumentNo());
-            }
+            // DR : Cuenta Acreedores del Socio de Negocio según moneda
+            for (HashMap.Entry<Integer, InfoMultiCurrency> entry : hashPagosMoneda.entrySet()){
 
-            estadoCuenta.setIsSOTrx(pago.isSOTrx());
+                // Impacto documento en estado de cuenta
+                MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(ctx, 0, trxName);
+                estadoCuenta.setZ_Pago_ID(pago.get_ID());
+                estadoCuenta.setAD_Table_ID(pago.get_Table_ID());
+                estadoCuenta.setC_BPartner_ID(pago.getC_BPartner_ID());
+                //estadoCuenta.setC_Currency_ID(pago.getC_Currency_ID());
+                estadoCuenta.setC_Currency_ID(entry.getValue().cuurencyID);
+                estadoCuenta.setC_DocType_ID(pago.getC_DocType_ID());
+                estadoCuenta.setDateDoc(pago.getDateDoc());
+                estadoCuenta.setDateAcct(pago.getDateDoc());
+                estadoCuenta.setDocBaseType(docType.getDocBaseType());
+                if ((pago.getNroRecibo() != null) && (!pago.getNroRecibo().trim().equalsIgnoreCase(""))){
+                    estadoCuenta.setDocumentNoRef(pago.getNroRecibo());
+                }
+                else{
+                    estadoCuenta.setDocumentNoRef(pago.getDocumentNo());
+                }
 
-            // Si es Recibo de Proveedor
-            if (!pago.isSOTrx()){
-                // Parte Acreedora
-                if (isVendor){
-                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
-                    if (!pago.isAnticipo()){
-                        estadoCuenta.setAmtSourceCr(Env.ZERO);
-                        estadoCuenta.setAmtSourceDr(amt);
+                estadoCuenta.setIsSOTrx(pago.isSOTrx());
+
+                // Si es Recibo de Proveedor
+                if (!pago.isSOTrx()){
+                    // Parte Acreedora
+                    if (isVendor){
+                        estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
+                        if (!pago.isAnticipo()){
+                            estadoCuenta.setAmtSourceCr(Env.ZERO);
+
+                            if (considerarAmt){
+                                estadoCuenta.setAmtSourceDr(amt);
+                            }
+                            else{
+                                //estadoCuenta.setAmtSourceDr(amt);
+                                estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                            }
+                        }
+                        else{
+                            estadoCuenta.setAmtSourceDr(Env.ZERO);
+
+                            if (considerarAmt){
+                                estadoCuenta.setAmtSourceCr(amt);
+                            }
+                            else {
+                                //estadoCuenta.setAmtSourceCr(amt);
+                                estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                            }
+                        }
                     }
-                    else{
-                        estadoCuenta.setAmtSourceDr(Env.ZERO);
-                        estadoCuenta.setAmtSourceCr(amt);
+                    else{  // Parte Deudora
+                        estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
+                        if (!pago.isAnticipo()){
+                            estadoCuenta.setAmtSourceDr(Env.ZERO);
+
+                            if (considerarAmt){
+                                estadoCuenta.setAmtSourceCr(amt);
+                            }
+                            else{
+                                //estadoCuenta.setAmtSourceCr(amt);
+                                estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                            }
+                        }
+                        else{
+                            estadoCuenta.setAmtSourceCr(Env.ZERO);
+
+                            if (considerarAmt){
+                                estadoCuenta.setAmtSourceDr(amt);
+                            }
+                            else{
+                                //estadoCuenta.setAmtSourceDr(amt);
+                                estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                            }
+                        }
                     }
                 }
-                else{  // Parte Deudora
-                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
-                    if (!pago.isAnticipo()){
-                        estadoCuenta.setAmtSourceDr(Env.ZERO);
-                        estadoCuenta.setAmtSourceCr(amt);
-                    }
-                    else{
-                        estadoCuenta.setAmtSourceCr(Env.ZERO);
-                        estadoCuenta.setAmtSourceDr(amt);
-                    }
-                }
-            }
-            else{  // Es Recibo de Cobro
+                else{  // Es Recibo de Cobro
 
-                // Parte Deudora
-                if (!isVendor){
-                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
-                    if (!pago.isAnticipo()){
-                        estadoCuenta.setAmtSourceCr(amt);
-                        estadoCuenta.setAmtSourceDr(Env.ZERO);
-                    }
-                    else{
-                        // Si es recibo de cobro marcado como anticipo, y es de un empleado
-                        if (partner.isEmployee()){
-                            estadoCuenta.setAmtSourceCr(amt);
+                    // Parte Deudora
+                    if (!isVendor){
+                        estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
+                        if (!pago.isAnticipo()){
+
+                            if (considerarAmt){
+                                estadoCuenta.setAmtSourceCr(amt);
+                            }
+                            else{
+                                //estadoCuenta.setAmtSourceCr(amt);
+                                estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                            }
+
                             estadoCuenta.setAmtSourceDr(Env.ZERO);
                         }
                         else{
-                            estadoCuenta.setAmtSourceDr(amt);
+                            // Si es recibo de cobro marcado como anticipo, y es de un empleado
+                            if (partner.isEmployee()){
+
+                                if (considerarAmt){
+                                    estadoCuenta.setAmtSourceCr(amt);
+                                }
+                                else{
+                                    //estadoCuenta.setAmtSourceCr(amt);
+                                    estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                }
+
+                                estadoCuenta.setAmtSourceDr(Env.ZERO);
+                            }
+                            else{
+                                if (considerarAmt){
+                                    estadoCuenta.setAmtSourceDr(amt);
+                                }
+                                else{
+                                    //estadoCuenta.setAmtSourceDr(amt);
+                                    estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                                }
+
+                                estadoCuenta.setAmtSourceCr(Env.ZERO);
+                            }
+                        }
+                    }
+                    else{  // Parte Acreedora
+                        estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
+                        if (!pago.isAnticipo()){
+
+                            if (considerarAmt){
+                                estadoCuenta.setAmtSourceDr(amt);
+                            }
+                            else{
+                                //estadoCuenta.setAmtSourceDr(amt);
+                                estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                            }
+
                             estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        }
+                        else{
+
+                            if (considerarAmt){
+                                estadoCuenta.setAmtSourceCr(amt);
+                            }
+                            else {
+                                //estadoCuenta.setAmtSourceCr(amt);
+                                estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                            }
+
+                            estadoCuenta.setAmtSourceDr(Env.ZERO);
                         }
                     }
                 }
-                else{  // Parte Acreedora
-                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
-                    if (!pago.isAnticipo()){
-                        estadoCuenta.setAmtSourceDr(amt);
-                        estadoCuenta.setAmtSourceCr(Env.ZERO);
-                    }
-                    else{
-                        estadoCuenta.setAmtSourceCr(amt);
-                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+
+                estadoCuenta.setRecord_ID(pago.get_ID());
+                estadoCuenta.setAD_Org_ID(pago.getAD_Org_ID());
+
+                if (!pago.isSOTrx()){
+                    List<MZPagoOrdenPago> ordenPagoList = pago.getOrdenesPagoReferenciadas();
+                    if (ordenPagoList.size() > 0){
+                        estadoCuenta.setZ_OrdenPago_To_ID(ordenPagoList.get(0).getZ_OrdenPago_ID());
+                        estadoCuenta.setDateRefOrdenPago(ordenPagoList.get(0).getDateTrx());
                     }
                 }
+
+                estadoCuenta.saveEx();
             }
-
-            estadoCuenta.setRecord_ID(pago.get_ID());
-            estadoCuenta.setAD_Org_ID(pago.getAD_Org_ID());
-
-            if (!pago.isSOTrx()){
-                List<MZPagoOrdenPago> ordenPagoList = pago.getOrdenesPagoReferenciadas();
-                if (ordenPagoList.size() > 0){
-                    estadoCuenta.setZ_OrdenPago_To_ID(ordenPagoList.get(0).getZ_OrdenPago_ID());
-                    estadoCuenta.setDateRefOrdenPago(ordenPagoList.get(0).getDateTrx());
-                }
-            }
-
-            estadoCuenta.saveEx();
         }
         catch (Exception e){
             throw new AdempiereException(e);
