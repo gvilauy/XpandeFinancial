@@ -420,33 +420,51 @@ public final class FinancialUtils {
                         " where z_resguardosocio_id =" + resguardoSocio.get_ID() + ")";
                 DB.executeUpdateEx(action, trxName);
 
-                // Impacto documento en estado de cuenta
-                MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(ctx, 0, trxName);
-                estadoCuenta.setZ_ResguardoSocio_ID(resguardoSocio.get_ID());
-                estadoCuenta.setAD_Table_ID(resguardoSocio.get_Table_ID());
-
-                estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
-
-                // Monto al debe o al haber segun sea resguardo o contra-resguardo
-                if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
-                    estadoCuenta.setAmtSourceCr(resguardoSocio.getTotalAmt());
-                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                // Hago tantos impactos de este resguardo como monedas tengan sus lineas
+                HashMap<Integer, InfoMultiCurrency> hashResgMoneda = new HashMap<Integer, InfoMultiCurrency>();
+                List<MZResguardoSocioDoc> resguardoSocioDocList = resguardoSocio.getResguardoDocs();
+                for (MZResguardoSocioDoc resguardoSocioDoc: resguardoSocioDocList){
+                    // Sumarizo por moneda
+                    if (!hashResgMoneda.containsKey(resguardoSocioDoc.getC_Currency_ID())){
+                        hashResgMoneda.put(resguardoSocioDoc.getC_Currency_ID(), new InfoMultiCurrency());
+                        hashResgMoneda.get(resguardoSocioDoc.getC_Currency_ID()).cuurencyID = resguardoSocioDoc.getC_Currency_ID();
+                    }
+                    hashResgMoneda.get(resguardoSocioDoc.getC_Currency_ID()).amtSource = hashResgMoneda.get(resguardoSocioDoc.getC_Currency_ID()).amtSource.add(resguardoSocioDoc.getAmtRetencionMO());
+                    hashResgMoneda.get(resguardoSocioDoc.getC_Currency_ID()).amtAcct = hashResgMoneda.get(resguardoSocioDoc.getC_Currency_ID()).amtAcct.add(resguardoSocioDoc.getAmtRetencion());
                 }
-                else{
-                    estadoCuenta.setAmtSourceCr(Env.ZERO);
-                    estadoCuenta.setAmtSourceDr(resguardoSocio.getTotalAmt());
+
+                for (HashMap.Entry<Integer, InfoMultiCurrency> entry : hashResgMoneda.entrySet()){
+
+                    // Impacto documento en estado de cuenta en este moneda
+                    MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(ctx, 0, trxName);
+                    estadoCuenta.setZ_ResguardoSocio_ID(resguardoSocio.get_ID());
+                    estadoCuenta.setAD_Table_ID(resguardoSocio.get_Table_ID());
+
+                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
+
+                    // Monto al debe o al haber segun sea resguardo o contra-resguardo
+                    if (docType.getDocBaseType().equalsIgnoreCase("RGC")){
+                        estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                    }
+                    else{
+                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                    }
+                    estadoCuenta.setC_BPartner_ID(resguardoSocio.getC_BPartner_ID());
+                    estadoCuenta.setC_Currency_ID(entry.getValue().cuurencyID);
+                    estadoCuenta.setC_DocType_ID(resguardoSocio.getC_DocType_ID());
+                    estadoCuenta.setDateDoc(resguardoSocio.getDateDoc());
+                    estadoCuenta.setDateAcct(resguardoSocio.getDateDoc());
+                    estadoCuenta.setDocBaseType(docType.getDocBaseType());
+                    estadoCuenta.setDocumentNoRef(resguardoSocio.getDocumentNo());
+                    estadoCuenta.setIsSOTrx(false);
+                    estadoCuenta.setRecord_ID(resguardoSocio.get_ID());
+                    estadoCuenta.setAD_Org_ID(resguardoSocio.getAD_Org_ID());
+                    estadoCuenta.saveEx();
+
                 }
-                estadoCuenta.setC_BPartner_ID(resguardoSocio.getC_BPartner_ID());
-                estadoCuenta.setC_Currency_ID(resguardoSocio.getC_Currency_ID());
-                estadoCuenta.setC_DocType_ID(resguardoSocio.getC_DocType_ID());
-                estadoCuenta.setDateDoc(resguardoSocio.getDateDoc());
-                estadoCuenta.setDateAcct(resguardoSocio.getDateDoc());
-                estadoCuenta.setDocBaseType(docType.getDocBaseType());
-                estadoCuenta.setDocumentNoRef(resguardoSocio.getDocumentNo());
-                estadoCuenta.setIsSOTrx(false);
-                estadoCuenta.setRecord_ID(resguardoSocio.get_ID());
-                estadoCuenta.setAD_Org_ID(resguardoSocio.getAD_Org_ID());
-                estadoCuenta.saveEx();
+
             }
             else {  // Reactivate o Void del documento
 
@@ -529,7 +547,12 @@ public final class FinancialUtils {
                         if (amtAnticipo == null) amtAnticipo = Env.ZERO;
 
                         // Impacto parte acreedora para pagos y deudora para cobros, por monto total menos anticipos
-                        FinancialUtils.setEstadoCtaPago(ctx, pago, true, pago.getPayAmt().add(amtAnticipo), isVendor, trxName);
+                        if (amtAnticipo.compareTo(Env.ZERO) <= 0){
+                            FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), isVendor, trxName);
+                        }
+                        else{
+                            FinancialUtils.setEstadoCtaPago(ctx, pago, true, pago.getPayAmt().add(amtAnticipo), isVendor, trxName);
+                        }
 
                         // Impacto parte deudora para pagos y acreedora para cobros por monto anticipos (si es mayor a cero)
                         if (amtAnticipo.compareTo(Env.ZERO) > 0){
@@ -650,7 +673,7 @@ public final class FinancialUtils {
             HashMap<Integer, InfoMultiCurrency> hashPagosMoneda = new HashMap<Integer, InfoMultiCurrency>();
             List<MZPagoLin> pagoLinList = pago.getSelectedLines();
             for (MZPagoLin pagoLin: pagoLinList){
-                // Sumarizo por moneda para contabilizacion CR por cuenta de Socio de Negocio y Moneda.
+                // Sumarizo por moneda
                 if (!hashPagosMoneda.containsKey(pagoLin.getC_Currency_ID())){
                     hashPagosMoneda.put(pagoLin.getC_Currency_ID(), new InfoMultiCurrency());
                     hashPagosMoneda.get(pagoLin.getC_Currency_ID()).cuurencyID = pagoLin.getC_Currency_ID();
@@ -658,16 +681,23 @@ public final class FinancialUtils {
                 hashPagosMoneda.get(pagoLin.getC_Currency_ID()).amtSource = hashPagosMoneda.get(pagoLin.getC_Currency_ID()).amtSource.add(pagoLin.getAmtAllocation());
                 hashPagosMoneda.get(pagoLin.getC_Currency_ID()).amtAcct = hashPagosMoneda.get(pagoLin.getC_Currency_ID()).amtAcct.add(pagoLin.getAmtAllocationMT());
             }
-            // DR : Cuenta Acreedores del Socio de Negocio según moneda
+
             for (HashMap.Entry<Integer, InfoMultiCurrency> entry : hashPagosMoneda.entrySet()){
 
-                // Impacto documento en estado de cuenta
+                // Impacto documento en estado de cuenta para esta moneda
                 MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(ctx, 0, trxName);
                 estadoCuenta.setZ_Pago_ID(pago.get_ID());
                 estadoCuenta.setAD_Table_ID(pago.get_Table_ID());
                 estadoCuenta.setC_BPartner_ID(pago.getC_BPartner_ID());
-                //estadoCuenta.setC_Currency_ID(pago.getC_Currency_ID());
-                estadoCuenta.setC_Currency_ID(entry.getValue().cuurencyID);
+
+                if (considerarAmt){
+                    estadoCuenta.setC_Currency_ID(pago.getC_Currency_ID());
+                }
+                else{
+                    //estadoCuenta.setC_Currency_ID(pago.getC_Currency_ID());
+                    estadoCuenta.setC_Currency_ID(entry.getValue().cuurencyID);
+                }
+
                 estadoCuenta.setC_DocType_ID(pago.getC_DocType_ID());
                 estadoCuenta.setDateDoc(pago.getDateDoc());
                 estadoCuenta.setDateAcct(pago.getDateDoc());

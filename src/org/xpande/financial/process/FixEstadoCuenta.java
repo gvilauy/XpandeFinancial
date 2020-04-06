@@ -54,6 +54,16 @@ public class FixEstadoCuenta extends SvrProcess {
     @Override
     protected String doIt() throws Exception {
 
+        //this.fixDocumentosTodos();
+
+        this.fixResguardos();
+
+        return "OK";
+
+    }
+
+    private void fixDocumentosTodos(){
+
         String action = "";
 
         try{
@@ -98,10 +108,36 @@ public class FixEstadoCuenta extends SvrProcess {
         catch (Exception e){
             throw new AdempiereException(e);
         }
-
-        return "OK";
-
     }
+
+
+    private void fixResguardos(){
+
+        String action = "";
+
+        try{
+
+            String whereClause = "";
+
+            if (this.adOrgID > 0){
+                whereClause += " and a.ad_org_id =" + this.adOrgID;
+            }
+
+            // Elimino información actual en estado de cuenta según filtros indicados
+            action = " delete from z_estadocuenta  " +
+                    " where z_resguardosocio_id is not null " +
+                    " and z_resguardosocio_id in (select z_resguardosocio_id from aux_resg) ";
+            DB.executeUpdateEx(action, get_TrxName());
+
+            // Proceso Resguardos
+            this.setResguardos2(whereClause);
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
 
     private void setInvoices(String whereClause) {
 
@@ -211,6 +247,37 @@ public class FixEstadoCuenta extends SvrProcess {
             rs = null; pstmt = null;
         }
     }
+
+
+    private void setResguardos2(String whereClause){
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select z_resguardosocio_id " +
+                    " from aux_resg ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                MZResguardoSocio resguardoSocio = new MZResguardoSocio(getCtx(), rs.getInt("z_resguardosocio_id"), get_TrxName());
+
+                FinancialUtils.setEstadoCtaResguardo(getCtx(), resguardoSocio, true, get_TrxName());
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+    }
+
 
     private void setOrdenesPago(String whereClause, boolean esOrdenAnticipo){
 
