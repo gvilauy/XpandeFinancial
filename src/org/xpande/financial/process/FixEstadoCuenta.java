@@ -24,6 +24,7 @@ public class FixEstadoCuenta extends SvrProcess {
 
     private int adClientID = 0;
     private int adOrgID = 0;
+    private String tipoFix = null;
     private Timestamp startDate = null;
     private Timestamp endDate = null;
 
@@ -43,6 +44,9 @@ public class FixEstadoCuenta extends SvrProcess {
                 else if (name.trim().equalsIgnoreCase("AD_Org_ID")){
                     this.adOrgID = ((BigDecimal)para[i].getParameter()).intValueExact();
                 }
+                else if (name.trim().equalsIgnoreCase("DocumentSerie")){
+                    this.tipoFix = para[i].getParameter().toString();
+                }
                 else if (name.trim().equalsIgnoreCase("DateDoc")){
                     this.startDate = (Timestamp)para[i].getParameter();
                     this.endDate = (Timestamp)para[i].getParameter_To();
@@ -54,9 +58,15 @@ public class FixEstadoCuenta extends SvrProcess {
     @Override
     protected String doIt() throws Exception {
 
-        //this.fixDocumentosTodos();
-
-        this.fixResguardos();
+        if (this.tipoFix.equalsIgnoreCase("1")){
+            this.fixDocumentosTodos();
+        }
+        else if (this.tipoFix.equalsIgnoreCase("2")){
+            this.fixResguardos();
+        }
+        else if (this.tipoFix.equalsIgnoreCase("3")){
+            this.fixPagos();
+        }
 
         return "OK";
 
@@ -131,6 +141,33 @@ public class FixEstadoCuenta extends SvrProcess {
 
             // Proceso Resguardos
             this.setResguardos2(whereClause);
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+    private void fixPagos(){
+
+        String action = "";
+
+        try{
+
+            String whereClause = "";
+
+            if (this.adOrgID > 0){
+                whereClause += " and a.ad_org_id =" + this.adOrgID;
+            }
+
+            // Elimino información actual en estado de cuenta según filtros indicados
+            action = " delete from z_estadocuenta  " +
+                    " where z_pago_id is not null " +
+                    " and z_pago_id in (select z_pago_id from aux_pago) ";
+            DB.executeUpdateEx(action, get_TrxName());
+
+            // Proceso Pagos
+            this.setPagos2();
 
         }
         catch (Exception e){
@@ -347,6 +384,34 @@ public class FixEstadoCuenta extends SvrProcess {
         }
     }
 
+    private void setPagos2(){
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select z_pago_id " +
+                    " from aux_pago ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                MZPago pago = new MZPago(getCtx(), rs.getInt("z_pago_id"), get_TrxName());
+
+                FinancialUtils.setEstadoCtaPago(getCtx(), pago, true, get_TrxName());
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+    }
 
     private void setAnticipos(String whereClause){
 
