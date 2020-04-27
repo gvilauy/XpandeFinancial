@@ -56,7 +56,7 @@ public interface I_Z_MedioPagoIdent
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_MedioPagoIdent
 	/** Set Business Partner .
 	  * Identifies a Business Partner
 	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/** Get Business Partner .
 	  * Identifies a Business Partner
@@ -77,6 +77,19 @@ public interface I_Z_MedioPagoIdent
 	public int getC_BPartner_ID();
 
 	public I_C_BPartner getC_BPartner() throws RuntimeException;
+
+    /** Column name Contabilizar */
+    public static final String COLUMNNAME_Contabilizar = "Contabilizar";
+
+	/** Set Contabilizar.
+	  * Si se desea contabilizar o no un documento
+	  */
+	public void setContabilizar (boolean Contabilizar);
+
+	/** Get Contabilizar.
+	  * Si se desea contabilizar o no un documento
+	  */
+	public boolean isContabilizar();
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -100,7 +113,7 @@ public interface I_Z_MedioPagoIdent
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -113,7 +126,7 @@ public interface I_Z_MedioPagoIdent
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -126,7 +139,7 @@ public interface I_Z_MedioPagoIdent
 	/** Set Name.
 	  * Alphanumeric identifier of the entity
 	  */
-	public void setName(String Name);
+	public void setName (String Name);
 
 	/** Get Name.
 	  * Alphanumeric identifier of the entity
@@ -155,7 +168,7 @@ public interface I_Z_MedioPagoIdent
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -166,7 +179,7 @@ public interface I_Z_MedioPagoIdent
     public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";
 
 	/** Set Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID(int Z_MedioPago_ID);
+	public void setZ_MedioPago_ID (int Z_MedioPago_ID);
 
 	/** Get Z_MedioPago ID	  */
 	public int getZ_MedioPago_ID();
@@ -177,7 +190,7 @@ public interface I_Z_MedioPagoIdent
     public static final String COLUMNNAME_Z_MedioPagoIdent_ID = "Z_MedioPagoIdent_ID";
 
 	/** Set Z_MedioPagoIdent ID	  */
-	public void setZ_MedioPagoIdent_ID(int Z_MedioPagoIdent_ID);
+	public void setZ_MedioPagoIdent_ID (int Z_MedioPagoIdent_ID);
 
 	/** Get Z_MedioPagoIdent ID	  */
 	public int getZ_MedioPagoIdent_ID();

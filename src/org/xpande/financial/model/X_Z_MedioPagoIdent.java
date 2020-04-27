@@ -30,7 +30,7 @@ public class X_Z_MedioPagoIdent extends PO implements I_Z_MedioPagoIdent, I_Pers
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191010L;
+	private static final long serialVersionUID = 20200427L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoIdent (Properties ctx, int Z_MedioPagoIdent_ID, String trxName)
@@ -38,6 +38,8 @@ public class X_Z_MedioPagoIdent extends PO implements I_Z_MedioPagoIdent, I_Pers
       super (ctx, Z_MedioPagoIdent_ID, trxName);
       /** if (Z_MedioPagoIdent_ID == 0)
         {
+			setContabilizar (true);
+// Y
 			setName (null);
 			setZ_MedioPago_ID (0);
 			setZ_MedioPagoIdent_ID (0);
@@ -98,6 +100,30 @@ public class X_Z_MedioPagoIdent extends PO implements I_Z_MedioPagoIdent, I_Pers
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Contabilizar.
+		@param Contabilizar 
+		Si se desea contabilizar o no un documento
+	  */
+	public void setContabilizar (boolean Contabilizar)
+	{
+		set_Value (COLUMNNAME_Contabilizar, Boolean.valueOf(Contabilizar));
+	}
+
+	/** Get Contabilizar.
+		@return Si se desea contabilizar o no un documento
+	  */
+	public boolean isContabilizar () 
+	{
+		Object oo = get_Value(COLUMNNAME_Contabilizar);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Description.
