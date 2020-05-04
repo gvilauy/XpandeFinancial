@@ -56,7 +56,7 @@ public interface I_Z_MedioPago
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_MedioPago
 	/** Set AplicaEnCobro.
 	  * Si aplica o no a un Cobro
 	  */
-	public void setAplicaEnCobro(boolean AplicaEnCobro);
+	public void setAplicaEnCobro (boolean AplicaEnCobro);
 
 	/** Get AplicaEnCobro.
 	  * Si aplica o no a un Cobro
@@ -82,7 +82,7 @@ public interface I_Z_MedioPago
 	/** Set AplicaEnPago.
 	  * Si se aplica o no en un Pago
 	  */
-	public void setAplicaEnPago(boolean AplicaEnPago);
+	public void setAplicaEnPago (boolean AplicaEnPago);
 
 	/** Get AplicaEnPago.
 	  * Si se aplica o no en un Pago
@@ -95,12 +95,25 @@ public interface I_Z_MedioPago
 	/** Set CarteraCobro.
 	  * Si un determinado medio de pago queda o no en cartera de la empresa cuando se recibe en un documento de cobro
 	  */
-	public void setCarteraCobro(boolean CarteraCobro);
+	public void setCarteraCobro (boolean CarteraCobro);
 
 	/** Get CarteraCobro.
 	  * Si un determinado medio de pago queda o no en cartera de la empresa cuando se recibe en un documento de cobro
 	  */
 	public boolean isCarteraCobro();
+
+    /** Column name Contabilizar */
+    public static final String COLUMNNAME_Contabilizar = "Contabilizar";
+
+	/** Set Contabilizar.
+	  * Si se desea contabilizar o no un documento
+	  */
+	public void setContabilizar (boolean Contabilizar);
+
+	/** Get Contabilizar.
+	  * Si se desea contabilizar o no un documento
+	  */
+	public boolean isContabilizar();
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -118,13 +131,26 @@ public interface I_Z_MedioPago
 	  */
 	public int getCreatedBy();
 
+    /** Column name DepositaCobro */
+    public static final String COLUMNNAME_DepositaCobro = "DepositaCobro";
+
+	/** Set DepositaCobro.
+	  * Si se deposita o no en transacciones de cobranza
+	  */
+	public void setDepositaCobro (boolean DepositaCobro);
+
+	/** Get DepositaCobro.
+	  * Si se deposita o no en transacciones de cobranza
+	  */
+	public boolean isDepositaCobro();
+
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -137,7 +163,7 @@ public interface I_Z_MedioPago
 	/** Set Identificable.
 	  * Si un concepto es identificable o no
 	  */
-	public void setIdentificable(boolean Identificable);
+	public void setIdentificable (boolean Identificable);
 
 	/** Get Identificable.
 	  * Si un concepto es identificable o no
@@ -150,7 +176,7 @@ public interface I_Z_MedioPago
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -163,7 +189,7 @@ public interface I_Z_MedioPago
 	/** Set Name.
 	  * Alphanumeric identifier of the entity
 	  */
-	public void setName(String Name);
+	public void setName (String Name);
 
 	/** Get Name.
 	  * Alphanumeric identifier of the entity
@@ -176,7 +202,7 @@ public interface I_Z_MedioPago
 	/** Set TieneBanco.
 	  * Si requiere información de Banco o no
 	  */
-	public void setTieneBanco(boolean TieneBanco);
+	public void setTieneBanco (boolean TieneBanco);
 
 	/** Get TieneBanco.
 	  * Si requiere información de Banco o no
@@ -189,7 +215,7 @@ public interface I_Z_MedioPago
 	/** Set TieneBancoCobro.
 	  * Si requiere información de Banco o no en un documento de Cobro
 	  */
-	public void setTieneBancoCobro(boolean TieneBancoCobro);
+	public void setTieneBancoCobro (boolean TieneBancoCobro);
 
 	/** Get TieneBancoCobro.
 	  * Si requiere información de Banco o no en un documento de Cobro
@@ -202,7 +228,7 @@ public interface I_Z_MedioPago
 	/** Set TieneCaja.
 	  * Si requiere o no una caja asociada
 	  */
-	public void setTieneCaja(boolean TieneCaja);
+	public void setTieneCaja (boolean TieneCaja);
 
 	/** Get TieneCaja.
 	  * Si requiere o no una caja asociada
@@ -215,7 +241,7 @@ public interface I_Z_MedioPago
 	/** Set TieneCajaCobro.
 	  * Si requiere o no una caja asociada en un documento de cobro
 	  */
-	public void setTieneCajaCobro(boolean TieneCajaCobro);
+	public void setTieneCajaCobro (boolean TieneCajaCobro);
 
 	/** Get TieneCajaCobro.
 	  * Si requiere o no una caja asociada en un documento de cobro
@@ -228,7 +254,7 @@ public interface I_Z_MedioPago
 	/** Set TieneCtaBco.
 	  * Si requiere o no una cuenta bancaria asociada
 	  */
-	public void setTieneCtaBco(boolean TieneCtaBco);
+	public void setTieneCtaBco (boolean TieneCtaBco);
 
 	/** Get TieneCtaBco.
 	  * Si requiere o no una cuenta bancaria asociada
@@ -241,7 +267,7 @@ public interface I_Z_MedioPago
 	/** Set TieneCtaBcoCobro.
 	  * Si requiere o no una cuenta bancaria asociada en un documento de Cobro
 	  */
-	public void setTieneCtaBcoCobro(boolean TieneCtaBcoCobro);
+	public void setTieneCtaBcoCobro (boolean TieneCtaBcoCobro);
 
 	/** Get TieneCtaBcoCobro.
 	  * Si requiere o no una cuenta bancaria asociada en un documento de Cobro
@@ -254,7 +280,7 @@ public interface I_Z_MedioPago
 	/** Set TieneEmision.
 	  * Si un determinado medio de pago tiene o no emisión en modulo financiero
 	  */
-	public void setTieneEmision(boolean TieneEmision);
+	public void setTieneEmision (boolean TieneEmision);
 
 	/** Get TieneEmision.
 	  * Si un determinado medio de pago tiene o no emisión en modulo financiero
@@ -267,7 +293,7 @@ public interface I_Z_MedioPago
 	/** Set TieneEmisionCobro.
 	  * Si un determinado medio de pago tiene o no emisión en un documento de Cobro
 	  */
-	public void setTieneEmisionCobro(boolean TieneEmisionCobro);
+	public void setTieneEmisionCobro (boolean TieneEmisionCobro);
 
 	/** Get TieneEmisionCobro.
 	  * Si un determinado medio de pago tiene o no emisión en un documento de Cobro
@@ -280,7 +306,7 @@ public interface I_Z_MedioPago
 	/** Set TieneFecEmi.
 	  * Si lleva o no Fecha de Emisión
 	  */
-	public void setTieneFecEmi(boolean TieneFecEmi);
+	public void setTieneFecEmi (boolean TieneFecEmi);
 
 	/** Get TieneFecEmi.
 	  * Si lleva o no Fecha de Emisión
@@ -293,7 +319,7 @@ public interface I_Z_MedioPago
 	/** Set TieneFecEmiCobro.
 	  * Si lleva o no Fecha de Emisión en un documento de Cobro
 	  */
-	public void setTieneFecEmiCobro(boolean TieneFecEmiCobro);
+	public void setTieneFecEmiCobro (boolean TieneFecEmiCobro);
 
 	/** Get TieneFecEmiCobro.
 	  * Si lleva o no Fecha de Emisión en un documento de Cobro
@@ -306,7 +332,7 @@ public interface I_Z_MedioPago
 	/** Set TieneFecVenc.
 	  * Si lleva o no Fecha de Vencimiento
 	  */
-	public void setTieneFecVenc(boolean TieneFecVenc);
+	public void setTieneFecVenc (boolean TieneFecVenc);
 
 	/** Get TieneFecVenc.
 	  * Si lleva o no Fecha de Vencimiento
@@ -319,7 +345,7 @@ public interface I_Z_MedioPago
 	/** Set TieneFecVencCobro.
 	  * Si lleva o no Fecha de Vencimiento en un documento de Cobro
 	  */
-	public void setTieneFecVencCobro(boolean TieneFecVencCobro);
+	public void setTieneFecVencCobro (boolean TieneFecVencCobro);
 
 	/** Get TieneFecVencCobro.
 	  * Si lleva o no Fecha de Vencimiento en un documento de Cobro
@@ -332,7 +358,7 @@ public interface I_Z_MedioPago
 	/** Set TieneFolio.
 	  * Si requiere o no un folio asociado de medios de pago
 	  */
-	public void setTieneFolio(boolean TieneFolio);
+	public void setTieneFolio (boolean TieneFolio);
 
 	/** Get TieneFolio.
 	  * Si requiere o no un folio asociado de medios de pago
@@ -345,7 +371,7 @@ public interface I_Z_MedioPago
 	/** Set TieneFolioCobro.
 	  * Si requiere o no un folio asociado de medios de pago en un documento de cobro
 	  */
-	public void setTieneFolioCobro(boolean TieneFolioCobro);
+	public void setTieneFolioCobro (boolean TieneFolioCobro);
 
 	/** Get TieneFolioCobro.
 	  * Si requiere o no un folio asociado de medios de pago en un documento de cobro
@@ -358,7 +384,7 @@ public interface I_Z_MedioPago
 	/** Set TieneIdent.
 	  * Si un medio de pago tiene o no identificadores para pagos
 	  */
-	public void setTieneIdent(boolean TieneIdent);
+	public void setTieneIdent (boolean TieneIdent);
 
 	/** Get TieneIdent.
 	  * Si un medio de pago tiene o no identificadores para pagos
@@ -371,7 +397,7 @@ public interface I_Z_MedioPago
 	/** Set TieneIdentCobro.
 	  * Si un medio de pago tiene o no identificadores para cobros
 	  */
-	public void setTieneIdentCobro(boolean TieneIdentCobro);
+	public void setTieneIdentCobro (boolean TieneIdentCobro);
 
 	/** Get TieneIdentCobro.
 	  * Si un medio de pago tiene o no identificadores para cobros
@@ -384,7 +410,7 @@ public interface I_Z_MedioPago
 	/** Set TieneNroRef.
 	  * Si requiere o no numero de referencia
 	  */
-	public void setTieneNroRef(boolean TieneNroRef);
+	public void setTieneNroRef (boolean TieneNroRef);
 
 	/** Get TieneNroRef.
 	  * Si requiere o no numero de referencia
@@ -397,7 +423,7 @@ public interface I_Z_MedioPago
 	/** Set TieneNroRefCobro.
 	  * Si requiere o no numero de referencia en un documento de Cobro
 	  */
-	public void setTieneNroRefCobro(boolean TieneNroRefCobro);
+	public void setTieneNroRefCobro (boolean TieneNroRefCobro);
 
 	/** Get TieneNroRefCobro.
 	  * Si requiere o no numero de referencia en un documento de Cobro
@@ -426,7 +452,7 @@ public interface I_Z_MedioPago
 	/** Set Search Key.
 	  * Search key for the record in the format required - must be unique
 	  */
-	public void setValue(String Value);
+	public void setValue (String Value);
 
 	/** Get Search Key.
 	  * Search key for the record in the format required - must be unique
@@ -437,7 +463,7 @@ public interface I_Z_MedioPago
     public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";
 
 	/** Set Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID(int Z_MedioPago_ID);
+	public void setZ_MedioPago_ID (int Z_MedioPago_ID);
 
 	/** Get Z_MedioPago ID	  */
 	public int getZ_MedioPago_ID();

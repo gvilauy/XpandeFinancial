@@ -30,7 +30,7 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190910L;
+	private static final long serialVersionUID = 20200504L;
 
     /** Standard Constructor */
     public X_Z_MedioPago (Properties ctx, int Z_MedioPago_ID, String trxName)
@@ -43,6 +43,10 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 			setAplicaEnPago (true);
 // Y
 			setCarteraCobro (false);
+// N
+			setContabilizar (true);
+// Y
+			setDepositaCobro (false);
 // N
 			setIdentificable (false);
 // N
@@ -179,6 +183,54 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	public boolean isCarteraCobro () 
 	{
 		Object oo = get_Value(COLUMNNAME_CarteraCobro);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Contabilizar.
+		@param Contabilizar 
+		Si se desea contabilizar o no un documento
+	  */
+	public void setContabilizar (boolean Contabilizar)
+	{
+		set_Value (COLUMNNAME_Contabilizar, Boolean.valueOf(Contabilizar));
+	}
+
+	/** Get Contabilizar.
+		@return Si se desea contabilizar o no un documento
+	  */
+	public boolean isContabilizar () 
+	{
+		Object oo = get_Value(COLUMNNAME_Contabilizar);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set DepositaCobro.
+		@param DepositaCobro 
+		Si se deposita o no en transacciones de cobranza
+	  */
+	public void setDepositaCobro (boolean DepositaCobro)
+	{
+		set_Value (COLUMNNAME_DepositaCobro, Boolean.valueOf(DepositaCobro));
+	}
+
+	/** Get DepositaCobro.
+		@return Si se deposita o no en transacciones de cobranza
+	  */
+	public boolean isDepositaCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_DepositaCobro);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
