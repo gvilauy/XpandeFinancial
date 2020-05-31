@@ -24,6 +24,7 @@ public class EstadoCuenta {
     public int adUserID = 0;
     public int cBPartnerID = 0;
     public int cCurrencyID = 0;
+    public int cBpGroupID = 0;
     public String tipoFecha = "";
     public String tipoSocioNegocio = "";
     public Timestamp startDate = null;
@@ -150,7 +151,7 @@ public class EstadoCuenta {
         try{
             // Cadenas de insert en tablas del reporte
             action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, amtsourcecr, amtsourcedr, " +
-                    " c_bpartner_id, c_currency_id, c_doctype_id, c_invoice_id, c_invoicepayschedule_id, " +
+                    " c_bp_group_id, c_bpartner_id, c_currency_id, c_doctype_id, c_invoice_id, c_invoicepayschedule_id, " +
                     " datedoc, docbasetype, documentnoref, duedate, estadoaprobacion, " +
                     " issotrx, referenciapago, z_afectacion_id, z_estadocuenta_id, " +
                     " z_ordenpago_id, z_pago_id, z_resguardosocio_id, z_resguardosocio_to_id, ad_user_id, tipofiltrofecha, tiposocionegocio) ";
@@ -158,13 +159,14 @@ public class EstadoCuenta {
             // Armo condicion where dinámica del reporte
             String whereClause = this.getWhereClause();
 
-            sql = " select ad_client_id, ad_org_id, amtsourcecr, amtsourcedr, c_bpartner_id, c_currency_id, c_doctype_id, c_invoice_id, " +
-                    " c_invoicepayschedule_id, datedoc, docbasetype, documentnoref, duedate, estadoaprobacion, issotrx, referenciapago, " +
-                    " z_afectacion_id, z_estadocuenta_id, z_ordenpago_id, z_pago_id, z_resguardosocio_id, z_resguardosocio_to_id, " +
-                    this.adUserID + ", '" + this.tipoFecha + "', tiposocionegocio " +
-                    " from z_estadocuenta " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.amtsourcecr, a.amtsourcedr, bp.c_bp_group_id, a.c_bpartner_id, a.c_currency_id, a.c_doctype_id, a.c_invoice_id, " +
+                    " a.c_invoicepayschedule_id, a.datedoc, a.docbasetype, a.documentnoref, a.duedate, a.estadoaprobacion, a.issotrx, a.referenciapago, " +
+                    " a.z_afectacion_id, a.z_estadocuenta_id, a.z_ordenpago_id, a.z_pago_id, a.z_resguardosocio_id, a.z_resguardosocio_to_id, " +
+                    this.adUserID + ", '" + this.tipoFecha + "', a.tiposocionegocio " +
+                    " from z_estadocuenta a " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where " + whereClause +
-                    " order by tiposocionegocio, c_currency_id, c_bpartner_id, datedoc, c_doctype_id, z_estadocuenta_id ";
+                    " order by a.tiposocionegocio, a.c_currency_id, a.c_bpartner_id, a.datedoc, a.c_doctype_id, a.z_estadocuenta_id ";
 
             DB.executeUpdateEx(action + sql, null);
 
@@ -183,35 +185,39 @@ public class EstadoCuenta {
 
         String whereClause = "";
 
-        whereClause = " ad_client_id =" + this.adClientID;
+        whereClause = " a.ad_client_id =" + this.adClientID;
 
         if (this.adOrgID > 0){
-            whereClause += " and ad_org_id =" + this.adOrgID;
+            whereClause += " and a.ad_org_id =" + this.adOrgID;
         }
 
         if (this.cBPartnerID > 0){
-            whereClause += " and c_bpartner_id =" + this.cBPartnerID;
+            whereClause += " and a.c_bpartner_id =" + this.cBPartnerID;
+        }
+
+        if (this.cBpGroupID > 0){
+            whereClause += " and bp.c_bp_group_id =" + this.cBpGroupID;
         }
 
         if (this.cCurrencyID > 0){
-            whereClause += " and c_currency_id =" + this.cCurrencyID;
+            whereClause += " and a.c_currency_id =" + this.cCurrencyID;
         }
 
         if (this.tipoFecha.equalsIgnoreCase("VALOR")){
-            whereClause += " and datedoc between '" + this.startDate + "' AND '" + this.endDate + "'";
+            whereClause += " and a.datedoc between '" + this.startDate + "' AND '" + this.endDate + "'";
         }
         else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
-            whereClause += " and duedate between '" + this.startDate + "' AND '" + this.endDate + "'";
+            whereClause += " and a.duedate between '" + this.startDate + "' AND '" + this.endDate + "'";
         }
         else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
-            whereClause += " and dateacct between '" + this.startDate + "' AND '" + this.endDate + "'";
+            whereClause += " and a.dateacct between '" + this.startDate + "' AND '" + this.endDate + "'";
         }
 
         if (this.tipoSocioNegocio.equalsIgnoreCase("CLIENTES")){
-            whereClause += " and TipoSocioNegocio ='CLIENTES'";
+            whereClause += " and a.TipoSocioNegocio ='CLIENTES'";
         }
         else if (this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
-            whereClause += " and TipoSocioNegocio ='PROVEEDORES'";
+            whereClause += " and a.TipoSocioNegocio ='PROVEEDORES'";
         }
 
         return whereClause;

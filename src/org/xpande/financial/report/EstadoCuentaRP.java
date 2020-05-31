@@ -47,6 +47,11 @@ public class EstadoCuentaRP extends SvrProcess {
                         this.estadoCuentaProcessor.cBPartnerID = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
                 }
+                else if (name.trim().equalsIgnoreCase("C_BP_Group_ID")){
+                    if (para[i].getParameter() != null){
+                        this.estadoCuentaProcessor.cBpGroupID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                }
                 else if (name.trim().equalsIgnoreCase("C_Currency_ID")){
                     if (para[i].getParameter() != null){
                         this.estadoCuentaProcessor.cCurrencyID = ((BigDecimal)para[i].getParameter()).intValueExact();
