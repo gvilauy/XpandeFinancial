@@ -103,7 +103,7 @@ public class SaldoPendiente {
                 this.getDataAnticipos();
 
                 // Si el reporte es para proveedores, incluyo resguardos que no esten asociados a ordenes de pago o recibos.
-                if (this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")){
+                if ((this.tipoSocioNegocio.equalsIgnoreCase("PROVEEDORES")) || (this.tipoSocioNegocio.equalsIgnoreCase("TODOS"))){
                     this.getDataResguardos();
                 }
             }
