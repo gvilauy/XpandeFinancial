@@ -74,8 +74,8 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 		}
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
-			options[newIndex++] = DocumentEngine.ACTION_None;
-			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
+			//options[newIndex++] = DocumentEngine.ACTION_None;
+			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
 			//options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
@@ -270,6 +270,7 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 			pago.setTotalMediosPago(loadPagoFile.getTotalAmt());
 			pago.setDescription("Generada Automáticamente desde Generación de Recibos Cta.Cte.");
 			pago.setAnticipo(true);
+			pago.setZ_LoadPago_ID(this.get_ID());
 			pago.saveEx();
 
 			// Cargo medio de pago
@@ -395,11 +396,43 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 	 */
 	public boolean reActivateIt()
 	{
+		String action = "";
+
 		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Obtengo y recorro lista de recibos generados
+		List<MZPago> pagoList = MZPago.getByLoadPago(getCtx(), this.get_ID(), get_TrxName());
+		for (MZPago pago: pagoList){
+
+			// Reactivo este recibo
+			if (!pago.reActivateIt()){
+				m_processMsg = "No se pudo reactivar el recibo número : " + pago.getDocumentNo();
+				if (pago.getProcessMsg() != null){
+					m_processMsg += ". " + pago.getProcessMsg();
+				}
+				return false;
+			}
+			pago.saveEx();
+
+			// ELimino el recibo
+			pago.deleteEx(true);
+		}
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
 	}	//	reActivateIt
 	
 	

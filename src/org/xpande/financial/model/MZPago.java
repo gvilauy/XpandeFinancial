@@ -3037,4 +3037,21 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		return message;
     }
 
+	/***
+	 * Obtiene y retorna lista de modelos según ID de carga de comprobantes recibido.
+	 * Xpande. Created by Gabriel Vila on 6/19/20.
+	 * @param ctx
+	 * @param zLoadPagoID
+	 * @param trxName
+	 * @return
+	 */
+    public static List<MZPago> getByLoadPago(Properties ctx, int zLoadPagoID, String trxName){
+
+    	String whereClause = X_Z_Pago.COLUMNNAME_Z_LoadPago_ID + " =" + zLoadPagoID;
+
+    	List<MZPago> lines = new Query(ctx, I_Z_Pago.Table_Name, whereClause, trxName).list();
+
+    	return lines;
+	}
+
 }

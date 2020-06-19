@@ -56,7 +56,7 @@ public interface I_Z_Pago
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_Pago
 	/** Set AmtAnticipo.
 	  * Monto de Anticipos
 	  */
-	public void setAmtAnticipo(BigDecimal AmtAnticipo);
+	public void setAmtAnticipo (BigDecimal AmtAnticipo);
 
 	/** Get AmtAnticipo.
 	  * Monto de Anticipos
@@ -82,7 +82,7 @@ public interface I_Z_Pago
 	/** Set Anticipo.
 	  * Si un determinado pago/cobro es solamente un anticipo y por lo tanto no tiene documentos a afectar
 	  */
-	public void setAnticipo(boolean Anticipo);
+	public void setAnticipo (boolean Anticipo);
 
 	/** Get Anticipo.
 	  * Si un determinado pago/cobro es solamente un anticipo y por lo tanto no tiene documentos a afectar
@@ -95,7 +95,7 @@ public interface I_Z_Pago
 	/** Set Business Partner .
 	  * Identifies a Business Partner
 	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/** Get Business Partner .
 	  * Identifies a Business Partner
@@ -110,7 +110,7 @@ public interface I_Z_Pago
 	/** Set Partner Location.
 	  * Identifies the (ship to) address for this Business Partner
 	  */
-	public void setC_BPartner_Location_ID(int C_BPartner_Location_ID);
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/** Get Partner Location.
 	  * Identifies the (ship to) address for this Business Partner
@@ -125,7 +125,7 @@ public interface I_Z_Pago
 	/** Set Charge.
 	  * Additional document charges
 	  */
-	public void setC_Charge_ID(int C_Charge_ID);
+	public void setC_Charge_ID (int C_Charge_ID);
 
 	/** Get Charge.
 	  * Additional document charges
@@ -140,7 +140,7 @@ public interface I_Z_Pago
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -155,7 +155,7 @@ public interface I_Z_Pago
 	/** Set Currency To.
 	  * Target currency
 	  */
-	public void setC_Currency_ID_To(int C_Currency_ID_To);
+	public void setC_Currency_ID_To (int C_Currency_ID_To);
 
 	/** Get Currency To.
 	  * Target currency
@@ -170,7 +170,7 @@ public interface I_Z_Pago
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -185,7 +185,7 @@ public interface I_Z_Pago
 	/** Set Charge amount.
 	  * Charge Amount
 	  */
-	public void setChargeAmt(BigDecimal ChargeAmt);
+	public void setChargeAmt (BigDecimal ChargeAmt);
 
 	/** Get Charge amount.
 	  * Charge Amount
@@ -214,7 +214,7 @@ public interface I_Z_Pago
 	/** Set Account Date.
 	  * Accounting Date
 	  */
-	public void setDateAcct(Timestamp DateAcct);
+	public void setDateAcct (Timestamp DateAcct);
 
 	/** Get Account Date.
 	  * Accounting Date
@@ -227,7 +227,7 @@ public interface I_Z_Pago
 	/** Set Document Date.
 	  * Date of the Document
 	  */
-	public void setDateDoc(Timestamp DateDoc);
+	public void setDateDoc (Timestamp DateDoc);
 
 	/** Get Document Date.
 	  * Date of the Document
@@ -240,7 +240,7 @@ public interface I_Z_Pago
 	/** Set DateEmittedFrom.
 	  * Desde fecha emision
 	  */
-	public void setDateEmittedFrom(Timestamp DateEmittedFrom);
+	public void setDateEmittedFrom (Timestamp DateEmittedFrom);
 
 	/** Get DateEmittedFrom.
 	  * Desde fecha emision
@@ -253,7 +253,7 @@ public interface I_Z_Pago
 	/** Set DateEmittedTo.
 	  * Hasta fecha de emisión
 	  */
-	public void setDateEmittedTo(Timestamp DateEmittedTo);
+	public void setDateEmittedTo (Timestamp DateEmittedTo);
 
 	/** Get DateEmittedTo.
 	  * Hasta fecha de emisión
@@ -266,7 +266,7 @@ public interface I_Z_Pago
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -279,7 +279,7 @@ public interface I_Z_Pago
 	/** Set Difference.
 	  * Difference Amount
 	  */
-	public void setDifferenceAmt(BigDecimal DifferenceAmt);
+	public void setDifferenceAmt (BigDecimal DifferenceAmt);
 
 	/** Get Difference.
 	  * Difference Amount
@@ -292,7 +292,7 @@ public interface I_Z_Pago
 	/** Set Document Action.
 	  * The targeted status of the document
 	  */
-	public void setDocAction(String DocAction);
+	public void setDocAction (String DocAction);
 
 	/** Get Document Action.
 	  * The targeted status of the document
@@ -305,7 +305,7 @@ public interface I_Z_Pago
 	/** Set Document Status.
 	  * The current status of the document
 	  */
-	public void setDocStatus(String DocStatus);
+	public void setDocStatus (String DocStatus);
 
 	/** Get Document Status.
 	  * The current status of the document
@@ -318,7 +318,7 @@ public interface I_Z_Pago
 	/** Set Document No.
 	  * Document sequence number of the document
 	  */
-	public void setDocumentNo(String DocumentNo);
+	public void setDocumentNo (String DocumentNo);
 
 	/** Get Document No.
 	  * Document sequence number of the document
@@ -331,7 +331,7 @@ public interface I_Z_Pago
 	/** Set DueDateFrom.
 	  * Desde fecha vencimiento
 	  */
-	public void setDueDateFrom(Timestamp DueDateFrom);
+	public void setDueDateFrom (Timestamp DueDateFrom);
 
 	/** Get DueDateFrom.
 	  * Desde fecha vencimiento
@@ -344,7 +344,7 @@ public interface I_Z_Pago
 	/** Set DueDateTo.
 	  * Hasta fecha de vencimiento
 	  */
-	public void setDueDateTo(Timestamp DueDateTo);
+	public void setDueDateTo (Timestamp DueDateTo);
 
 	/** Get DueDateTo.
 	  * Hasta fecha de vencimiento
@@ -357,7 +357,7 @@ public interface I_Z_Pago
 	/** Set ExtornarAcct.
 	  * Si se debe o no dar vuelta el asiento contable de un documento
 	  */
-	public void setExtornarAcct(boolean ExtornarAcct);
+	public void setExtornarAcct (boolean ExtornarAcct);
 
 	/** Get ExtornarAcct.
 	  * Si se debe o no dar vuelta el asiento contable de un documento
@@ -370,7 +370,7 @@ public interface I_Z_Pago
 	/** Set ID_Virtual.
 	  * Identificador virtual para tablas
 	  */
-	public void setID_Virtual(String ID_Virtual);
+	public void setID_Virtual (String ID_Virtual);
 
 	/** Get ID_Virtual.
 	  * Identificador virtual para tablas
@@ -383,7 +383,7 @@ public interface I_Z_Pago
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -396,7 +396,7 @@ public interface I_Z_Pago
 	/** Set Approved.
 	  * Indicates if this document requires approval
 	  */
-	public void setIsApproved(boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/** Get Approved.
 	  * Indicates if this document requires approval
@@ -409,7 +409,7 @@ public interface I_Z_Pago
 	/** Set Sales Transaction.
 	  * This is a Sales Transaction
 	  */
-	public void setIsSOTrx(boolean IsSOTrx);
+	public void setIsSOTrx (boolean IsSOTrx);
 
 	/** Get Sales Transaction.
 	  * This is a Sales Transaction
@@ -422,7 +422,7 @@ public interface I_Z_Pago
 	/** Set NroRecibo.
 	  * Número de Recibo asociado a un pago/cobro en módulo Financiero
 	  */
-	public void setNroRecibo(String NroRecibo);
+	public void setNroRecibo (String NroRecibo);
 
 	/** Get NroRecibo.
 	  * Número de Recibo asociado a un pago/cobro en módulo Financiero
@@ -435,7 +435,7 @@ public interface I_Z_Pago
 	/** Set Payment amount.
 	  * Amount being paid
 	  */
-	public void setPayAmt(BigDecimal PayAmt);
+	public void setPayAmt (BigDecimal PayAmt);
 
 	/** Get Payment amount.
 	  * Amount being paid
@@ -448,7 +448,7 @@ public interface I_Z_Pago
 	/** Set Posted.
 	  * Posting status
 	  */
-	public void setPosted(boolean Posted);
+	public void setPosted (boolean Posted);
 
 	/** Get Posted.
 	  * Posting status
@@ -459,7 +459,7 @@ public interface I_Z_Pago
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
 	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
+	public void setProcessButton (String ProcessButton);
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
@@ -470,7 +470,7 @@ public interface I_Z_Pago
 	/** Set ProcessButton2.
 	  * Botón de Proceso
 	  */
-	public void setProcessButton2(String ProcessButton2);
+	public void setProcessButton2 (String ProcessButton2);
 
 	/** Get ProcessButton2.
 	  * Botón de Proceso
@@ -483,7 +483,7 @@ public interface I_Z_Pago
 	/** Set ProcessButton3.
 	  * Botón para proceso
 	  */
-	public void setProcessButton3(String ProcessButton3);
+	public void setProcessButton3 (String ProcessButton3);
 
 	/** Get ProcessButton3.
 	  * Botón para proceso
@@ -496,7 +496,7 @@ public interface I_Z_Pago
 	/** Set ProcessButton4.
 	  * Botón de Proceso
 	  */
-	public void setProcessButton4(String ProcessButton4);
+	public void setProcessButton4 (String ProcessButton4);
 
 	/** Get ProcessButton4.
 	  * Botón de Proceso
@@ -509,7 +509,7 @@ public interface I_Z_Pago
 	/** Set ProcessButton5.
 	  * Botón de Proceso
 	  */
-	public void setProcessButton5(String ProcessButton5);
+	public void setProcessButton5 (String ProcessButton5);
 
 	/** Get ProcessButton5.
 	  * Botón de Proceso
@@ -522,7 +522,7 @@ public interface I_Z_Pago
 	/** Set ProcessButton6.
 	  * Botón de Proceso
 	  */
-	public void setProcessButton6(String ProcessButton6);
+	public void setProcessButton6 (String ProcessButton6);
 
 	/** Get ProcessButton6.
 	  * Botón de Proceso
@@ -535,7 +535,7 @@ public interface I_Z_Pago
 	/** Set Processed.
 	  * The document has been processed
 	  */
-	public void setProcessed(boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/** Get Processed.
 	  * The document has been processed
@@ -548,7 +548,7 @@ public interface I_Z_Pago
 	/** Set Processed On.
 	  * The date+time (expressed in decimal format) when the document has been processed
 	  */
-	public void setProcessedOn(BigDecimal ProcessedOn);
+	public void setProcessedOn (BigDecimal ProcessedOn);
 
 	/** Get Processed On.
 	  * The date+time (expressed in decimal format) when the document has been processed
@@ -559,7 +559,7 @@ public interface I_Z_Pago
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/** Set Process Now	  */
-	public void setProcessing(boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
@@ -570,7 +570,7 @@ public interface I_Z_Pago
 	/** Set ReciboAnticipo.
 	  * Si un determinado pago/cobro es solamente un recibo hecho contra un anticipo
 	  */
-	public void setReciboAnticipo(boolean ReciboAnticipo);
+	public void setReciboAnticipo (boolean ReciboAnticipo);
 
 	/** Get ReciboAnticipo.
 	  * Si un determinado pago/cobro es solamente un recibo hecho contra un anticipo
@@ -583,7 +583,7 @@ public interface I_Z_Pago
 	/** Set Reference.
 	  * Reference for this record
 	  */
-	public void setReference(String Reference);
+	public void setReference (String Reference);
 
 	/** Get Reference.
 	  * Reference for this record
@@ -596,7 +596,7 @@ public interface I_Z_Pago
 	/** Set TieneOrdenPago.
 	  * Si tiene o no ordenes de pago asociadas
 	  */
-	public void setTieneOrdenPago(boolean TieneOrdenPago);
+	public void setTieneOrdenPago (boolean TieneOrdenPago);
 
 	/** Get TieneOrdenPago.
 	  * Si tiene o no ordenes de pago asociadas
@@ -609,7 +609,7 @@ public interface I_Z_Pago
 	/** Set TieneRecibo.
 	  * Si un documento de pago/cobro tiene recibo asociado en módulo Financiero
 	  */
-	public void setTieneRecibo(boolean TieneRecibo);
+	public void setTieneRecibo (boolean TieneRecibo);
 
 	/** Get TieneRecibo.
 	  * Si un documento de pago/cobro tiene recibo asociado en módulo Financiero
@@ -622,7 +622,7 @@ public interface I_Z_Pago
 	/** Set TotalMediosPago.
 	  * Monto total de medios de pago considerados en un documento
 	  */
-	public void setTotalMediosPago(BigDecimal TotalMediosPago);
+	public void setTotalMediosPago (BigDecimal TotalMediosPago);
 
 	/** Get TotalMediosPago.
 	  * Monto total de medios de pago considerados en un documento
@@ -645,13 +645,24 @@ public interface I_Z_Pago
 	  */
 	public int getUpdatedBy();
 
+    /** Column name Z_LoadPago_ID */
+    public static final String COLUMNNAME_Z_LoadPago_ID = "Z_LoadPago_ID";
+
+	/** Set Z_LoadPago ID	  */
+	public void setZ_LoadPago_ID (int Z_LoadPago_ID);
+
+	/** Get Z_LoadPago ID	  */
+	public int getZ_LoadPago_ID();
+
+	public I_Z_LoadPago getZ_LoadPago() throws RuntimeException;
+
     /** Column name Z_OrdenPago_To_ID */
     public static final String COLUMNNAME_Z_OrdenPago_To_ID = "Z_OrdenPago_To_ID";
 
 	/** Set Z_OrdenPago_To_ID.
 	  * Referencia a un documento de Orden de Pago
 	  */
-	public void setZ_OrdenPago_To_ID(int Z_OrdenPago_To_ID);
+	public void setZ_OrdenPago_To_ID (int Z_OrdenPago_To_ID);
 
 	/** Get Z_OrdenPago_To_ID.
 	  * Referencia a un documento de Orden de Pago
@@ -664,7 +675,7 @@ public interface I_Z_Pago
     public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
 
 	/** Set Z_Pago ID	  */
-	public void setZ_Pago_ID(int Z_Pago_ID);
+	public void setZ_Pago_ID (int Z_Pago_ID);
 
 	/** Get Z_Pago ID	  */
 	public int getZ_Pago_ID();
@@ -675,7 +686,7 @@ public interface I_Z_Pago
 	/** Set Z_Pago_To_ID.
 	  * Referencia a un documento de Pago
 	  */
-	public void setZ_Pago_To_ID(int Z_Pago_To_ID);
+	public void setZ_Pago_To_ID (int Z_Pago_To_ID);
 
 	/** Get Z_Pago_To_ID.
 	  * Referencia a un documento de Pago
