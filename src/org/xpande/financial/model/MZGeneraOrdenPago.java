@@ -1481,6 +1481,14 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                         ordenPagoLin.setZ_ResguardoSocio_ID(generaLin.getZ_ResguardoSocio_ID());
                     }
                     if (generaLin.getZ_TransferSaldo_ID() > 0){
+                        // Verifico que exista la transferencia de saldo en el sistema.
+                        // Pasa seguido que la eliminan.
+                        MZTransferSaldo transferSaldo = (MZTransferSaldo) generaLin.getZ_TransferSaldo();
+                        if ((transferSaldo == null) || (transferSaldo.get_ID() <= 0)){
+                            return "El Documento de Transferencia de Saldo número : " + generaLin.getDocumentNoRef() +
+                                    " fue eliminado del sistema. Tiene que eliminarlo de los documentos a procesar" +
+                                    " antes de generar las ordenes de pago.";
+                        }
                         ordenPagoLin.setZ_TransferSaldo_ID(generaLin.getZ_TransferSaldo_ID());
                     }
                     if (generaLin.getZ_Pago_ID() > 0){
