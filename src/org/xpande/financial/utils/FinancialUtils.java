@@ -682,6 +682,20 @@ public final class FinancialUtils {
                 hashPagosMoneda.get(pagoLin.getC_Currency_ID()).amtAcct = hashPagosMoneda.get(pagoLin.getC_Currency_ID()).amtAcct.add(pagoLin.getAmtAllocationMT());
             }
 
+            // Si no tengo lineas de pago porque estoy en un anticipo, obtengo las monedas de los medios de pago
+            if (hashPagosMoneda.size() <= 0){
+                List<MZPagoMedioPago> pagoMedioPagoList = pago.getMediosPago();
+                for (MZPagoMedioPago pagoMedioPago: pagoMedioPagoList){
+                    // Sumarizo por moneda
+                    if (!hashPagosMoneda.containsKey(pagoMedioPago.getC_Currency_ID())){
+                        hashPagosMoneda.put(pagoMedioPago.getC_Currency_ID(), new InfoMultiCurrency());
+                        hashPagosMoneda.get(pagoMedioPago.getC_Currency_ID()).cuurencyID = pagoMedioPago.getC_Currency_ID();
+                    }
+                    hashPagosMoneda.get(pagoMedioPago.getC_Currency_ID()).amtSource = hashPagosMoneda.get(pagoMedioPago.getC_Currency_ID()).amtSource.add(pagoMedioPago.getTotalAmt());
+                    hashPagosMoneda.get(pagoMedioPago.getC_Currency_ID()).amtAcct = hashPagosMoneda.get(pagoMedioPago.getC_Currency_ID()).amtAcct.add(pagoMedioPago.getTotalAmtMT());
+                }
+            }
+
             for (HashMap.Entry<Integer, InfoMultiCurrency> entry : hashPagosMoneda.entrySet()){
 
                 // Impacto documento en estado de cuenta para esta moneda
