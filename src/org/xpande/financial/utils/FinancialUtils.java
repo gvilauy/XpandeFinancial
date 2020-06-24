@@ -731,50 +731,94 @@ public final class FinancialUtils {
                     if (isVendor){
                         estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
                         if (!pago.isAnticipo()){
-                            estadoCuenta.setAmtSourceCr(Env.ZERO);
-
                             if (considerarAmt){
-                                estadoCuenta.setAmtSourceDr(amt);
+                                if (amt.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(amt);
+                                }
+                                else{
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(amt.negate());
+                                }
                             }
                             else{
-                                //estadoCuenta.setAmtSourceDr(amt);
-                                estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                                if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                                }
+                                else {
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(entry.getValue().amtSource.negate());
+                                }
                             }
                         }
                         else{
-                            estadoCuenta.setAmtSourceDr(Env.ZERO);
-
                             if (considerarAmt){
-                                estadoCuenta.setAmtSourceCr(amt);
+                                if (amt.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(amt);
+                                }
+                                else {
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(amt.negate());
+                                }
                             }
                             else {
-                                //estadoCuenta.setAmtSourceCr(amt);
-                                estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                }
+                                else {
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(entry.getValue().amtSource.negate());
+                                }
                             }
                         }
                     }
                     else{  // Parte Deudora
                         estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
                         if (!pago.isAnticipo()){
-                            estadoCuenta.setAmtSourceDr(Env.ZERO);
-
                             if (considerarAmt){
-                                estadoCuenta.setAmtSourceCr(amt);
+                                if (amt.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(amt);
+                                }
+                                else{
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(amt.negate());
+                                }
                             }
                             else{
-                                //estadoCuenta.setAmtSourceCr(amt);
-                                estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                }
+                                else {
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(entry.getValue().amtSource.negate());
+                                }
                             }
                         }
                         else{
-                            estadoCuenta.setAmtSourceCr(Env.ZERO);
-
                             if (considerarAmt){
-                                estadoCuenta.setAmtSourceDr(amt);
+                                if (amt.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(amt);
+                                }
+                                else {
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(amt.negate());
+                                }
                             }
                             else{
-                                //estadoCuenta.setAmtSourceDr(amt);
-                                estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                                if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                                }
+                                else {
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(entry.getValue().amtSource.negate());
+                                }
                             }
                         }
                     }
@@ -785,69 +829,121 @@ public final class FinancialUtils {
                     if (!isVendor){
                         estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
                         if (!pago.isAnticipo()){
-
                             if (considerarAmt){
-                                estadoCuenta.setAmtSourceCr(amt);
+                                if (amt.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(amt);
+                                }
+                                else {
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(amt.negate());
+                                }
                             }
                             else{
-                                //estadoCuenta.setAmtSourceCr(amt);
-                                estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                }
+                                else{
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(entry.getValue().amtSource.negate());
+                                }
                             }
-
-                            estadoCuenta.setAmtSourceDr(Env.ZERO);
                         }
                         else{
                             // Si es recibo de cobro marcado como anticipo, y es de un empleado
                             if (partner.isEmployee()){
-
                                 if (considerarAmt){
-                                    estadoCuenta.setAmtSourceCr(amt);
+                                    if (amt.compareTo(Env.ZERO) >= 0){
+                                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                        estadoCuenta.setAmtSourceCr(amt);
+                                    }
+                                    else{
+                                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                        estadoCuenta.setAmtSourceDr(amt.negate());
+                                    }
                                 }
                                 else{
-                                    //estadoCuenta.setAmtSourceCr(amt);
-                                    estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                    if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                        estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                    }
+                                    else{
+                                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                        estadoCuenta.setAmtSourceDr(entry.getValue().amtSource.negate());
+                                    }
                                 }
-
-                                estadoCuenta.setAmtSourceDr(Env.ZERO);
                             }
                             else{
                                 if (considerarAmt){
-                                    estadoCuenta.setAmtSourceDr(amt);
+                                    if (amt.compareTo(Env.ZERO) >= 0){
+                                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                        estadoCuenta.setAmtSourceDr(amt);
+                                    }
+                                    else{
+                                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                        estadoCuenta.setAmtSourceCr(amt.negate());
+                                    }
                                 }
                                 else{
-                                    //estadoCuenta.setAmtSourceDr(amt);
-                                    estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                                    if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                        estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                                    }
+                                    else{
+                                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                        estadoCuenta.setAmtSourceCr(entry.getValue().amtSource.negate());
+                                    }
                                 }
 
-                                estadoCuenta.setAmtSourceCr(Env.ZERO);
                             }
                         }
                     }
                     else{  // Parte Acreedora
                         estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
                         if (!pago.isAnticipo()){
-
                             if (considerarAmt){
-                                estadoCuenta.setAmtSourceDr(amt);
+                                if (amt.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(amt);
+                                }
+                                else {
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(amt.negate());
+                                }
                             }
                             else{
-                                //estadoCuenta.setAmtSourceDr(amt);
-                                estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                                if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(entry.getValue().amtSource);
+                                }
+                                else {
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(entry.getValue().amtSource.negate());
+                                }
                             }
-
-                            estadoCuenta.setAmtSourceCr(Env.ZERO);
                         }
                         else{
-
                             if (considerarAmt){
-                                estadoCuenta.setAmtSourceCr(amt);
+                                if (amt.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(amt);
+                                }
+                                else {
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(amt.negate());
+                                }
                             }
                             else {
-                                //estadoCuenta.setAmtSourceCr(amt);
-                                estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                if (entry.getValue().amtSource.compareTo(Env.ZERO) >= 0){
+                                    estadoCuenta.setAmtSourceDr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceCr(entry.getValue().amtSource);
+                                }
+                                else{
+                                    estadoCuenta.setAmtSourceCr(Env.ZERO);
+                                    estadoCuenta.setAmtSourceDr(entry.getValue().amtSource.negate());
+                                }
                             }
-
-                            estadoCuenta.setAmtSourceDr(Env.ZERO);
                         }
                     }
                 }

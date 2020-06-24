@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import javax.el.ELContext;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -285,6 +286,18 @@ public class EstadoCuenta {
 
                 BigDecimal amtSourceCr = rs.getBigDecimal("amtsourcecr");
                 if (amtSourceCr == null) amtSourceCr = Env.ZERO;
+
+                /*
+                // Acumulado segun sea PROVEEDOR o DEUDOR
+                // Para Deudores: sumo DR, resto CR
+                // Para Proveedores: sumo CR, resto DR.
+                if (tipoSocioNegocioAux.equalsIgnoreCase("PROVEEDORES")){
+                    amtAcumulado = amtAcumulado.add(amtSourceCr.subtract(amtSourceDr));
+                }
+                else{
+                    amtAcumulado = amtAcumulado.add(amtSourceDr.subtract(amtSourceCr));
+                }
+                */
 
                 amtAcumulado = amtAcumulado.add(amtSourceDr.subtract(amtSourceCr));
 
