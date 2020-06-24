@@ -30,7 +30,7 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190902L;
+	private static final long serialVersionUID = 20200623L;
 
     /** Standard Constructor */
     public X_Z_FinancialConfig (Properties ctx, int Z_FinancialConfig_ID, String trxName)
@@ -192,6 +192,52 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	public int getDefaultDocPPD_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocPPD_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DocAjusteCCD_ID.
+		@param DocAjusteCCD_ID 
+		ID de Documento para Ajuste de Cuenta Corriente Deudor
+	  */
+	public void setDocAjusteCCD_ID (int DocAjusteCCD_ID)
+	{
+		if (DocAjusteCCD_ID < 1) 
+			set_Value (COLUMNNAME_DocAjusteCCD_ID, null);
+		else 
+			set_Value (COLUMNNAME_DocAjusteCCD_ID, Integer.valueOf(DocAjusteCCD_ID));
+	}
+
+	/** Get DocAjusteCCD_ID.
+		@return ID de Documento para Ajuste de Cuenta Corriente Deudor
+	  */
+	public int getDocAjusteCCD_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DocAjusteCCD_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DocAjustePPD_ID.
+		@param DocAjustePPD_ID 
+		ID de Documento para Ajuste de Cuenta Corriente Proveedor
+	  */
+	public void setDocAjustePPD_ID (int DocAjustePPD_ID)
+	{
+		if (DocAjustePPD_ID < 1) 
+			set_Value (COLUMNNAME_DocAjustePPD_ID, null);
+		else 
+			set_Value (COLUMNNAME_DocAjustePPD_ID, Integer.valueOf(DocAjustePPD_ID));
+	}
+
+	/** Get DocAjustePPD_ID.
+		@return ID de Documento para Ajuste de Cuenta Corriente Proveedor
+	  */
+	public int getDocAjustePPD_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DocAjustePPD_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

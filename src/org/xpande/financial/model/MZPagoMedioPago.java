@@ -72,17 +72,20 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
                 if ((pagoMoneda != null) && (pagoMoneda.get_ID() > 0)){
                     this.setMultiplyRate(pagoMoneda.getMultiplyRate());
                 }
+                else {
+                    this.setMultiplyRate(Env.ONE);
+                }
             }
 
             if (this.getMultiplyRate().compareTo(Env.ONE) == 0){
-                this.setTotalAmt(this.getTotalAmtMT());
+                this.setTotalAmtMT(this.getTotalAmt());
             }
             else{
                 if (this.getC_Currency_ID() != schema.getC_Currency_ID()){
-                    this.setTotalAmt(this.getTotalAmtMT().divide(this.getMultiplyRate(), 2, RoundingMode.HALF_UP));
+                    this.setTotalAmtMT(this.getTotalAmt().multiply(this.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
                 }
                 else{
-                    this.setTotalAmt(this.getTotalAmtMT().multiply(this.getMultiplyRate()).setScale(2, RoundingMode.HALF_UP));
+                    this.setTotalAmtMT(this.getTotalAmt().divide(this.getMultiplyRate(), 2, RoundingMode.HALF_UP));
                 }
             }
 
@@ -268,10 +271,24 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
                 }
             }
 
-            if ((this.getTotalAmt() == null) || (this.getTotalAmt().compareTo(Env.ZERO) <= 0)){
-                return "Debe indicar importe mayor a cero para este medio de pago.";
+            if (this.getTotalAmt() == null){
+                return "Debe indicar importe para este medio de pago.";
             }
 
+            if (this.getTotalAmt().compareTo(Env.ZERO) <= 0){
+
+                // Si el medio de pago no acepta monto negativo, aviso.
+                boolean isSOTrx = ((MZPago) this.getZ_Pago()).isSOTrx();
+                MZMedioPago medioPago = (MZMedioPago) this.getZ_MedioPago();
+                if (!isSOTrx && !medioPago.isAceptaNegativo()){
+                    return "Debe indicar importe mayor a cero para este medio de pago.";
+                }
+                else{
+                    if (isSOTrx && !medioPago.isAceptaNegCobro()){
+                        return "Debe indicar importe mayor a cero para este medio de pago.";
+                    }
+                }
+            }
         }
         catch (Exception e){
             throw new AdempiereException(e);

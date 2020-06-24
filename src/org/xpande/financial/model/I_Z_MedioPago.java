@@ -42,6 +42,32 @@ public interface I_Z_MedioPago
 
     /** Load Meta Data */
 
+    /** Column name AceptaNegativo */
+    public static final String COLUMNNAME_AceptaNegativo = "AceptaNegativo";
+
+	/** Set AceptaNegativo.
+	  * Si acepta o no montos negativos
+	  */
+	public void setAceptaNegativo (boolean AceptaNegativo);
+
+	/** Get AceptaNegativo.
+	  * Si acepta o no montos negativos
+	  */
+	public boolean isAceptaNegativo();
+
+    /** Column name AceptaNegCobro */
+    public static final String COLUMNNAME_AceptaNegCobro = "AceptaNegCobro";
+
+	/** Set AceptaNegCobro.
+	  * Si acepta o no montos negativos en cobros
+	  */
+	public void setAceptaNegCobro (boolean AceptaNegCobro);
+
+	/** Get AceptaNegCobro.
+	  * Si acepta o no montos negativos en cobros
+	  */
+	public boolean isAceptaNegCobro();
+
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 

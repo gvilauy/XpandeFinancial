@@ -30,7 +30,7 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200504L;
+	private static final long serialVersionUID = 20200623L;
 
     /** Standard Constructor */
     public X_Z_MedioPago (Properties ctx, int Z_MedioPago_ID, String trxName)
@@ -38,6 +38,10 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
       super (ctx, Z_MedioPago_ID, trxName);
       /** if (Z_MedioPago_ID == 0)
         {
+			setAceptaNegativo (false);
+// N
+			setAceptaNegCobro (false);
+// N
 			setAplicaEnCobro (true);
 // Y
 			setAplicaEnPago (true);
@@ -119,6 +123,54 @@ public class X_Z_MedioPago extends PO implements I_Z_MedioPago, I_Persistent
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set AceptaNegativo.
+		@param AceptaNegativo 
+		Si acepta o no montos negativos
+	  */
+	public void setAceptaNegativo (boolean AceptaNegativo)
+	{
+		set_Value (COLUMNNAME_AceptaNegativo, Boolean.valueOf(AceptaNegativo));
+	}
+
+	/** Get AceptaNegativo.
+		@return Si acepta o no montos negativos
+	  */
+	public boolean isAceptaNegativo () 
+	{
+		Object oo = get_Value(COLUMNNAME_AceptaNegativo);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set AceptaNegCobro.
+		@param AceptaNegCobro 
+		Si acepta o no montos negativos en cobros
+	  */
+	public void setAceptaNegCobro (boolean AceptaNegCobro)
+	{
+		set_Value (COLUMNNAME_AceptaNegCobro, Boolean.valueOf(AceptaNegCobro));
+	}
+
+	/** Get AceptaNegCobro.
+		@return Si acepta o no montos negativos en cobros
+	  */
+	public boolean isAceptaNegCobro () 
+	{
+		Object oo = get_Value(COLUMNNAME_AceptaNegCobro);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	/** Set AplicaEnCobro.
 		@param AplicaEnCobro 

@@ -56,7 +56,7 @@ public interface I_Z_FinancialConfig
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_FinancialConfig
 	/** Set ControlaPagos.
 	  * Si se controla o no pagos asociados a un determinado documento
 	  */
-	public void setControlaPagos(boolean ControlaPagos);
+	public void setControlaPagos (boolean ControlaPagos);
 
 	/** Get ControlaPagos.
 	  * Si se controla o no pagos asociados a un determinado documento
@@ -82,7 +82,7 @@ public interface I_Z_FinancialConfig
 	/** Set ControlaResguardos.
 	  * Si se controla o no que un documento tenga asociado un Resguardo
 	  */
-	public void setControlaResguardos(boolean ControlaResguardos);
+	public void setControlaResguardos (boolean ControlaResguardos);
 
 	/** Get ControlaResguardos.
 	  * Si se controla o no que un documento tenga asociado un Resguardo
@@ -95,7 +95,7 @@ public interface I_Z_FinancialConfig
 	/** Set Payment Term.
 	  * The terms of Payment (timing, discount)
 	  */
-	public void setC_PaymentTerm_ID(int C_PaymentTerm_ID);
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/** Get Payment Term.
 	  * The terms of Payment (timing, discount)
@@ -126,7 +126,7 @@ public interface I_Z_FinancialConfig
 	/** Set DefaultDocCCD_ID.
 	  * Documento por defecto para Cobro a Clientes
 	  */
-	public void setDefaultDocCCD_ID(int DefaultDocCCD_ID);
+	public void setDefaultDocCCD_ID (int DefaultDocCCD_ID);
 
 	/** Get DefaultDocCCD_ID.
 	  * Documento por defecto para Cobro a Clientes
@@ -139,12 +139,38 @@ public interface I_Z_FinancialConfig
 	/** Set DefaultDocPPD_ID.
 	  * Documento por defecto para Pago a Proveedores
 	  */
-	public void setDefaultDocPPD_ID(int DefaultDocPPD_ID);
+	public void setDefaultDocPPD_ID (int DefaultDocPPD_ID);
 
 	/** Get DefaultDocPPD_ID.
 	  * Documento por defecto para Pago a Proveedores
 	  */
 	public int getDefaultDocPPD_ID();
+
+    /** Column name DocAjusteCCD_ID */
+    public static final String COLUMNNAME_DocAjusteCCD_ID = "DocAjusteCCD_ID";
+
+	/** Set DocAjusteCCD_ID.
+	  * ID de Documento para Ajuste de Cuenta Corriente Deudor
+	  */
+	public void setDocAjusteCCD_ID (int DocAjusteCCD_ID);
+
+	/** Get DocAjusteCCD_ID.
+	  * ID de Documento para Ajuste de Cuenta Corriente Deudor
+	  */
+	public int getDocAjusteCCD_ID();
+
+    /** Column name DocAjustePPD_ID */
+    public static final String COLUMNNAME_DocAjustePPD_ID = "DocAjustePPD_ID";
+
+	/** Set DocAjustePPD_ID.
+	  * ID de Documento para Ajuste de Cuenta Corriente Proveedor
+	  */
+	public void setDocAjustePPD_ID (int DocAjustePPD_ID);
+
+	/** Get DocAjustePPD_ID.
+	  * ID de Documento para Ajuste de Cuenta Corriente Proveedor
+	  */
+	public int getDocAjustePPD_ID();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -152,7 +178,7 @@ public interface I_Z_FinancialConfig
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -181,7 +207,7 @@ public interface I_Z_FinancialConfig
 	/** Set Search Key.
 	  * Search key for the record in the format required - must be unique
 	  */
-	public void setValue(String Value);
+	public void setValue (String Value);
 
 	/** Get Search Key.
 	  * Search key for the record in the format required - must be unique
@@ -192,7 +218,7 @@ public interface I_Z_FinancialConfig
     public static final String COLUMNNAME_Z_FinancialConfig_ID = "Z_FinancialConfig_ID";
 
 	/** Set Z_FinancialConfig ID	  */
-	public void setZ_FinancialConfig_ID(int Z_FinancialConfig_ID);
+	public void setZ_FinancialConfig_ID (int Z_FinancialConfig_ID);
 
 	/** Get Z_FinancialConfig ID	  */
 	public int getZ_FinancialConfig_ID();

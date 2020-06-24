@@ -2235,9 +2235,16 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					continue;
 				}
 
+				// Valido importe no nulo
+				if (pagoMedioPago.getTotalAmt() == null){
+					return "Debe indicar importe en medios de pago de este documento.";
+				}
+
 				// Valido importe positivo y mayor a cero en este medio de pago
-				if ((pagoMedioPago.getTotalAmt() == null) || (pagoMedioPago.getTotalAmt().compareTo(Env.ZERO) <= 0)){
-					return "Debe indicar importe mayor a cero en medios de pago de este documento.";
+				if (pagoMedioPago.getTotalAmt().compareTo(Env.ZERO) <= 0){
+					if (!medioPago.isAceptaNegativo()){
+						return "Debe indicar importe mayor a cero en medios de pago : " + medioPago.getName();
+					}
 				}
 
 				// Si este medio de pago no se emite por definición
