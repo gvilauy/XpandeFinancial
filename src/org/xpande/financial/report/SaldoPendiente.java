@@ -32,6 +32,7 @@ public class SaldoPendiente {
     public boolean tieneAcct = false;
     public String tipoSocioNegocio = "";
     public String tipoConceptoDoc = "";
+    public Timestamp startDate = null;
     public Timestamp endDate = null;
 
     /***
@@ -154,12 +155,21 @@ public class SaldoPendiente {
             }
 
             if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+                if (this.startDate != null){
+                    whereClause += " and a.dateinvoiced >='" + this.startDate + "'";
+                }
                 whereClause += " and a.dateinvoiced <='" + this.endDate + "'";
             }
             else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+                if (this.startDate != null){
+                    whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(a.C_PaymentTerm_ID, a.DateInvoiced)), a.dateinvoiced) >='" + this.startDate + "' ";
+                }
                 whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(a.C_PaymentTerm_ID, a.DateInvoiced)), a.dateinvoiced) <='" + this.endDate + "' ";
             }
             else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+                if (this.startDate != null){
+                    whereClause += " and a.dateacct >='" + this.startDate + "'";
+                }
                 whereClause += " and a.dateacct <='" + this.endDate + "'";
             }
 
@@ -226,12 +236,21 @@ public class SaldoPendiente {
             }
 
             if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+                if (this.startDate != null){
+                    whereClause += " and a.datedoc >='" + this.startDate + "'";
+                }
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
             }
             else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+                if (this.startDate != null){
+                    whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(inv.C_PaymentTerm_ID, inv.DateInvoiced)), a.datedoc) >='" + this.startDate + "' ";
+                }
                 whereClause += " AND coalesce(coalesce(ips.duedate, paymentTermDueDate(inv.C_PaymentTerm_ID, inv.DateInvoiced)), a.datedoc) <='" + this.endDate + "' ";
             }
             else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+                if (this.startDate != null){
+                    whereClause += " and a.datedoc >='" + this.startDate + "'";
+                }
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
             }
 
@@ -300,14 +319,26 @@ public class SaldoPendiente {
             }
 
             if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+                if (this.startDate != null){
+                    whereClause += " and a.datedoc >='" + this.startDate + "'";
+                    whereClauseAfecta += " datedoc >='" + this.startDate + "' ";
+                }
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
                 whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
             }
             else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+                if (this.startDate != null){
+                    whereClause += " and a.datedoc >='" + this.startDate + "'";
+                    whereClauseAfecta += " datedoc >='" + this.startDate + "' ";
+                }
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
                 whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
             }
             else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+                if (this.startDate != null){
+                    whereClause += " and a.datedoc >='" + this.startDate + "'";
+                    whereClauseAfecta += " datedoc >='" + this.startDate + "' ";
+                }
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
                 whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
             }
@@ -376,14 +407,26 @@ public class SaldoPendiente {
             }
 
             if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+                if (this.startDate != null){
+                    whereClause += " and a.datedoc >='" + this.startDate + "'";
+                    whereClauseAfecta += " datedoc >='" + this.startDate + "' ";
+                }
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
                 whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
             }
             else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+                if (this.startDate != null){
+                    whereClause += " and a.datedoc >='" + this.startDate + "'";
+                    whereClauseAfecta += " datedoc >='" + this.startDate + "' ";
+                }
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
                 whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
             }
             else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+                if (this.startDate != null){
+                    whereClause += " and a.datedoc >='" + this.startDate + "'";
+                    whereClauseAfecta += " datedoc >='" + this.startDate + "' ";
+                }
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
                 whereClauseAfecta += " datedoc <='" + this.endDate + "' ";
             }
@@ -455,12 +498,21 @@ public class SaldoPendiente {
             }
 
             if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+                if (this.startDate != null){
+                    whereClause += " and a.dateemitted >='" + this.startDate + "'";
+                }
                 whereClause += " and a.dateemitted <='" + this.endDate + "'";
             }
             else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+                if (this.startDate != null){
+                    whereClause += " and a.duedate >='" + this.startDate + "'";
+                }
                 whereClause += " and a.duedate <='" + this.endDate + "'";
             }
             else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+                if (this.startDate != null){
+                    whereClause += " and a.dateemitted >='" + this.startDate + "'";
+                }
                 whereClause += " and a.dateemitted <='" + this.endDate + "'";
             }
 
@@ -517,12 +569,21 @@ public class SaldoPendiente {
         }
 
         if (this.tipoFecha.equalsIgnoreCase("VALOR")){
+            if (this.startDate != null){
+                whereClause += " and a.dateemmited >='" + this.startDate + "'";
+            }
             whereClause += " and a.dateemmited <='" + this.endDate + "'";
         }
         else if (this.tipoFecha.equalsIgnoreCase("VENCIMIENTO")){
+            if (this.startDate != null){
+                whereClause += " and a.duedate >='" + this.startDate + "'";
+            }
             whereClause += " and a.duedate <='" + this.endDate + "'";
         }
         else if (this.tipoFecha.equalsIgnoreCase("ACCT")){
+            if (this.startDate != null){
+                whereClause += " and a.dateemmited >='" + this.startDate + "'";
+            }
             whereClause += " and a.dateemmited <='" + this.endDate + "'";
         }
 

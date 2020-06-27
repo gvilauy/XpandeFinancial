@@ -50,6 +50,11 @@ public class SaldoPendienteRV extends SvrProcess {
                 else if (name.trim().equalsIgnoreCase("TipoSocioNegocio")){
                     this.saldoPendProcessor.tipoSocioNegocio = (String)para[i].getParameter();
                 }
+                else if (name.trim().equalsIgnoreCase("StartDate")){
+                    if (para[i].getParameter() != null){
+                        this.saldoPendProcessor.startDate = (Timestamp)para[i].getParameter();
+                    }
+                }
                 else if (name.trim().equalsIgnoreCase("EndDate")){
                     this.saldoPendProcessor.endDate = (Timestamp)para[i].getParameter();
                 }
