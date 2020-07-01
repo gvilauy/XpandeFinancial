@@ -180,13 +180,22 @@ public class SaldoPendiente {
                 whereClause += " and a.issotrx ='N'";
             }
 
+            String fieldStartDate = "";
+            if (this.startDate == null){
+                fieldStartDate = " null ";
+            }
+            else {
+                fieldStartDate = "'" + this.startDate + "'";
+            }
+
+
             sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.c_invoice_id, ips.c_invoicepayschedule_id, a.c_doctypetarget_id, " +
                     " (coalesce(a.documentserie, '') || a.documentno) as documentnoref, a.c_currency_id, a.dateinvoiced, " +
                     " coalesce(coalesce(ips.duedate, paymentTermDueDate(a.C_PaymentTerm_ID, a.DateInvoiced)), a.dateinvoiced)::timestamp without time zone as duedate, " +
                     " a.dateacct, a.issotrx, doc.docbasetype, " +
                     " coalesce(ips.dueamt, a.grandtotal) as amtdocument, coalesce(ips.dueamt, a.grandtotal) as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
-                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.startDate + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
+                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA', " +
                     " case when (a.issotrx = 'N' and a.subdocbasetype is null) then 'Y' else 'N' end as isgasto " +
                     " from c_invoice a " +
@@ -262,13 +271,21 @@ public class SaldoPendiente {
                 whereClause += " and a.issotrx ='N'";
             }
 
+            String fieldStartDate = "";
+            if (this.startDate == null){
+                fieldStartDate = " null ";
+            }
+            else {
+                fieldStartDate = "'" + this.startDate + "'";
+            }
+
             sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_transfersaldo_id, ips.c_invoicepayschedule_id, a.c_doctype_id, " +
                     " a.documentno, a.c_currency_id, a.datedoc, " +
                     " coalesce(coalesce(ips.duedate, paymentTermDueDate(inv.C_PaymentTerm_ID, inv.DateInvoiced)), a.datedoc)::timestamp without time zone as duedate, " +
                     " a.datedoc, a.issotrx, doc.docbasetype, " +
                     " coalesce(ips.dueamt, a.grandtotal) as amtdocument, coalesce(ips.dueamt, a.grandtotal) as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
-                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.startDate + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
+                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA' " +
                     " from z_transfersaldo a " +
                     " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
@@ -368,13 +385,21 @@ public class SaldoPendiente {
                 whereClause += " and a.issotrx ='N'";
             }
 
+            String fieldStartDate = "";
+            if (this.startDate == null){
+                fieldStartDate = " null ";
+            }
+            else {
+                fieldStartDate = "'" + this.startDate + "'";
+            }
+
             sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_pago_id, a.c_doctype_id, " +
                     " a.documentno, a.c_currency_id, a.datedoc, a.datedoc, a.datedoc, a.issotrx, doc.docbasetype, " +
                     " a.payamt as amtdocument, a.payamt as amtopen, " +
                     " (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_pagoafectacion " +
                     " where " + whereClauseAfecta + " and z_pago_id = a.z_pago_id) as amtallocated, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
-                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.startDate + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
+                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA' " +
                     " from z_pago a " +
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
@@ -441,11 +466,19 @@ public class SaldoPendiente {
                 whereClause += " and a.datedoc <='" + this.endDate + "'";
             }
 
+            String fieldStartDate = "";
+            if (this.startDate == null){
+                fieldStartDate = " null ";
+            }
+            else {
+                fieldStartDate = "'" + this.startDate + "'";
+            }
+
             sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_resguardosocio_id, a.c_doctype_id, " +
                     " a.documentno, a.c_currency_id, a.datedoc, a.datedoc, a.datedoc, 'N', doc.docbasetype, " +
                     " a.totalamt as amtdocument, a.totalamt as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
-                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.startDate + "', '" + this.endDate + "', " + this.cCurrencyID + ", " +
+                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA' " +
                     " from z_resguardosocio a " +
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
@@ -524,12 +557,20 @@ public class SaldoPendiente {
                 whereClause += " and a.isreceipt ='N'";
             }
 
+            String fieldStartDate = "";
+            if (this.startDate == null){
+                fieldStartDate = " null ";
+            }
+            else {
+                fieldStartDate = "'" + this.startDate + "'";
+            }
+
             sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_mediopago_id, a.nromediopago, " +
                     " a.z_mediopagoitem_id, a.z_emisionmediopago_id, a.c_bankaccount_id, a.c_currency_id, a.dateemitted, " +
                     " a.duedate, a.dateemitted, a.isreceipt, " +
                     " a.totalamt as amtdocument, a.totalamt as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
-                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', '" + this.startDate + "', '" +  this.endDate + "', " + this.cCurrencyID + ", "
+                    ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" +  this.endDate + "', " + this.cCurrencyID + ", "
                     + this.adOrgID + ", 1, 'DOC' " +
                     " from z_mediopagoitem a " +
                     " where a.anulado ='N' and a.conciliado ='N' and a.depositado ='N' and a.emitido ='Y' and a.reemplazado ='N' " +
