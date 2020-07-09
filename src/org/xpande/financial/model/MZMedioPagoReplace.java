@@ -524,6 +524,11 @@ public class MZMedioPagoReplace extends X_Z_MedioPagoReplace implements DocActio
 			amtCargo = Env.ZERO;
 		}
 
+		if (amtCargo.compareTo(Env.ZERO) != 0){
+			if (this.getC_Charge_ID() <= 0){
+				return "Falta indicar CARGO a considerar según monto ingresado por este concepto.";
+			}
+		}
 
 		// Valido detalle de nuevos medios de pago por cada linea del medio de pago que se quiere reemplazar
 		for (MZMedioPagoReplaceLin replaceLin: lines){

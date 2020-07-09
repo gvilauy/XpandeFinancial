@@ -167,7 +167,7 @@ public class ValidatorFinancial implements ModelValidator {
                     return message;
                 }
 
-                // No permito transferir salfo con medio de pago efectivo
+                // No permito transferir saldo con medio de pago efectivo
                 if (X_C_Invoice.PAYMENTRULE_Cash.equals(model.getPaymentRule())){
                     message = "No se permite Transferencia de Saldos con el Medio de Pago seleccionado.";
                     return message;
