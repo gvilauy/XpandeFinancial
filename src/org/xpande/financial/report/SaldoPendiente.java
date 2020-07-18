@@ -134,7 +134,7 @@ public class SaldoPendiente {
         try{
 
             // Incluyo invoices
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, c_invoice_id, c_invoicepayschedule_id, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, c_invoice_id, c_invoicepayschedule_id, " +
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
@@ -189,7 +189,7 @@ public class SaldoPendiente {
             }
 
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.c_invoice_id, ips.c_invoicepayschedule_id, a.c_doctypetarget_id, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, a.c_invoice_id, ips.c_invoicepayschedule_id, a.c_doctypetarget_id, " +
                     " (coalesce(a.documentserie, '') || a.documentno) as documentnoref, a.c_currency_id, a.dateinvoiced, " +
                     " coalesce(coalesce(ips.duedate, paymentTermDueDate(a.C_PaymentTerm_ID, a.DateInvoiced)), a.dateinvoiced)::timestamp without time zone as duedate, " +
                     " a.dateacct, a.issotrx, doc.docbasetype, " +
@@ -200,10 +200,10 @@ public class SaldoPendiente {
                     " case when (a.issotrx = 'N' and a.subdocbasetype is null) then 'Y' else 'N' end as isgasto " +
                     " from c_invoice a " +
                     " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " left outer join c_invoicepayschedule ips on a.c_invoice_id = ips.c_invoice_id " +
                     " where a.docstatus ='CO' " +
-                    " and a.IsForzedPaid ='N' " + whereClause +
-                    " order by a.dateinvoiced, a.c_bpartner_id ";
+                    " and a.IsForzedPaid ='N' " + whereClause;
 
             DB.executeUpdateEx(action + sql, null);
 
@@ -223,7 +223,7 @@ public class SaldoPendiente {
 
         try{
 
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, z_transfersaldo_id, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, z_transfersaldo_id, " +
                     " c_invoicepayschedule_id, " +
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
@@ -279,7 +279,7 @@ public class SaldoPendiente {
                 fieldStartDate = "'" + this.startDate + "'";
             }
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_transfersaldo_id, ips.c_invoicepayschedule_id, a.c_doctype_id, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, a.z_transfersaldo_id, ips.c_invoicepayschedule_id, a.c_doctype_id, " +
                     " a.documentno, a.c_currency_id, a.datedoc, " +
                     " coalesce(coalesce(ips.duedate, paymentTermDueDate(inv.C_PaymentTerm_ID, inv.DateInvoiced)), a.datedoc)::timestamp without time zone as duedate, " +
                     " a.datedoc, a.issotrx, doc.docbasetype, " +
@@ -289,11 +289,11 @@ public class SaldoPendiente {
                     this.adOrgID + ", 0, 'ABIERTA' " +
                     " from z_transfersaldo a " +
                     " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " inner join c_invoice inv on a.c_invoice_id = inv.c_invoice_id " +
                     " left outer join c_invoicepayschedule ips on inv.c_invoice_id = ips.c_invoice_id " +
                     " where a.docstatus ='CO' " +
-                    " and a.IsForzedPaid ='N' " + whereClause +
-                    " order by a.datedoc, a.c_bpartner_id ";
+                    " and a.IsForzedPaid ='N' " + whereClause;
 
             DB.executeUpdateEx(action + sql, null);
 
@@ -314,7 +314,7 @@ public class SaldoPendiente {
         try{
 
             // Incluyo invoices
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, z_pago_id, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, z_pago_id, " +
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
@@ -393,7 +393,7 @@ public class SaldoPendiente {
                 fieldStartDate = "'" + this.startDate + "'";
             }
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_pago_id, a.c_doctype_id, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, a.z_pago_id, a.c_doctype_id, " +
                     " a.documentno, a.c_currency_id, a.datedoc, a.datedoc, a.datedoc, a.issotrx, doc.docbasetype, " +
                     " a.payamt as amtdocument, a.payamt as amtopen, " +
                     " (select round(coalesce(sum(amtallocation),0),4) as amtallocated from z_pagoafectacion " +
@@ -403,10 +403,10 @@ public class SaldoPendiente {
                     this.adOrgID + ", 0, 'ABIERTA' " +
                     " from z_pago a " +
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.docstatus ='CO' " +
                     " and anticipo ='Y' " +
-                    " and z_pago_to_id is null " + whereClause +
-                    " order by a.datedoc, a.c_bpartner_id ";
+                    " and z_pago_to_id is null " + whereClause;
 
             DB.executeUpdateEx(action + sql, null);
 
@@ -427,7 +427,7 @@ public class SaldoPendiente {
 
         try{
             // Incluyo Resguardos
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, z_resguardosocio_id, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, z_resguardosocio_id, " +
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
@@ -474,7 +474,7 @@ public class SaldoPendiente {
                 fieldStartDate = "'" + this.startDate + "'";
             }
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_resguardosocio_id, a.c_doctype_id, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, a.z_resguardosocio_id, a.c_doctype_id, " +
                     " a.documentno, a.c_currency_id, a.datedoc, a.datedoc, a.datedoc, 'N', doc.docbasetype, " +
                     " a.totalamt as amtdocument, a.totalamt as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
@@ -482,14 +482,14 @@ public class SaldoPendiente {
                     this.adOrgID + ", 0, 'ABIERTA' " +
                     " from z_resguardosocio a " +
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.docstatus ='CO' " +
                     " and a.IsForzedPaid ='N' " + whereClause +
                     " and z_resguardosocio_id not in " +
                     " (select b.z_resguardosocio_id " +
                     " from z_pagoresguardo b " +
                     " inner join z_pago c on b.z_pago_id = c.z_pago_id " +
-                    " where b.z_resguardosocio_id is not null and c.docstatus='CO' and c.datedoc <='" + this.endDate + "') " +
-                    " order by a.datedoc, a.c_bpartner_id ";
+                    " where b.z_resguardosocio_id is not null and c.docstatus='CO' and c.datedoc <='" + this.endDate + "') ";
 
             DB.executeUpdateEx(action + sql, null);
 
@@ -510,7 +510,7 @@ public class SaldoPendiente {
         try{
 
             // Incluyo medios de pago emitidos
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, " +
                     " z_mediopago_id, nromediopago, z_mediopagoitem_id, z_emisionmediopago_id, " +
                     " c_bankaccount_id, c_currency_id, datedoc, duedate, dateacct, issotrx, " +
                     " amtdocument, amtopen, amtallocated,  " +
@@ -565,7 +565,7 @@ public class SaldoPendiente {
                 fieldStartDate = "'" + this.startDate + "'";
             }
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, a.z_mediopago_id, a.nromediopago, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, a.z_mediopago_id, a.nromediopago, " +
                     " a.z_mediopagoitem_id, a.z_emisionmediopago_id, a.c_bankaccount_id, a.c_currency_id, a.dateemitted, " +
                     " a.duedate, a.dateemitted, a.isreceipt, " +
                     " a.totalamt as amtdocument, a.totalamt as amtopen, 0, " +
@@ -573,10 +573,10 @@ public class SaldoPendiente {
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" +  this.endDate + "', " + this.cCurrencyID + ", "
                     + this.adOrgID + ", 1, 'DOC' " +
                     " from z_mediopagoitem a " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.anulado ='N' and a.conciliado ='N' and a.depositado ='N' and a.emitido ='Y' and a.reemplazado ='N' " +
                     " and ((a.entregado ='N') or ((a.entregado ='Y') and (a.daterefpago is not null and a.daterefpago > '" + this.endDate + "'))) " +
-                    whereClause +
-                    " order by a.dateemitted, a.c_bpartner_id ";
+                    whereClause;
 
             DB.executeUpdateEx(action + sql, null);
 

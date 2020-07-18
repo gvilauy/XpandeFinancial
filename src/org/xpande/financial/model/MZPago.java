@@ -2431,6 +2431,16 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					medioPagoItem.setDateRefPago(this.getDateDoc());
 					medioPagoItem.setEntregado(true);
 					medioPagoItem.saveEx();
+
+					// Al documento de emision de este medio de pago, le seteo el ID de este pago.
+					if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
+						MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+						if ((emisionMedioPago != null) && (emisionMedioPago.get_ID() > 0)){
+							emisionMedioPago.setZ_Pago_ID(this.get_ID());
+							emisionMedioPago.saveEx();
+						}
+					}
+
 				}
 			}
 		}
