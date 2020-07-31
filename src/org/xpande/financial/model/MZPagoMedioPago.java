@@ -161,7 +161,7 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
     @Override
     protected boolean afterSave(boolean newRecord, boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         String action = "";
 
@@ -202,7 +202,6 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
             throw new AdempiereException(e);
         }
 
-
         return true;
     }
 
@@ -224,8 +223,6 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
      * @return
      */
     private String validacionesCampos(){
-
-        String message = null;
 
         try{
 
@@ -294,7 +291,7 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
             throw new AdempiereException(e);
         }
 
-        return message;
+        return null;
     }
 
 }

@@ -33,7 +33,7 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190910L;
+	private static final long serialVersionUID = 20200730L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoItem (Properties ctx, int Z_MedioPagoItem_ID, String trxName)
@@ -838,6 +838,31 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	public int getZ_MedioPagoReplace_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoReplace_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_MPagoCaja getZ_MPagoCaja() throws RuntimeException
+    {
+		return (I_Z_MPagoCaja)MTable.get(getCtx(), I_Z_MPagoCaja.Table_Name)
+			.getPO(getZ_MPagoCaja_ID(), get_TrxName());	}
+
+	/** Set Z_MPagoCaja ID.
+		@param Z_MPagoCaja_ID Z_MPagoCaja ID	  */
+	public void setZ_MPagoCaja_ID (int Z_MPagoCaja_ID)
+	{
+		if (Z_MPagoCaja_ID < 1) 
+			set_Value (COLUMNNAME_Z_MPagoCaja_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_MPagoCaja_ID, Integer.valueOf(Z_MPagoCaja_ID));
+	}
+
+	/** Get Z_MPagoCaja ID.
+		@return Z_MPagoCaja ID	  */
+	public int getZ_MPagoCaja_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MPagoCaja_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

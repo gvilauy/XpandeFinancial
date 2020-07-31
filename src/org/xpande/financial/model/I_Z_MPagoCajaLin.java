@@ -396,6 +396,17 @@ public interface I_Z_MPagoCajaLin
 
 	public I_Z_MedioPagoIdent getZ_MedioPagoIdent() throws RuntimeException;
 
+    /** Column name Z_MedioPagoItem_ID */
+    public static final String COLUMNNAME_Z_MedioPagoItem_ID = "Z_MedioPagoItem_ID";
+
+	/** Set Z_MedioPagoItem ID	  */
+	public void setZ_MedioPagoItem_ID (int Z_MedioPagoItem_ID);
+
+	/** Get Z_MedioPagoItem ID	  */
+	public int getZ_MedioPagoItem_ID();
+
+	public I_Z_MedioPagoItem getZ_MedioPagoItem() throws RuntimeException;
+
     /** Column name Z_MPagoCaja_ID */
     public static final String COLUMNNAME_Z_MPagoCaja_ID = "Z_MPagoCaja_ID";
 

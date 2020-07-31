@@ -33,7 +33,7 @@ public class X_Z_MPagoCajaLin extends PO implements I_Z_MPagoCajaLin, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200729L;
+	private static final long serialVersionUID = 20200730L;
 
     /** Standard Constructor */
     public X_Z_MPagoCajaLin (Properties ctx, int Z_MPagoCajaLin_ID, String trxName)
@@ -64,7 +64,6 @@ public class X_Z_MPagoCajaLin extends PO implements I_Z_MPagoCajaLin, I_Persiste
 			setTieneNroRef (false);
 // N
 			setTotalAmt (Env.ZERO);
-			setTotalAmtMT (Env.ZERO);
 			setZ_MedioPago_ID (0);
 			setZ_MPagoCaja_ID (0);
 			setZ_MPagoCajaLin_ID (0);
@@ -596,6 +595,31 @@ public class X_Z_MPagoCajaLin extends PO implements I_Z_MPagoCajaLin, I_Persiste
 	public int getZ_MedioPagoIdent_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoIdent_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_Z_MedioPagoItem getZ_MedioPagoItem() throws RuntimeException
+    {
+		return (I_Z_MedioPagoItem)MTable.get(getCtx(), I_Z_MedioPagoItem.Table_Name)
+			.getPO(getZ_MedioPagoItem_ID(), get_TrxName());	}
+
+	/** Set Z_MedioPagoItem ID.
+		@param Z_MedioPagoItem_ID Z_MedioPagoItem ID	  */
+	public void setZ_MedioPagoItem_ID (int Z_MedioPagoItem_ID)
+	{
+		if (Z_MedioPagoItem_ID < 1) 
+			set_Value (COLUMNNAME_Z_MedioPagoItem_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_MedioPagoItem_ID, Integer.valueOf(Z_MedioPagoItem_ID));
+	}
+
+	/** Get Z_MedioPagoItem ID.
+		@return Z_MedioPagoItem ID	  */
+	public int getZ_MedioPagoItem_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_MedioPagoItem_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

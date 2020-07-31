@@ -925,8 +925,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private String validateReactivate(List<MZPagoMedioPago> pagoMedioPagoList) {
 
-		String message = null;
-
 		try{
 
 			// Recorro medios de pago
@@ -941,6 +939,10 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 						return "El Medio de Pago Número " + medioPagoItem.getNroMedioPago() + " esta Depositado." +
 								" Debe anular dicho depósito antes de continuar con esta acción.";
 					}
+					if (medioPagoItem.isConciliado()){
+						return "El Medio de Pago Número " + medioPagoItem.getNroMedioPago() + " esta Conciliado." +
+								" Debe anular dicha conciliación antes de continuar con esta acción.";
+					}
 				}
 			}
 
@@ -949,7 +951,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		    throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 	}
 
 

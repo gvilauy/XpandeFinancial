@@ -20,13 +20,18 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.xpande.financial.utils.FinancialUtils;
 
 /** Generated Model for Z_MPagoCaja
  *  @author Adempiere (generated) 
@@ -226,7 +231,29 @@ public class MZMPagoCaja extends X_Z_MPagoCaja implements DocAction, DocOptions 
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		if (this.getDateAcct() == null) this.setDateAcct(this.getDateDoc());
+
+		// Me aseguro que fecha del documento y fecha contable no sean mayor a hoy
+		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+		if (this.getDateDoc().after(fechaHoy)){
+			this.setDateDoc(fechaHoy);
+		}
+		if (this.getDateAcct().after(fechaHoy)){
+			this.setDateAcct(fechaHoy);
+		}
+
+		List<MZMPagoCajaLin> pagoCajaLinList = this.getLines();
+		if (pagoCajaLinList.size() <= 0){
+			m_processMsg = "Este Documento no tiene lineas y por lo tanto no puede Completarse.";
+			return DocAction.STATUS_Invalid;
+		}
+
+		m_processMsg = this.crearMediosPago(pagoCajaLinList);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -315,10 +342,48 @@ public class MZMPagoCaja extends X_Z_MPagoCaja implements DocAction, DocOptions 
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+
+		String action = "";
+
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Control de período contable
+		MPeriod.testPeriodOpen(getCtx(), this.getDateDoc(), this.getC_DocType_ID(), this.getAD_Org_ID());
+
+		// Obtengo medios de pago de este documento
+		List<MZMPagoCajaLin> pagoCajaLinList = this.getLines();
+
+		// Valido documento para reactivar
+		m_processMsg = this.validateReactivate(pagoCajaLinList);
+		if (m_processMsg != null){
+			return false;
+		}
+
+		// Elimino asientos contables
+		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+		// Actualizo lineas
+		action = " update z_mpagocajalin set z_mediopagoitem_id = null where z_mpagocaja_id =" + this.get_ID();
+		DB.executeUpdateEx(action, get_TrxName());
+
+		// Elimino medios de pago asociados a este documento
+		action = " delete from z_mediopagoitem  where z_mpagocaja_id =" + this.get_ID();
+		DB.executeUpdateEx(action, get_TrxName());
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(false);
+		this.setPosted(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
 	}	//	reActivateIt
 	
 	
@@ -385,4 +450,142 @@ public class MZMPagoCaja extends X_Z_MPagoCaja implements DocAction, DocOptions 
         .append(getSummary()).append("]");
       return sb.toString();
     }
+
+
+	/***
+	 * Obtiene y retorna lineas de este documento.
+	 * Xpande. Created by Gabriel Vila on 7/30/20.
+	 * @return
+	 */
+	public List<MZMPagoCajaLin> getLines(){
+
+		String whereClause = X_Z_MPagoCajaLin.COLUMNNAME_Z_MPagoCaja_ID + " =" + this.get_ID();
+
+		List<MZMPagoCajaLin> lines = new Query(getCtx(), I_Z_MPagoCajaLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+	/***
+	 * Crea los medios de pago asociados a este Documento.
+	 * Xpande. Created by Gabriel Vila on 7/30/20.
+	 * @param pagoCajaLinList
+	 * @return
+	 */
+	private String crearMediosPago(List<MZMPagoCajaLin> pagoCajaLinList) {
+
+		try{
+			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+
+			// Recorre lista de medios de pago a emitir para este documento
+			for (MZMPagoCajaLin pagoCajaLin: pagoCajaLinList){
+
+				MZMedioPagoItem medioPagoItem = new MZMedioPagoItem(getCtx(), 0, get_TrxName());
+				medioPagoItem.setZ_MedioPago_ID(pagoCajaLin.getZ_MedioPago_ID());
+				medioPagoItem.setAD_Org_ID(this.getAD_Org_ID());
+				medioPagoItem.setC_Currency_ID(pagoCajaLin.getC_Currency_ID());
+				medioPagoItem.setNroMedioPago(pagoCajaLin.getDocumentNoRef());
+
+				if (pagoCajaLin.getC_Bank_ID() > 0){
+					medioPagoItem.setC_Bank_ID(pagoCajaLin.getC_Bank_ID());
+				}
+
+				medioPagoItem.setDateEmitted(pagoCajaLin.getDateEmitted());
+				medioPagoItem.setDueDate(pagoCajaLin.getDueDate());
+				medioPagoItem.setIsReceipt(true);
+				medioPagoItem.setEmitido(true);
+				medioPagoItem.setTotalAmt(pagoCajaLin.getTotalAmt());
+				medioPagoItem.setIsOwn(false);
+				medioPagoItem.setC_BPartner_ID(this.getC_BPartner_ID());
+				medioPagoItem.setZ_MPagoCaja_ID(this.get_ID());
+
+				// Si este medio de pago no queda en cartera de la empresa, lo marco como entregado para que no pueda ser utilizado como medio de pago
+				// en un documento de pago.
+				MZMedioPago medioPago = (MZMedioPago) pagoCajaLin.getZ_MedioPago();
+				if (!medioPago.isCarteraCobro()){
+					medioPagoItem.setEntregado(true);
+				}
+
+				if (pagoCajaLin.getZ_MedioPagoIdent_ID() > 0){
+					medioPagoItem.setZ_MedioPagoIdent_ID(pagoCajaLin.getZ_MedioPagoIdent_ID());
+				}
+
+				medioPagoItem.saveEx();
+
+				// Asocio item de medio de pago creago, a esta linea.
+				pagoCajaLin.setZ_MedioPagoItem_ID(medioPagoItem.get_ID());
+				pagoCajaLin.saveEx();
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return null;
+	}
+
+	/***
+	 * Validaciones del documento al reactivarlo o anularlo.
+	 * Xpande. Created by Gabriel Vila on 7/30/20.
+	 * @param pagoCajaLinList
+	 * @return
+	 */
+	private String validateReactivate(List<MZMPagoCajaLin> pagoCajaLinList) {
+
+		try{
+
+			// Recorro medios de pago
+			for (MZMPagoCajaLin pagoCajaLin: pagoCajaLinList){
+
+				// Si tengo item de medio de pago
+				if (pagoCajaLin.getZ_MedioPagoItem_ID() > 0){
+
+					MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoCajaLin.getZ_MedioPagoItem();
+
+					// Valido que este medio de pago no tenga acciones posteriores
+					if (medioPagoItem.isDepositado()){
+						return "El Medio de Pago Número " + medioPagoItem.getNroMedioPago() + " esta Depositado." +
+								" Debe anular dicho depósito antes de continuar con esta acción.";
+					}
+					if (medioPagoItem.isConciliado()){
+						return "El Medio de Pago Número " + medioPagoItem.getNroMedioPago() + " esta Conciliado." +
+								" Debe anular dicha conciliación antes de continuar con esta acción.";
+					}
+				}
+			}
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return null;
+	}
+
+	/***
+	 * Actualiza totales de este documento, segun montos de lineas.
+	 * Xpande. Created by Gabriel Vila on 7/30/20.
+	 */
+	public void updateTotals(){
+
+		String action = "", sql = "";
+
+		try{
+
+			// Obtengo suma de montos de medios de pago
+			sql = " select sum(coalesce(totalamt,0)) as total from z_mpagocajalin " +
+					" where z_mpagocaja_id =" + this.get_ID();
+			BigDecimal sumMedios = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (sumMedios == null) sumMedios = Env.ZERO;
+
+			action = " update z_mpagocaja set totalamt =" + sumMedios +
+					 " where z_mpagocaja_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+	}
+
 }

@@ -56,7 +56,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Anulado.
 	  * Si esta anulado o no
 	  */
-	public void setAnulado(boolean Anulado);
+	public void setAnulado (boolean Anulado);
 
 	/** Get Anulado.
 	  * Si esta anulado o no
@@ -82,7 +82,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Bank Account.
 	  * Account at the Bank
 	  */
-	public void setC_BankAccount_ID(int C_BankAccount_ID);
+	public void setC_BankAccount_ID (int C_BankAccount_ID);
 
 	/** Get Bank Account.
 	  * Account at the Bank
@@ -97,7 +97,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Bank.
 	  * Bank
 	  */
-	public void setC_Bank_ID(int C_Bank_ID);
+	public void setC_Bank_ID (int C_Bank_ID);
 
 	/** Get Bank.
 	  * Bank
@@ -112,7 +112,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Business Partner .
 	  * Identifies a Business Partner
 	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/** Get Business Partner .
 	  * Identifies a Business Partner
@@ -127,7 +127,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Cash Book.
 	  * Cash Book for recording petty cash transactions
 	  */
-	public void setC_CashBook_ID(int C_CashBook_ID);
+	public void setC_CashBook_ID (int C_CashBook_ID);
 
 	/** Get Cash Book.
 	  * Cash Book for recording petty cash transactions
@@ -142,7 +142,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -157,7 +157,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Conciliado.
 	  * Conciliado si o no
 	  */
-	public void setConciliado(boolean Conciliado);
+	public void setConciliado (boolean Conciliado);
 
 	/** Get Conciliado.
 	  * Conciliado si o no
@@ -186,7 +186,7 @@ public interface I_Z_MedioPagoItem
 	/** Set DateEmitted.
 	  * Fecha emisión de un documento
 	  */
-	public void setDateEmitted(Timestamp DateEmitted);
+	public void setDateEmitted (Timestamp DateEmitted);
 
 	/** Get DateEmitted.
 	  * Fecha emisión de un documento
@@ -199,7 +199,7 @@ public interface I_Z_MedioPagoItem
 	/** Set DateRefDeposito.
 	  * Fecha referencia de un documento de Deposito de Medio de Pago
 	  */
-	public void setDateRefDeposito(Timestamp DateRefDeposito);
+	public void setDateRefDeposito (Timestamp DateRefDeposito);
 
 	/** Get DateRefDeposito.
 	  * Fecha referencia de un documento de Deposito de Medio de Pago
@@ -212,7 +212,7 @@ public interface I_Z_MedioPagoItem
 	/** Set DateRefPago.
 	  * Fecha referencia de un documento de pago / cobro
 	  */
-	public void setDateRefPago(Timestamp DateRefPago);
+	public void setDateRefPago (Timestamp DateRefPago);
 
 	/** Get DateRefPago.
 	  * Fecha referencia de un documento de pago / cobro
@@ -225,7 +225,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Depositado.
 	  * Si esta o no depositado
 	  */
-	public void setDepositado(boolean Depositado);
+	public void setDepositado (boolean Depositado);
 
 	/** Get Depositado.
 	  * Si esta o no depositado
@@ -238,7 +238,7 @@ public interface I_Z_MedioPagoItem
 	/** Set DocumentSerie.
 	  * Serie de un Documento
 	  */
-	public void setDocumentSerie(String DocumentSerie);
+	public void setDocumentSerie (String DocumentSerie);
 
 	/** Get DocumentSerie.
 	  * Serie de un Documento
@@ -251,7 +251,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Due Date.
 	  * Date when the payment is due
 	  */
-	public void setDueDate(Timestamp DueDate);
+	public void setDueDate (Timestamp DueDate);
 
 	/** Get Due Date.
 	  * Date when the payment is due
@@ -264,7 +264,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Emitido.
 	  * Documento emitido
 	  */
-	public void setEmitido(boolean Emitido);
+	public void setEmitido (boolean Emitido);
 
 	/** Get Emitido.
 	  * Documento emitido
@@ -277,7 +277,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Entregado.
 	  * Si esta entregado o no
 	  */
-	public void setEntregado(boolean Entregado);
+	public void setEntregado (boolean Entregado);
 
 	/** Get Entregado.
 	  * Si esta entregado o no
@@ -290,7 +290,7 @@ public interface I_Z_MedioPagoItem
 	/** Set ID_Virtual.
 	  * Identificador virtual para tablas
 	  */
-	public void setID_Virtual(String ID_Virtual);
+	public void setID_Virtual (String ID_Virtual);
 
 	/** Get ID_Virtual.
 	  * Identificador virtual para tablas
@@ -303,7 +303,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -316,7 +316,7 @@ public interface I_Z_MedioPagoItem
 	/** Set IsOwn.
 	  * Si le pertenece o no
 	  */
-	public void setIsOwn(boolean IsOwn);
+	public void setIsOwn (boolean IsOwn);
 
 	/** Get IsOwn.
 	  * Si le pertenece o no
@@ -329,7 +329,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Printed.
 	  * Indicates if this document / line is printed
 	  */
-	public void setIsPrinted(boolean IsPrinted);
+	public void setIsPrinted (boolean IsPrinted);
 
 	/** Get Printed.
 	  * Indicates if this document / line is printed
@@ -342,7 +342,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Receipt.
 	  * This is a sales transaction (receipt)
 	  */
-	public void setIsReceipt(boolean IsReceipt);
+	public void setIsReceipt (boolean IsReceipt);
 
 	/** Get Receipt.
 	  * This is a sales transaction (receipt)
@@ -355,7 +355,7 @@ public interface I_Z_MedioPagoItem
 	/** Set LeyendaImpresion1.
 	  * Leyenda de impresión
 	  */
-	public void setLeyendaImpresion1(String LeyendaImpresion1);
+	public void setLeyendaImpresion1 (String LeyendaImpresion1);
 
 	/** Get LeyendaImpresion1.
 	  * Leyenda de impresión
@@ -368,7 +368,7 @@ public interface I_Z_MedioPagoItem
 	/** Set LeyendaImpresion2.
 	  * Leyenda de impresión
 	  */
-	public void setLeyendaImpresion2(String LeyendaImpresion2);
+	public void setLeyendaImpresion2 (String LeyendaImpresion2);
 
 	/** Get LeyendaImpresion2.
 	  * Leyenda de impresión
@@ -381,7 +381,7 @@ public interface I_Z_MedioPagoItem
 	/** Set NroMedioPago.
 	  * Numero de medio de pago
 	  */
-	public void setNroMedioPago(String NroMedioPago);
+	public void setNroMedioPago (String NroMedioPago);
 
 	/** Get NroMedioPago.
 	  * Numero de medio de pago
@@ -394,7 +394,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Reemplazado.
 	  * Reemplazado si o no
 	  */
-	public void setReemplazado(boolean Reemplazado);
+	public void setReemplazado (boolean Reemplazado);
 
 	/** Get Reemplazado.
 	  * Reemplazado si o no
@@ -407,7 +407,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Ref_Cobro_ID.
 	  * ID de un documento de Cobro referenciado.
 	  */
-	public void setRef_Cobro_ID(int Ref_Cobro_ID);
+	public void setRef_Cobro_ID (int Ref_Cobro_ID);
 
 	/** Get Ref_Cobro_ID.
 	  * ID de un documento de Cobro referenciado.
@@ -420,7 +420,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Total Amount.
 	  * Total Amount
 	  */
-	public void setTotalAmt(BigDecimal TotalAmt);
+	public void setTotalAmt (BigDecimal TotalAmt);
 
 	/** Get Total Amount.
 	  * Total Amount
@@ -447,7 +447,7 @@ public interface I_Z_MedioPagoItem
     public static final String COLUMNNAME_Z_DepositoMedioPago_ID = "Z_DepositoMedioPago_ID";
 
 	/** Set Z_DepositoMedioPago ID	  */
-	public void setZ_DepositoMedioPago_ID(int Z_DepositoMedioPago_ID);
+	public void setZ_DepositoMedioPago_ID (int Z_DepositoMedioPago_ID);
 
 	/** Get Z_DepositoMedioPago ID	  */
 	public int getZ_DepositoMedioPago_ID();
@@ -458,7 +458,7 @@ public interface I_Z_MedioPagoItem
     public static final String COLUMNNAME_Z_EmisionMedioPago_ID = "Z_EmisionMedioPago_ID";
 
 	/** Set Z_EmisionMedioPago ID	  */
-	public void setZ_EmisionMedioPago_ID(int Z_EmisionMedioPago_ID);
+	public void setZ_EmisionMedioPago_ID (int Z_EmisionMedioPago_ID);
 
 	/** Get Z_EmisionMedioPago ID	  */
 	public int getZ_EmisionMedioPago_ID();
@@ -469,7 +469,7 @@ public interface I_Z_MedioPagoItem
     public static final String COLUMNNAME_Z_MedioPagoFolio_ID = "Z_MedioPagoFolio_ID";
 
 	/** Set Z_MedioPagoFolio ID	  */
-	public void setZ_MedioPagoFolio_ID(int Z_MedioPagoFolio_ID);
+	public void setZ_MedioPagoFolio_ID (int Z_MedioPagoFolio_ID);
 
 	/** Get Z_MedioPagoFolio ID	  */
 	public int getZ_MedioPagoFolio_ID();
@@ -480,7 +480,7 @@ public interface I_Z_MedioPagoItem
     public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";
 
 	/** Set Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID(int Z_MedioPago_ID);
+	public void setZ_MedioPago_ID (int Z_MedioPago_ID);
 
 	/** Get Z_MedioPago ID	  */
 	public int getZ_MedioPago_ID();
@@ -491,7 +491,7 @@ public interface I_Z_MedioPagoItem
     public static final String COLUMNNAME_Z_MedioPagoIdent_ID = "Z_MedioPagoIdent_ID";
 
 	/** Set Z_MedioPagoIdent ID	  */
-	public void setZ_MedioPagoIdent_ID(int Z_MedioPagoIdent_ID);
+	public void setZ_MedioPagoIdent_ID (int Z_MedioPagoIdent_ID);
 
 	/** Get Z_MedioPagoIdent ID	  */
 	public int getZ_MedioPagoIdent_ID();
@@ -502,7 +502,7 @@ public interface I_Z_MedioPagoItem
     public static final String COLUMNNAME_Z_MedioPagoItem_ID = "Z_MedioPagoItem_ID";
 
 	/** Set Z_MedioPagoItem ID	  */
-	public void setZ_MedioPagoItem_ID(int Z_MedioPagoItem_ID);
+	public void setZ_MedioPagoItem_ID (int Z_MedioPagoItem_ID);
 
 	/** Get Z_MedioPagoItem ID	  */
 	public int getZ_MedioPagoItem_ID();
@@ -513,7 +513,7 @@ public interface I_Z_MedioPagoItem
 	/** Set Z_MedioPagoItem_Rep_ID.
 	  * Item de  Medio de Pago reemplazante
 	  */
-	public void setZ_MedioPagoItem_Rep_ID(int Z_MedioPagoItem_Rep_ID);
+	public void setZ_MedioPagoItem_Rep_ID (int Z_MedioPagoItem_Rep_ID);
 
 	/** Get Z_MedioPagoItem_Rep_ID.
 	  * Item de  Medio de Pago reemplazante
@@ -526,18 +526,29 @@ public interface I_Z_MedioPagoItem
     public static final String COLUMNNAME_Z_MedioPagoReplace_ID = "Z_MedioPagoReplace_ID";
 
 	/** Set Z_MedioPagoReplace ID	  */
-	public void setZ_MedioPagoReplace_ID(int Z_MedioPagoReplace_ID);
+	public void setZ_MedioPagoReplace_ID (int Z_MedioPagoReplace_ID);
 
 	/** Get Z_MedioPagoReplace ID	  */
 	public int getZ_MedioPagoReplace_ID();
 
 	public I_Z_MedioPagoReplace getZ_MedioPagoReplace() throws RuntimeException;
 
+    /** Column name Z_MPagoCaja_ID */
+    public static final String COLUMNNAME_Z_MPagoCaja_ID = "Z_MPagoCaja_ID";
+
+	/** Set Z_MPagoCaja ID	  */
+	public void setZ_MPagoCaja_ID (int Z_MPagoCaja_ID);
+
+	/** Get Z_MPagoCaja ID	  */
+	public int getZ_MPagoCaja_ID();
+
+	public I_Z_MPagoCaja getZ_MPagoCaja() throws RuntimeException;
+
     /** Column name Z_OrdenPago_ID */
     public static final String COLUMNNAME_Z_OrdenPago_ID = "Z_OrdenPago_ID";
 
 	/** Set Z_OrdenPago ID	  */
-	public void setZ_OrdenPago_ID(int Z_OrdenPago_ID);
+	public void setZ_OrdenPago_ID (int Z_OrdenPago_ID);
 
 	/** Get Z_OrdenPago ID	  */
 	public int getZ_OrdenPago_ID();
@@ -548,7 +559,7 @@ public interface I_Z_MedioPagoItem
     public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
 
 	/** Set Z_Pago ID	  */
-	public void setZ_Pago_ID(int Z_Pago_ID);
+	public void setZ_Pago_ID (int Z_Pago_ID);
 
 	/** Get Z_Pago ID	  */
 	public int getZ_Pago_ID();
