@@ -138,7 +138,7 @@ public class SaldoPendiente {
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
-                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, isgasto) ";
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, isgasto, c_bp_group_id) ";
 
             String whereClause = " and a.ad_client_id =" + this.adClientID;
 
@@ -197,7 +197,7 @@ public class SaldoPendiente {
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA', " +
-                    " case when (a.issotrx = 'N' and a.subdocbasetype is null) then 'Y' else 'N' end as isgasto " +
+                    " case when (a.issotrx = 'N' and a.subdocbasetype is null) then 'Y' else 'N' end as isgasto, bp.c_bp_group_id " +
                     " from c_invoice a " +
                     " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
                     " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
@@ -228,7 +228,7 @@ public class SaldoPendiente {
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
-                    " c_currency_id_to, ad_orgtrx_id, seqno, reference) ";
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, c_bp_group_id) ";
 
 
             String whereClause = " and a.ad_client_id =" + this.adClientID;
@@ -286,7 +286,7 @@ public class SaldoPendiente {
                     " coalesce(ips.dueamt, a.grandtotal) as amtdocument, coalesce(ips.dueamt, a.grandtotal) as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" + this.endDate + "', " + this.cCurrencyID + ", " +
-                    this.adOrgID + ", 0, 'ABIERTA' " +
+                    this.adOrgID + ", 0, 'ABIERTA', bp.c_bp_group_id " +
                     " from z_transfersaldo a " +
                     " inner join c_doctype doc on a.c_doctypetarget_id = doc.c_doctype_id " +
                     " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
@@ -318,7 +318,7 @@ public class SaldoPendiente {
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
-                    " c_currency_id_to, ad_orgtrx_id, seqno, reference) ";
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, c_bp_group_id) ";
 
             String whereClauseAfecta = "";
 
@@ -400,7 +400,7 @@ public class SaldoPendiente {
                     " where " + whereClauseAfecta + " and z_pago_id = a.z_pago_id) as amtallocated, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" + this.endDate + "', " + this.cCurrencyID + ", " +
-                    this.adOrgID + ", 0, 'ABIERTA' " +
+                    this.adOrgID + ", 0, 'ABIERTA', bp.c_bp_group_id " +
                     " from z_pago a " +
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
                     " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
@@ -431,7 +431,7 @@ public class SaldoPendiente {
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
-                    " c_currency_id_to, ad_orgtrx_id, seqno, reference) ";
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, c_bp_group_id) ";
 
             String whereClause = " and a.ad_client_id =" + this.adClientID;
 
@@ -479,7 +479,7 @@ public class SaldoPendiente {
                     " a.totalamt as amtdocument, a.totalamt as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" + this.endDate + "', " + this.cCurrencyID + ", " +
-                    this.adOrgID + ", 0, 'ABIERTA' " +
+                    this.adOrgID + ", 0, 'ABIERTA', bp.c_bp_group_id " +
                     " from z_resguardosocio a " +
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
                     " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
@@ -515,7 +515,7 @@ public class SaldoPendiente {
                     " c_bankaccount_id, c_currency_id, datedoc, duedate, dateacct, issotrx, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
-                    " c_currency_id_to, ad_orgtrx_id, seqno, reference) ";
+                    " c_currency_id_to, ad_orgtrx_id, seqno, reference, c_bp_group_id) ";
 
             String whereClause = " and a.ad_client_id =" + this.adClientID;
 
@@ -571,7 +571,7 @@ public class SaldoPendiente {
                     " a.totalamt as amtdocument, a.totalamt as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" +  this.endDate + "', " + this.cCurrencyID + ", "
-                    + this.adOrgID + ", 1, 'DOC' " +
+                    + this.adOrgID + ", 1, 'DOC', bp.c_bp_group_id " +
                     " from z_mediopagoitem a " +
                     " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.anulado ='N' and a.conciliado ='N' and a.depositado ='N' and a.emitido ='Y' and a.reemplazado ='N' " +
