@@ -128,6 +128,8 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
 
         try{
 
+            MZPago pago = (MZPago) this.getZ_Pago();
+
             if (this.getZ_OrdenPago_ID() > 0){
                 log.saveError("ATENCIÓN", "No es posible eliminar esta linea ya que esta asociada a una Orden de Pago.\n" +
                         "Elimine la Orden de Pago de la grilla de Ordenes de Pago asociadas a este Recibo.");
@@ -139,12 +141,19 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
                 MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) this.getZ_MedioPagoItem();
                 if ((medioPagoItem != null) && (medioPagoItem.get_ID() > 0)){
 
-                    action = " update z_mediopagoitem set z_pago_id = null, entregado='N' where z_mediopagoitem_id =" + medioPagoItem.get_ID();
-                    DB.executeUpdateEx(action, get_TrxName());
-
-                    if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
-                        action = " update z_emisionmediopago set z_pago_id = null where z_emisionmediopago_id =" + medioPagoItem.getZ_EmisionMedioPago_ID();
+                    // Si estoy en un documento de cobro
+                    if (pago.isSOTrx()){
+                        // Elimino directamente este medio de pago
+                        medioPagoItem.deleteEx(true);
+                    }
+                    else{
+                        action = " update z_mediopagoitem set z_pago_id = null, entregado='N' where z_mediopagoitem_id =" + medioPagoItem.get_ID();
                         DB.executeUpdateEx(action, get_TrxName());
+
+                        if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
+                            action = " update z_emisionmediopago set z_pago_id = null where z_emisionmediopago_id =" + medioPagoItem.getZ_EmisionMedioPago_ID();
+                            DB.executeUpdateEx(action, get_TrxName());
+                        }
                     }
                 }
             }
@@ -208,7 +217,7 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
     @Override
     protected boolean afterDelete(boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         // Actualizo totales del documento
         MZPago pago = (MZPago) this.getZ_Pago();
