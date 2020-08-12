@@ -18,47 +18,23 @@ package org.xpande.financial.model;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
-
-import dto.sisteco.SistecoConvertResponse;
-import dto.sisteco.SistecoResponseDTO;
-import dto.uy.gub.dgi.cfe.*;
 import org.adempiere.exceptions.AdempiereException;
-import org.apache.axis.client.Call;
-import org.apache.axis.client.Service;
-import org.apache.axis.encoding.XMLType;
-import org.compiere.apps.ADialog;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.eevolution.model.X_C_TaxGroup;
 import org.xpande.cfe.model.MZCFEConfig;
-import org.xpande.cfe.model.MZCFERespuestaProvider;
 import org.xpande.cfe.utils.ProcesadorCFE;
 import org.xpande.core.utils.CurrencyUtils;
 import org.xpande.financial.utils.FinancialUtils;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
-import javax.xml.rpc.ParameterMode;
 
 /** Generated Model for Z_ResguardoSocio
  *  @author Adempiere (generated) 
