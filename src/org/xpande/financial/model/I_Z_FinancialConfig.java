@@ -63,6 +63,19 @@ public interface I_Z_FinancialConfig
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name ControlaCobros */
+    public static final String COLUMNNAME_ControlaCobros = "ControlaCobros";
+
+	/** Set ControlaCobros.
+	  * Si se controla o no cobros asociados a un determinado documento
+	  */
+	public void setControlaCobros (boolean ControlaCobros);
+
+	/** Get ControlaCobros.
+	  * Si se controla o no cobros asociados a un determinado documento
+	  */
+	public boolean isControlaCobros();
+
     /** Column name ControlaPagos */
     public static final String COLUMNNAME_ControlaPagos = "ControlaPagos";
 

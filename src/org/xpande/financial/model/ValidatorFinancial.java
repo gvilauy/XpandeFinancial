@@ -107,18 +107,31 @@ public class ValidatorFinancial implements ModelValidator {
                     }
                 }
 
-            }
+                // Para comprobantes de compra o venta, valido que no este asociado a un pago / cobro.
+                if (financialConfig.isControlaPagos()){
+                    // El control no aplica cuando se esta reactivando un comprobante de compra y el mismo tiene medio de pago efectivo.
+                    if (!X_C_Invoice.PAYMENTRULE_Cash.equalsIgnoreCase(model.getPaymentRule())){
+                        message = this.validateInvoicePago(model);
+                        if (message != null){
+                            return message;
+                        }
+                    }
+                }
 
-            // Para comprobantes de compra o venta, valido que no este asociado a un pago / cobro.
-            if (financialConfig.isControlaPagos()){
-                // El control no aplica cuando se esta reactivando un comprobante de compra y el mismo tiene medio de pago efectivo.
-                if (!X_C_Invoice.PAYMENTRULE_Cash.equalsIgnoreCase(model.getPaymentRule())){
-                    message = this.validateInvoicePago(model);
-                    if (message != null){
-                        return message;
+            }
+            else{
+                // Para comprobantes de compra o venta, valido que no este asociado a un pago / cobro.
+                if (financialConfig.isControlaCobros()){
+                    // El control no aplica cuando se esta reactivando un comprobante de venta y el mismo tiene medio de pago efectivo.
+                    if (!X_C_Invoice.PAYMENTRULE_Cash.equalsIgnoreCase(model.getPaymentRule())){
+                        message = this.validateInvoicePago(model);
+                        if (message != null){
+                            return message;
+                        }
                     }
                 }
             }
+
 
             // Para comprobantes de compra
             if (!model.isSOTrx()){

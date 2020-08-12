@@ -30,7 +30,7 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200623L;
+	private static final long serialVersionUID = 20200812L;
 
     /** Standard Constructor */
     public X_Z_FinancialConfig (Properties ctx, int Z_FinancialConfig_ID, String trxName)
@@ -38,6 +38,8 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
       super (ctx, Z_FinancialConfig_ID, trxName);
       /** if (Z_FinancialConfig_ID == 0)
         {
+			setControlaCobros (true);
+// Y
 			setControlaPagos (true);
 // Y
 			setControlaResguardos (false);
@@ -74,6 +76,30 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set ControlaCobros.
+		@param ControlaCobros 
+		Si se controla o no cobros asociados a un determinado documento
+	  */
+	public void setControlaCobros (boolean ControlaCobros)
+	{
+		set_Value (COLUMNNAME_ControlaCobros, Boolean.valueOf(ControlaCobros));
+	}
+
+	/** Get ControlaCobros.
+		@return Si se controla o no cobros asociados a un determinado documento
+	  */
+	public boolean isControlaCobros () 
+	{
+		Object oo = get_Value(COLUMNNAME_ControlaCobros);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	/** Set ControlaPagos.
 		@param ControlaPagos 
