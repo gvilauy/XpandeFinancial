@@ -58,7 +58,6 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
       super (ctx, rs, trxName);
     }
 
-
 	@Override
 	public int customizeValidActions(String docStatus, Object processing, String orderType, String isSOTrx, int AD_Table_ID, String[] docAction, String[] options, int index) {
 
@@ -360,8 +359,30 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 	 */
 	public boolean voidIt()
 	{
-		log.info("voidIt - " + toString());
-		return false;
+		log.info(toString());
+		// Before Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		// Verifico período contable y elimino contabilidad.
+		MPeriod.testPeriodOpen(getCtx(), this.getDateAcct(), this.getC_DocType_ID(), this.getAD_Org_ID());
+		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+		// Impacto en estado de cuenta
+		FinancialUtils.setEstadoCtaResguardo(getCtx(), this, false, get_TrxName());
+
+		// After Void
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(true);
+		this.setPosted(true);
+		this.setDocStatus(DOCSTATUS_Voided);
+		this.setDocAction(DOCACTION_None);
+
+		return true;
 	}	//	voidIt
 	
 	/**
@@ -875,4 +896,28 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 
 		return resguardoSocioDoc;
 	}
+
+	/***
+	 * Obtiene y retorna modelo según parametros recibidos.
+	 * Xpande. Created by Gabriel Vila on 8/26/20.
+	 * @param ctx
+	 * @param adOrgID
+	 * @param cDocTypeID
+	 * @param documentNo
+	 * @param cBPartnerID
+	 * @param trxName
+	 * @return
+	 */
+	public static MZResguardoSocio getByOrgDocPartner(Properties ctx, int adOrgID, int cDocTypeID, String documentNo, int cBPartnerID, String trxName) {
+
+		String whereClause = X_Z_ResguardoSocio.COLUMNNAME_AD_Org_ID + " =" + adOrgID +
+				" AND " + X_Z_ResguardoSocio.COLUMNNAME_C_DocType_ID + " =" + cDocTypeID +
+				" AND " + X_Z_ResguardoSocio.COLUMNNAME_DocumentNo + " ='" + documentNo + "' " +
+				" AND " + X_Z_ResguardoSocio.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID;
+
+		MZResguardoSocio model = new Query(ctx, I_Z_ResguardoSocio.Table_Name, whereClause, trxName).first();
+
+		return model;
+	}
+
 }
