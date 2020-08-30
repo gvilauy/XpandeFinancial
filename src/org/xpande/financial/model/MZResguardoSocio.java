@@ -242,10 +242,6 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		// Lista de documentos asociados a este resguardo
 		List<MZResguardoSocioDoc> docs = this.getResguardoDocs();
 
-		if (this.getDateAcct() == null){
-			this.setDateAcct(this.getDateDoc());
-		}
-
 		// Validaciones del documento
 		String message =  this.validateDocument(docs);
 		if (message != null){
@@ -775,15 +771,6 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		}
 
 		return totalBase;
-	}
-
-	@Override
-	protected boolean beforeSave(boolean newRecord) {
-
-		// Me aseguro de setear fecha contable
-		this.setDateAcct(this.getDateDoc());
-
-		return true;
 	}
 
 	@Override
