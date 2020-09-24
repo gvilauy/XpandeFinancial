@@ -26,6 +26,12 @@ public class MZPagoLin extends X_Z_PagoLin {
     @Override
     protected boolean beforeSave(boolean newRecord) {
 
+        // Validio que el monto a afectar no supere el monto pendiente
+        if (this.getAmtAllocation().compareTo(this.getAmtOpen()) > 0){
+            log.saveError("ATENCIÓN", "El monto a afectar no puede ser mayor que el monto pendiente.");
+            return false;
+        }
+
         if (!newRecord){
 
             if (this.getZ_OrdenPago_ID() > 0){
