@@ -590,6 +590,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     " where hdr.ad_client_id =" + this.getAD_Client_ID() +
                     " and hdr.ad_org_id =" + this.getAD_Org_ID() +
                     " and hdr.ispaid ='N' " +
+                    " and hdr.isforzedpaid='N' " +
                     " and hdr.docstatus='CO' " +
                     " and hdr.z_resguardosocio_ref_id is null " +
                     " and doc.docbasetype='RGU' " +
@@ -938,6 +939,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     " and hdr.ad_org_id =" + this.getAD_Org_ID() +
                     " and hdr.issotrx='N' " +
                     " and hdr.ispaid='N' " +
+                    " and hdr.isforzedpaid='N' " +
                     " and hdr.docstatus='CO' " +
                     " and iop.amtopen > 0 " +
                     " and hdr.c_invoice_id not in (select coalesce(c_invoice_id,0) as inv_id from z_generaordenpagolin " +
@@ -1132,6 +1134,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     " and hdr.ad_org_id =" + this.getAD_Org_ID() +
                     " and hdr.issotrx='N' " +
                     " and hdr.ispaid='N' " +
+                    " and hdr.isforzedpaid='N' " +
                     " and hdr.docstatus='CO' " +
                     " and iop.amtopen > 0 " +
                     " and hdr.z_transfersaldo_id not in (select coalesce(z_transfersaldo_id,0) as transf_id from z_generaordenpagolin " +
