@@ -4,6 +4,7 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MClient;
 import org.compiere.util.Env;
 
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -27,7 +28,13 @@ public class MZPagoLin extends X_Z_PagoLin {
     protected boolean beforeSave(boolean newRecord) {
 
         // Validio que el monto a afectar no supere el monto pendiente
-        if (this.getAmtAllocation().compareTo(this.getAmtOpen()) > 0){
+        BigDecimal amtAllocation = this.getAmtAllocation();
+        BigDecimal amtOpen = this.getAmtOpen();
+
+        if (amtAllocation.compareTo(Env.ZERO) < 0) amtAllocation = amtAllocation.negate();
+        if (amtOpen.compareTo(Env.ZERO) < 0) amtOpen = amtOpen.negate();
+
+        if (amtAllocation.compareTo(amtOpen) > 0){
             log.saveError("ATENCIÓN", "El monto a afectar no puede ser mayor que el monto pendiente.");
             return false;
         }

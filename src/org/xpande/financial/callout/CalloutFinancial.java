@@ -150,5 +150,35 @@ public class CalloutFinancial extends CalloutEngine {
         return "";
     }
 
+    /***
+     * Setea atributos asociados al item de un medio de pago seleccionado en documentos de Pago / Orden de Pago.
+     * Xpande. Created by Gabriel Vila on 10/8/20.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setMedioPagoItemInfoPago(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null) return "";
+
+        int zMedioPagoItemID = (Integer) value;
+
+        if (zMedioPagoItemID <= 0) return "";
+
+        MZMedioPagoItem medioPagoItem = new MZMedioPagoItem(ctx, zMedioPagoItemID, null);
+
+        if ((medioPagoItem != null) && (medioPagoItem.get_ID() > 0)) {
+
+            mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DateEmitted, medioPagoItem.getDateEmitted());
+            mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DueDate, medioPagoItem.getDueDate());
+            mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TotalAmt, medioPagoItem.getTotalAmt());
+
+        }
+
+        return "";
+    }
 
 }
