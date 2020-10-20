@@ -147,13 +147,13 @@ public class MZPagoMedioPago extends X_Z_PagoMedioPago {
                         medioPagoItem.deleteEx(true);
                     }
                     else{
-                        action = " update z_mediopagoitem set z_pago_id = null, entregado='N' where z_mediopagoitem_id =" + medioPagoItem.get_ID();
-                        DB.executeUpdateEx(action, get_TrxName());
-
                         if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
                             action = " update z_emisionmediopago set z_pago_id = null where z_emisionmediopago_id =" + medioPagoItem.getZ_EmisionMedioPago_ID();
                             DB.executeUpdateEx(action, get_TrxName());
                         }
+
+                        action = " update z_mediopagoitem set z_pago_id = null, entregado='N' where z_mediopagoitem_id =" + medioPagoItem.get_ID();
+                        DB.executeUpdateEx(action, get_TrxName());
                     }
                 }
             }

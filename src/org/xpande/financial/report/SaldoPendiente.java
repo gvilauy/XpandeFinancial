@@ -484,7 +484,9 @@ public class SaldoPendiente {
                     " inner join c_doctype doc on a.c_doctype_id = doc.c_doctype_id " +
                     " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.docstatus ='CO' " +
+                    " and a.z_resguardosocio_ref_id is null " +
                     " and a.IsForzedPaid ='N' " + whereClause +
+                    " and doc.docbasetype ='RGU' " +
                     " and z_resguardosocio_id not in " +
                     " (select b.z_resguardosocio_id " +
                     " from z_pagoresguardo b " +
