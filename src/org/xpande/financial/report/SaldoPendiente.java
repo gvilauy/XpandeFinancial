@@ -576,7 +576,8 @@ public class SaldoPendiente {
                     + this.adOrgID + ", 1, 'DOC', bp.c_bp_group_id " +
                     " from z_mediopagoitem a " +
                     " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
-                    " where a.anulado ='N' and a.conciliado ='N' and a.depositado ='N' and a.emitido ='Y' and a.reemplazado ='N' " +
+                    " where a.anulado ='N' and a.conciliado ='N' and a.depositado ='N' and a.emitido ='Y' " +
+                    " and a.reemplazado ='N' and a.IsForzedPaid='N' " +
                     " and ((a.entregado ='N') or ((a.entregado ='Y') and (a.daterefpago is not null and a.daterefpago > '" + this.endDate + "'))) " +
                     whereClause;
 
