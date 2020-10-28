@@ -65,6 +65,7 @@ public class SeleccionResguardoContra extends SeleccionResguardoContraAbstract
 				this.resguardoSocioContra.setZ_ResguardoSocio_Ref_ID(resguardoSocioRef.get_ID());
 				this.resguardoSocioContra.setEsContraResguardo(true);
 				this.resguardoSocioContra.setTotalAmt(resguardoSocioRef.getTotalAmt());
+				this.resguardoSocioContra.setTotalAmtME(resguardoSocioRef.getTotalAmtME());
 				this.resguardoSocioContra.saveEx();
 
 				// Referencio resguardo a su contra-resguardo
@@ -88,6 +89,7 @@ public class SeleccionResguardoContra extends SeleccionResguardoContraAbstract
 					MZResguardoSocioDoc newDoc = new MZResguardoSocioDoc(getCtx(), 0, get_TrxName());
 					newDoc.setZ_ResguardoSocio_ID(this.resguardoSocioContra.get_ID());
 					newDoc.setAmtRetencion(oldDoc.getAmtRetencion());
+					newDoc.setAmtRetencionMO(oldDoc.getAmtRetencionMO());
 					newDoc.setAmtTotal(oldDoc.getAmtTotal());
 					newDoc.setAmtRounding(oldDoc.getAmtRounding());
 					newDoc.setTaxAmt(oldDoc.getTaxAmt());

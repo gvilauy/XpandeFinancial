@@ -429,7 +429,7 @@ public class SaldoPendiente {
             // Incluyo Resguardos
             action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, z_resguardosocio_id, " +
                     " c_doctype_id, documentnoref, c_currency_id, datedoc, duedate, dateacct, issotrx, docbasetype, " +
-                    " amtdocument, amtopen, amtallocated,  " +
+                    " amtdocument, amtopen, amtdocumentmn, amtopenmn, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
                     " c_currency_id_to, ad_orgtrx_id, seqno, reference, c_bp_group_id) ";
 
@@ -476,7 +476,14 @@ public class SaldoPendiente {
 
             sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, a.z_resguardosocio_id, a.c_doctype_id, " +
                     " a.documentno, a.c_currency_id, a.datedoc, a.datedoc, a.datedoc, 'N', doc.docbasetype, " +
-                    " a.totalamt as amtdocument, a.totalamt as amtopen, 0, " +
+
+                    " case when (a.totalamtme is not null and a.totalamtme > 0) then a.totalamtme else a.totalamt end as amtdocumentmo, " +
+                    " case when (a.totalamtme is not null and a.totalamtme > 0) then a.totalamtme else a.totalamt end as amtopenmo, " +
+                    " case when (a.totalamtme is not null and a.totalamtme > 0) then a.totalamt else null end as amtdocumentmn, " +
+                    " case when (a.totalamtme is not null and a.totalamtme > 0) then a.totalamt else null end as amtopenmn, 0, " +
+
+                    //" a.totalamt as amtdocument, a.totalamt as amtopen, 0, " +
+
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +
                     ((this.tieneAcct) ? "Y" : "N") + "', '" + this.tipoConceptoDoc + "', " + fieldStartDate + ", '" + this.endDate + "', " + this.cCurrencyID + ", " +
                     this.adOrgID + ", 0, 'ABIERTA', bp.c_bp_group_id " +
