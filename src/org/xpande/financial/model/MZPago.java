@@ -711,13 +711,18 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			action = " update z_mediopagoitem set z_pago_id = ref_cobro_id where isreceipt='Y' and ref_cobro_id > 0 and z_pago_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
-			// Para pagos, desasocio ordenes de pago
+			// Para pagos
 			if (!this.isSOTrx()){
 
+				// Desasocio ordenes de pago
 				if (ordenPagoList.size() > 0){
 					action = " update z_ordenpago set ispaid='N', z_pago_id = null, processing='N' where z_pago_id =" + this.get_ID();
 					DB.executeUpdateEx(action, get_TrxName());
 				}
+
+				// Desasocio emisiones de medios de pago
+				action = " update z_emisionmediopago set z_pago_id = null where z_pago_id =" + this.get_ID();
+				DB.executeUpdateEx(action, get_TrxName());
 			}
 
 			// Desasocio invoices cuando es un pago sin ordenes de pago asociadas o cuando es un cobro
