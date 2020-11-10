@@ -86,7 +86,7 @@ public class MZOrdenPagoMedio extends X_Z_OrdenPagoMedio {
     @Override
     protected boolean afterSave(boolean newRecord, boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         String action = "";
 
