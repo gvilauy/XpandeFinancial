@@ -1191,15 +1191,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and iop.amtopen > 0 " +
 					" and hdr.c_invoice_id not in (select coalesce(c_invoice_id,0) as inv_id from z_pagolin " +
 					" where c_invoice_id is not null " +
-					" and z_pago_id =" + this.get_ID() + ") " +
-
-					/*
-					" and hdr.c_invoice_id not in (select a.c_invoice_id from z_ordenpagolin a " +
-					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
-					" where a.c_invoice_id is not null and b.docstatus='CO') " +
-					 */
-
-					whereClause +
+					" and z_pago_id =" + this.get_ID() + ") " + whereClause +
 					" order by hdr.dateinvoiced ";
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
@@ -1221,7 +1213,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 				boolean esFactura = true;
 				if ((rs.getString("docbasetype").equalsIgnoreCase(Doc.DOCTYPE_APCredit))
-				 || (rs.getString("docbasetype").equalsIgnoreCase(Doc.DOCTYPE_ARCredit))){
+				 			|| (rs.getString("docbasetype").equalsIgnoreCase(Doc.DOCTYPE_ARCredit))){
 					esFactura = false;
 				}
 
