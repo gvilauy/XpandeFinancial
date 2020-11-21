@@ -201,6 +201,25 @@ public class ValidatorFinancial implements ModelValidator {
                     return message;
                 }
             }
+            else{
+                // Si tengo monto de medios de pago
+                BigDecimal amtMediosPago = (BigDecimal) model.get_Value("TotalMediosPago");
+                if (amtMediosPago == null) amtMediosPago = Env.ZERO;
+                if (amtMediosPago.compareTo(Env.ZERO) > 0){
+                    // Valido que el monto de medios de pago sea igual al monto del comprobante
+                    if (amtMediosPago.compareTo(model.getGrandTotal()) != 0){
+                        message = "Monto total de medios de pago debe ser igual al Total del comprobante.";
+                        return message;
+                    }
+
+                    // Genero pago/cobro para medios de pago asociados a este comprobante
+                    MZPago pago = new MZPago(model.getCtx(), 0, model.get_TrxName());
+                    message = pago.generateFromInvoice(model);
+                    if (message != null){
+                        return message;
+                    }
+                }
+            }
 
         }
 

@@ -2934,8 +2934,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
     public String generateFromCashInvoice(MInvoice invoice) {
 
-		String message = null;
-
 		try{
 
 			// Obtengo modelo de Configuraciones financieras
@@ -3050,8 +3048,163 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		    throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
     }
+
+	/***
+	 * Genera un documento de pago o cobro para una determinada invoice con los medios de pago ingresados en dicha Invoice.
+	 * Xpande. Created by Gabriel Vila on 11/21/20.
+	 * @param invoice
+	 * @return
+	 */
+	public String generateFromInvoice(MInvoice invoice) {
+
+		try{
+
+			// Obtengo modelo de Configuraciones financieras
+			MZFinancialConfig financialConfig = MZFinancialConfig.getDefault(getCtx(), null);
+
+			// Documento de pago o cobro según tipo de invoice.
+			MDocType docType = null;
+			if (invoice.isSOTrx()){
+				if (financialConfig.getDefaultDocCCD_ID() <= 0){
+					return "Falta parametrizar Documento por Defecto para Cobros a Clientes, en Configuraciones Financieras.";
+				}
+				docType = new MDocType(getCtx(), financialConfig.getDefaultDocCCD_ID(), get_TrxName());
+			}
+			else{
+				if (financialConfig.getDefaultDocPPD_ID() <= 0){
+					return "Falta parametrizar Documento por Defecto para Pagos a Proveedores, en Configuraciones Financieras.";
+				}
+				docType = new MDocType(getCtx(), financialConfig.getDefaultDocPPD_ID(), get_TrxName());
+			}
+
+			// Si la invoice es una nota de credito marco el recibo a generar para que haga el asiento alreves
+			MDocType docTypeInvoice = (MDocType) invoice.getC_DocTypeTarget();
+			if ((docTypeInvoice.getDocBaseType().equalsIgnoreCase("APC")) || (docTypeInvoice.getDocBaseType().equalsIgnoreCase("ARC"))){
+				this.setExtornarAcct(true);
+			}
+
+			BigDecimal amtRounding = (BigDecimal) invoice.get_Value("AmtRounding");
+			if (amtRounding == null) amtRounding = Env.ZERO;
+			BigDecimal amtTotal = invoice.getGrandTotal().add(amtRounding);
+
+			// Seteo atributos del cabezal del documento de pago/cobro.
+			this.setAD_Client_ID(invoice.getAD_Client_ID());
+			this.setAD_Org_ID(invoice.getAD_Org_ID());
+			this.setC_DocType_ID(docType.get_ID());
+			this.setIsSOTrx(invoice.isSOTrx());
+			this.setC_BPartner_ID(invoice.getC_BPartner_ID());
+			this.setC_Currency_ID(invoice.getC_Currency_ID());
+			this.setDateDoc(invoice.getDateInvoiced());
+			this.setPayAmt(amtTotal);
+			this.setTotalMediosPago(amtTotal);
+			this.setTieneOrdenPago(false);
+			this.setTieneRecibo(false);
+			this.saveEx();
+
+			// Linea para Documento Invoice origen de este pago/cobro.
+			MZPagoLin pagoLin = new MZPagoLin(getCtx(), 0, get_TrxName());
+			pagoLin.setAD_Org_ID(this.getAD_Org_ID());
+			pagoLin.setZ_Pago_ID(this.get_ID());
+			pagoLin.setAmtAllocation(this.getPayAmt());
+			pagoLin.setAmtAllocationMT(this.getPayAmt());
+			pagoLin.setAmtDocument(this.getPayAmt());
+			pagoLin.setAmtOpen(this.getPayAmt());
+			pagoLin.setC_Currency_ID(this.getC_Currency_ID());
+			pagoLin.setC_DocType_ID(invoice.getC_DocTypeTarget_ID());
+			pagoLin.setC_Invoice_ID(invoice.get_ID());
+			pagoLin.setDateDoc(invoice.getDateInvoiced());
+
+			String documentNoRef = invoice.getDocumentNo();
+			if (invoice.get_ValueAsString("DocumentSerie") != null){
+				documentNoRef = invoice.get_ValueAsString("DocumentSerie").trim() + documentNoRef;
+			}
+			pagoLin.setDocumentNoRef(documentNoRef);
+			pagoLin.setDueDateDoc(invoice.getDateInvoiced());
+			pagoLin.setEstadoAprobacion(X_Z_PagoLin.ESTADOAPROBACION_APROBADO);
+			pagoLin.setIsSelected(true);
+			pagoLin.setMultiplyRate(Env.ONE);
+			pagoLin.setResguardoEmitido(false);
+			pagoLin.saveEx();
+
+			// Lineas de medio de pago ingresados en la invoice
+			List<MZInvoiceMedioPago> invoiceMedioPagoList = this.getMediosPagoInvoice(invoice.get_ID());
+			for (MZInvoiceMedioPago invoiceMedioPago: invoiceMedioPagoList){
+
+				MZMedioPago medioPago = new MZMedioPago(getCtx(), invoiceMedioPago.getZ_MedioPago_ID(), null);
+				MZPagoMedioPago pagoMedioPago = new MZPagoMedioPago(getCtx(), 0, get_TrxName());
+				pagoMedioPago.setZ_Pago_ID(this.get_ID());
+				pagoMedioPago.setAD_Org_ID(this.getAD_Org_ID());
+				pagoMedioPago.setZ_MedioPago_ID(medioPago.get_ID());
+
+				if (invoiceMedioPago.getC_Bank_ID() > 0) pagoMedioPago.setC_Bank_ID(invoiceMedioPago.getC_Bank_ID());
+				if (invoiceMedioPago.getC_BankAccount_ID() > 0) pagoMedioPago.setC_BankAccount_ID(invoiceMedioPago.getC_BankAccount_ID());
+				if (invoiceMedioPago.getC_CashBook_ID() > 0) pagoMedioPago.setC_CashBook_ID(invoiceMedioPago.getC_CashBook_ID());
+				if (invoiceMedioPago.getDateEmitted() != null) pagoMedioPago.setDateEmitted(invoiceMedioPago.getDateEmitted());
+				if (invoiceMedioPago.getDueDate() != null) pagoMedioPago.setDueDate(invoiceMedioPago.getDueDate());
+				if (invoiceMedioPago.getDocumentNoRef() != null) pagoMedioPago.setDocumentNoRef(invoiceMedioPago.getDocumentNoRef());
+				if (invoiceMedioPago.getZ_MedioPagoFolio_ID() > 0) pagoMedioPago.setZ_MedioPagoFolio_ID(invoiceMedioPago.getZ_MedioPagoFolio_ID());
+				if (invoiceMedioPago.getZ_MedioPagoItem_ID() > 0) pagoMedioPago.setZ_MedioPagoItem_ID(invoiceMedioPago.getZ_MedioPagoItem_ID());
+				if (invoiceMedioPago.getZ_MedioPagoIdent_ID() > 0) pagoMedioPago.setZ_MedioPagoIdent_ID(invoiceMedioPago.getZ_MedioPagoIdent_ID());
+
+				pagoMedioPago.setC_Currency_ID(invoiceMedioPago.getC_Currency_ID());
+				pagoMedioPago.setEmisionManual(invoiceMedioPago.isEmisionManual());
+				pagoMedioPago.setIsReceipt(invoiceMedioPago.isReceipt());
+				pagoMedioPago.setMultiplyRate(invoiceMedioPago.getMultiplyRate());
+				pagoMedioPago.setTotalAmt(invoiceMedioPago.getTotalAmt());
+				pagoMedioPago.setTotalAmtMT(invoiceMedioPago.getTotalAmtMT());
+
+				if (this.isSOTrx()){
+					pagoMedioPago.setTieneBanco(medioPago.isTieneBancoCobro());
+					pagoMedioPago.setTieneCaja(medioPago.isTieneCajaCobro());
+					pagoMedioPago.setTieneCtaBco(medioPago.isTieneCtaBcoCobro());
+					pagoMedioPago.setTieneFecEmi(medioPago.isTieneFecEmiCobro());
+					pagoMedioPago.setTieneFecVenc(medioPago.isTieneFecVencCobro());
+					pagoMedioPago.setTieneFolio(medioPago.isTieneFolioCobro());
+					pagoMedioPago.setTieneNroRef(medioPago.isTieneNroRefCobro());
+				}
+				else{
+					pagoMedioPago.setTieneBanco(medioPago.isTieneBanco());
+					pagoMedioPago.setTieneCaja(medioPago.isTieneCaja());
+					pagoMedioPago.setTieneCtaBco(medioPago.isTieneCtaBco());
+					pagoMedioPago.setTieneFecEmi(medioPago.isTieneFecEmi());
+					pagoMedioPago.setTieneFecVenc(medioPago.isTieneFecVenc());
+					pagoMedioPago.setTieneFolio(medioPago.isTieneFolio());
+					pagoMedioPago.setTieneNroRef(medioPago.isTieneNroRef());
+				}
+				pagoMedioPago.saveEx();
+			}
+
+			// Completo documento
+			if (!this.processIt(DOCACTION_Complete)){
+				return this.m_processMsg;
+			}
+
+			this.saveEx();
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return null;
+	}
+
+	/***
+	 * Obtiene y retorna lista de medios de pago creados y asociados directamente en una invoice.
+	 * Xpande. Created by Gabriel Vila on 11/21/20.
+	 * @param cInvoiceID
+	 * @return
+	 */
+	private List<MZInvoiceMedioPago> getMediosPagoInvoice(int cInvoiceID) {
+
+		String whereClause = X_Z_InvoiceMedioPago.COLUMNNAME_C_Invoice_ID + " =" + cInvoiceID;
+
+		List<MZInvoiceMedioPago> lines = new Query(getCtx(), I_Z_InvoiceMedioPago.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
 
 	/***
 	 * Obtiene y retorna lista de modelos según ID de carga de comprobantes recibido.

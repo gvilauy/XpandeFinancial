@@ -3,6 +3,7 @@ package org.xpande.financial.callout;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.model.MInvoice;
 import org.compiere.util.Env;
 import org.xpande.financial.model.*;
 
@@ -33,22 +34,36 @@ public class CalloutPago extends CalloutEngine {
 
         BigDecimal amtMedioPago = (BigDecimal) mTab.getValue(X_Z_PagoMedioPago.COLUMNNAME_TotalAmtMT);
         if ((amtMedioPago == null) || (amtMedioPago.compareTo(Env.ZERO) <= 0)) {
+
+            BigDecimal totalMedioPago = Env.ZERO;
+            BigDecimal totalDocs = Env.ZERO;
+
             int zPagoID = Env.getContextAsInt(ctx, WindowNo, "Z_Pago_ID");
-
-            MZPago pago = new MZPago(ctx, zPagoID, null);
-            if ((pago != null) && (pago.get_ID() > 0)) {
-
-                BigDecimal totalMedioPago = pago.getTotalMediosPago();
-                BigDecimal totalDocs = pago.getPayAmt();
-
-                if (totalMedioPago == null) totalMedioPago = Env.ZERO;
-                if (totalDocs == null) totalDocs = Env.ZERO;
-
-                amtMedioPago = totalDocs.subtract(totalMedioPago);
-                if (amtMedioPago.compareTo(Env.ZERO) < 0) amtMedioPago = Env.ZERO;
-
-                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TotalAmtMT, amtMedioPago);
+            if (zPagoID > 0){
+                MZPago pago = new MZPago(ctx, zPagoID, null);
+                if ((pago != null) && (pago.get_ID() > 0)) {
+                    totalMedioPago = pago.getTotalMediosPago();
+                    totalDocs = pago.getPayAmt();
+                }
             }
+            else{
+                int cInvoiceID = Env.getContextAsInt(ctx, WindowNo, "C_Invoice_ID");
+                if (cInvoiceID > 0){
+                    MInvoice invoice = new MInvoice(ctx, cInvoiceID, null);
+                    if ((invoice != null) && (invoice.get_ID() > 0)) {
+                        totalMedioPago = (BigDecimal) invoice.get_Value("TotalMediosPago");
+                        totalDocs = invoice.getGrandTotal();
+                    }
+                }
+            }
+
+            if (totalMedioPago == null) totalMedioPago = Env.ZERO;
+            if (totalDocs == null) totalDocs = Env.ZERO;
+
+            amtMedioPago = totalDocs.subtract(totalMedioPago);
+            if (amtMedioPago.compareTo(Env.ZERO) < 0) amtMedioPago = Env.ZERO;
+
+            mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TotalAmtMT, amtMedioPago);
         }
 
         return "";
@@ -77,67 +92,63 @@ public class CalloutPago extends CalloutEngine {
 
         if ((medioPago != null) && (medioPago.get_ID() > 0)) {
 
-            int zPagoID = Env.getContextAsInt(ctx, WindowNo, "Z_Pago_ID");
-            MZPago pago = new MZPago(ctx, zPagoID, null);
-            if ((pago != null) && (pago.get_ID() > 0)) {
+            boolean isSOTrx = "Y".equals(Env.getContext(ctx, WindowNo, "IsSOTrx"));
 
-                // Seteo comportamiento del medio de pago según sea un documento de pago o cobro
-                if (!pago.isSOTrx()) {
+            // Seteo comportamiento del medio de pago según sea un documento de pago o cobro
+            if (!isSOTrx) {
 
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmi());
-                    if (!medioPago.isTieneFecEmi()){
-                        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DateEmitted, null);
-                    }
-
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecVenc, medioPago.isTieneFecVenc());
-                    if (!medioPago.isTieneFecVenc()){
-                        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DueDate, null);
-                    }
-
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCtaBco, medioPago.isTieneCtaBco());
-                    if (!medioPago.isTieneCtaBco()){
-                        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_C_BankAccount_ID, null);
-                    }
-
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCaja, medioPago.isTieneCaja());
-                    if (!medioPago.isTieneCaja()){
-                        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_C_CashBook_ID, null);
-                    }
-
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFolio, medioPago.isTieneFolio());
-                    if (!medioPago.isTieneFolio()){
-                        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_Z_MedioPagoFolio_ID, null);
-                    }
-
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneBanco, medioPago.isTieneBanco());
-                    if (!medioPago.isTieneBanco()){
-                        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_C_Bank_ID, null);
-                    }
-
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneNroRef, medioPago.isTieneNroRef());
-                    if (!medioPago.isTieneNroRef()){
-                        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DocumentNoRef, null);
-                    }
-
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneIdent, medioPago.isTieneIdent());
-                    if (!medioPago.isTieneIdent()){
-                        mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_Z_MedioPagoIdent_ID, null);
-                    }
-
-
-                } else {
-
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmiCobro());
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecVenc, medioPago.isTieneFecVencCobro());
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCtaBco, medioPago.isTieneCtaBcoCobro());
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCaja, medioPago.isTieneCajaCobro());
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFolio, medioPago.isTieneFolioCobro());
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneBanco, medioPago.isTieneBancoCobro());
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneNroRef, medioPago.isTieneNroRefCobro());
-                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneIdent, medioPago.isTieneIdentCobro());
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmi());
+                if (!medioPago.isTieneFecEmi()){
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DateEmitted, null);
                 }
-            }
 
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecVenc, medioPago.isTieneFecVenc());
+                if (!medioPago.isTieneFecVenc()){
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DueDate, null);
+                }
+
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCtaBco, medioPago.isTieneCtaBco());
+                if (!medioPago.isTieneCtaBco()){
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_C_BankAccount_ID, null);
+                }
+
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCaja, medioPago.isTieneCaja());
+                if (!medioPago.isTieneCaja()){
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_C_CashBook_ID, null);
+                }
+
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFolio, medioPago.isTieneFolio());
+                if (!medioPago.isTieneFolio()){
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_Z_MedioPagoFolio_ID, null);
+                }
+
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneBanco, medioPago.isTieneBanco());
+                if (!medioPago.isTieneBanco()){
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_C_Bank_ID, null);
+                }
+
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneNroRef, medioPago.isTieneNroRef());
+                if (!medioPago.isTieneNroRef()){
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_DocumentNoRef, null);
+                }
+
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneIdent, medioPago.isTieneIdent());
+                if (!medioPago.isTieneIdent()){
+                    mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_Z_MedioPagoIdent_ID, null);
+                }
+
+
+            } else {
+
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecEmi, medioPago.isTieneFecEmiCobro());
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFecVenc, medioPago.isTieneFecVencCobro());
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCtaBco, medioPago.isTieneCtaBcoCobro());
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneCaja, medioPago.isTieneCajaCobro());
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneFolio, medioPago.isTieneFolioCobro());
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneBanco, medioPago.isTieneBancoCobro());
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneNroRef, medioPago.isTieneNroRefCobro());
+                mTab.setValue(X_Z_PagoMedioPago.COLUMNNAME_TieneIdent, medioPago.isTieneIdentCobro());
+            }
         }
 
         return "";
