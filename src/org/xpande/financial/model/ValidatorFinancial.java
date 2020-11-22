@@ -79,7 +79,7 @@ public class ValidatorFinancial implements ModelValidator {
     private String docValidate(MInvoice model, int timing) {
 
         String message = null;
-        String action = "";
+        String action, sql;
 
         if ((timing == TIMING_BEFORE_REACTIVATE) || (timing == TIMING_BEFORE_VOID)){
 
@@ -87,6 +87,11 @@ public class ValidatorFinancial implements ModelValidator {
             if (financialConfig == null){
                 return "Falta información de Configuración Financiera.";
             }
+
+            // Guardo flag para saber si esta invoice fue imputada directamente con medios de pago asociados
+            sql = " select count(*) from z_invoicemediopago where c_invoice_id =" + model.get_ID();
+            int contador = DB.getSQLValueEx(model.get_TrxName(), sql);
+            boolean afectacionDirecta = (contador > 0);
 
             // Antes de reactivar o anular valido que esta invoice no tengo movimientos posteriores
             if (!model.isSOTrx()) {
@@ -109,8 +114,9 @@ public class ValidatorFinancial implements ModelValidator {
 
                 // Para comprobantes de compra o venta, valido que no este asociado a un pago / cobro.
                 if (financialConfig.isControlaPagos()){
-                    // El control no aplica cuando se esta reactivando un comprobante de compra y el mismo tiene medio de pago efectivo.
-                    if (!X_C_Invoice.PAYMENTRULE_Cash.equalsIgnoreCase(model.getPaymentRule())){
+                    // El control no aplica cuando se esta reactivando un comprobante de compra y el mismo tiene medio de pago efectivo o cuando tiene
+                    // medios de pago asociados de manera directa.
+                    if ((!X_C_Invoice.PAYMENTRULE_Cash.equalsIgnoreCase(model.getPaymentRule()) && (!afectacionDirecta))){
                         message = this.validateInvoicePago(model);
                         if (message != null){
                             return message;
@@ -122,8 +128,9 @@ public class ValidatorFinancial implements ModelValidator {
             else{
                 // Para comprobantes de compra o venta, valido que no este asociado a un pago / cobro.
                 if (financialConfig.isControlaCobros()){
-                    // El control no aplica cuando se esta reactivando un comprobante de venta y el mismo tiene medio de pago efectivo.
-                    if (!X_C_Invoice.PAYMENTRULE_Cash.equalsIgnoreCase(model.getPaymentRule())){
+                    // El control no aplica cuando se esta reactivando un comprobante de venta y el mismo tiene medio de pago efectivo o cuando tiene
+                    // medios de pago asociados de manera directa.
+                    if ((!X_C_Invoice.PAYMENTRULE_Cash.equalsIgnoreCase(model.getPaymentRule()) && (!afectacionDirecta))){
                         message = this.validateInvoicePago(model);
                         if (message != null){
                             return message;
@@ -132,12 +139,12 @@ public class ValidatorFinancial implements ModelValidator {
                 }
             }
 
-
             // Para comprobantes de compra
             if (!model.isSOTrx()){
-                // Para comprobantes de proveedores con medio de pago EFECTIVO, tengo que anular el pago que se generó de manera automática.
-                if (X_C_Invoice.PAYMENTRULE_Cash.equals(model.getPaymentRule())){
-                    message = this.anularPagosInvoice(model);
+                // Para comprobantes de proveedores con medio de pago EFECTIVO o que tienen afectación directa,
+                // tengo que anular el pago que se generó de manera automática.
+                if ((X_C_Invoice.PAYMENTRULE_Cash.equals(model.getPaymentRule())) || (afectacionDirecta)){
+                    message = this.deletePagosInvoice(model);
                     if (message != null){
                         return message;
                     }
@@ -156,7 +163,7 @@ public class ValidatorFinancial implements ModelValidator {
 
                 // Si existe, anulo y elimino documento de Transferencia de Saldos asociado.
                 if (model.get_ValueAsBoolean("TransferSaldo")){
-                    String sql = " select z_transfersaldo_id from z_transfersaldo where c_invoice_id =" + model.get_ID();
+                    sql = " select z_transfersaldo_id from z_transfersaldo where c_invoice_id =" + model.get_ID();
                     int transferSaldoID = DB.getSQLValueEx(model.get_TrxName(), sql);
                     if (transferSaldoID > 0){
                         MZTransferSaldo transferSaldo = new MZTransferSaldo(model.getCtx(), transferSaldoID, model.get_TrxName());
@@ -253,12 +260,12 @@ public class ValidatorFinancial implements ModelValidator {
 
 
     /***
-     * Anulo pagos que esten afectando a una determinada invoice.
+     * Elimina pagos que esten afectando a una determinada invoice.
      * Xpande. Created by Gabriel Vila on 5/9/19.
      * @param model
      * @return
      */
-    private String anularPagosInvoice(MInvoice model) {
+    private String deletePagosInvoice(MInvoice model) {
 
         String message = null;
 
@@ -276,9 +283,18 @@ public class ValidatorFinancial implements ModelValidator {
                 MZPago pago = new MZPago(model.getCtx(), rs.getInt("z_pago_id"), model.get_TrxName());
                 if ((pago != null) && (pago.get_ID() > 0)){
                     if (pago.getDocStatus().equalsIgnoreCase(DocumentEngine.STATUS_Completed)){
-                        if (!pago.processIt(DocAction.ACTION_Void)){
+                        if (!pago.processIt(DocAction.ACTION_ReActivate)){
                             return pago.getProcessMsg();
                         }
+                        pago.saveEx();
+
+                        // Elimino el pago
+                        pago.deleteEx(true);
+                    }
+                    else if (pago.getDocStatus().equalsIgnoreCase(DocumentEngine.STATUS_InProgress)){
+
+                        // Elimino el pago
+                        pago.deleteEx(true);
                     }
                 }
         	}
@@ -291,7 +307,7 @@ public class ValidatorFinancial implements ModelValidator {
         	rs = null; pstmt = null;
         }
 
-        return message;
+        return null;
     }
 
 
