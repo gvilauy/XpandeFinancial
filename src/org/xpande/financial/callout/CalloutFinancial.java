@@ -38,6 +38,31 @@ public class CalloutFinancial extends CalloutEngine {
     }
 
     /***
+     * Setea moneda dewstino segun cuenta bancaria destino recibida.
+     * Xpande. Created by Gabriel Vila on 11/25/20.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String currencyToByBankAccount(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            return "";
+        }
+
+        int cBankAccountID = ((Integer) value).intValue();
+
+        MBankAccount bankAccount = new MBankAccount(ctx, cBankAccountID, null);
+        mTab.setValue("C_Currency_ID_To", bankAccount.getC_Currency_ID());
+
+        return "";
+    }
+
+
+    /***
      * Setea DocBaseType según ID de documento recibido.
      * @param ctx
      * @param WindowNo

@@ -18,38 +18,36 @@ package org.xpande.financial.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
+import org.xpande.core.utils.CurrencyUtils;
 
-/** Generated Model for Z_MovBanco
+/** Generated Model for Z_TransfBancaria
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class MZMovBanco extends X_Z_MovBanco implements DocAction, DocOptions {
+public class MZTransfBancaria extends X_Z_TransfBancaria implements DocAction, DocOptions {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20201110L;
+	private static final long serialVersionUID = 20201125L;
 
     /** Standard Constructor */
-    public MZMovBanco (Properties ctx, int Z_MovBanco_ID, String trxName)
+    public MZTransfBancaria (Properties ctx, int Z_TransfBancaria_ID, String trxName)
     {
-      super (ctx, Z_MovBanco_ID, trxName);
+      super (ctx, Z_TransfBancaria_ID, trxName);
     }
 
     /** Load Constructor */
-    public MZMovBanco (Properties ctx, ResultSet rs, String trxName)
+    public MZTransfBancaria (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -231,25 +229,7 @@ public class MZMovBanco extends X_Z_MovBanco implements DocAction, DocOptions {
 			approveIt();
 		log.info(toString());
 		//
-
-		// Me aseguro que fecha del documento y fecha contable no sean mayor a hoy
-		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-		if (this.getDateDoc().after(fechaHoy)){
-			this.setDateDoc(fechaHoy);
-		}
-		if (this.getDateAcct().after(fechaHoy)){
-			this.setDateAcct(fechaHoy);
-		}
-
-		// Obtengo lineas del documento
-		List<MZMovBancoLin> movBancoLinList = this.getLines();
-
-		// Valido que tenga lineas
-		if (movBancoLinList.size() <= 0){
-			m_processMsg = "El Documento no tiene líneas y por lo tanto no puede Completarse";
-			return DocAction.STATUS_Invalid;
-		}
-
+		
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -423,50 +403,89 @@ public class MZMovBanco extends X_Z_MovBanco implements DocAction, DocOptions {
     @Override
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("MZMovBanco[")
+      StringBuffer sb = new StringBuffer ("MZTransfBancaria[")
         .append(getSummary()).append("]");
       return sb.toString();
     }
 
-	/***
-	 * Actualiza totales del cabezal según importes de las lineas.
-	 * Xpande. Created by Gabriel Vila on 11/10/20.
-	 */
-	public void updateTotals() {
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
 
-		String action, sql;
-
-		try{
-			// Obtengo suma de importes en moneda de transaccion, desde las lienas.
-			sql = " select sum(coalesce(totalamtmt,0)) as total from z_movbancolin " +
-					" where z_movbanco_id =" + this.get_ID();
-			BigDecimal sumLines = DB.getSQLValueBDEx(get_TrxName(), sql);
-			if (sumLines == null) sumLines = Env.ZERO;
-
-			// Actulizo totales en este cabezal
-			action = " update z_movbanco set totalamt =" + sumLines +
-					 " where z_movbanco_id =" + this.get_ID();
-			DB.executeUpdateEx(action, get_TrxName());
-
+		// Valido que no haya seleccionado la misma cuenta como origen y destino
+		if (this.getC_BankAccount_ID() == this.getC_BankAccount_To_ID()){
+			log.saveError("ATENCIÓN", "La cuenta bancaria origen no puede ser la misma que la cuenta bancaria destino");
+			return false;
 		}
-		catch (Exception e){
-			throw new AdempiereException(e);
+
+		MAcctSchema acctSchema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
+
+		// Para nuevos registros o cambios de fecha documento
+		if ((newRecord) || (is_ValueChanged(X_Z_TransfBancaria.COLUMNNAME_DateDoc))){
+
+			BigDecimal multiplyRate = Env.ONE;
+
+			// Monedas distintas para las cuentas bancarias seleccionadas
+			if (this.getC_Currency_ID_To() != this.getC_Currency_ID()){
+				// Obtengo tasa de cambio y calculo monto destino en base a monedas y tasa
+				multiplyRate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0,
+						this.getC_Currency_ID_To(), this.getC_Currency_ID(), 114, this.getDateDoc(), null);
+				if (multiplyRate == null){
+					log.saveError("ATENCIÓN", "No se pudo obtener Tasa de Cambio para fecha y monedas");
+					return false;
+				}
+			}
+
+			this.setCurrencyRate(multiplyRate);
+			if (this.getC_Currency_ID() == acctSchema.getC_Currency_ID()){
+				this.setAmtTotalTo(this.getAmtTotal().divide(multiplyRate,2, RoundingMode.HALF_UP));
+			}
+			else{
+				this.setAmtTotalTo(this.getAmtTotal().multiply(multiplyRate).setScale(2, RoundingMode.HALF_UP));
+			}
 		}
+
+		if ((!newRecord) && (is_ValueChanged(X_Z_TransfBancaria.COLUMNNAME_AmtTotal))){
+			if (this.getC_Currency_ID() == acctSchema.getC_Currency_ID()){
+				this.setAmtTotalTo(this.getAmtTotal().divide(this.getCurrencyRate(), 2, RoundingMode.HALF_UP));
+			}
+			else{
+				this.setAmtTotalTo(this.getAmtTotal().multiply(this.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP));
+			}
+		}
+
+		if (!newRecord) {
+			if ((is_ValueChanged(X_Z_TransfBancaria.COLUMNNAME_AmtTotal)) || (is_ValueChanged(X_Z_TransfBancaria.COLUMNNAME_CurrencyRate))){
+				if (this.getC_Currency_ID() == acctSchema.getC_Currency_ID()){
+					this.setAmtTotalTo(this.getAmtTotal().divide(this.getCurrencyRate(), 2, RoundingMode.HALF_UP));
+				}
+				else{
+					this.setAmtTotalTo(this.getAmtTotal().multiply(this.getCurrencyRate()).setScale(2, RoundingMode.HALF_UP));
+				}
+			}
+			if ((is_ValueChanged(X_Z_TransfBancaria.COLUMNNAME_C_BankAccount_ID)) || (is_ValueChanged(X_Z_TransfBancaria.COLUMNNAME_C_BankAccount_To_ID))){
+				BigDecimal multiplyRate = Env.ONE;
+
+				// Monedas distintas para las cuentas bancarias seleccionadas
+				if (this.getC_Currency_ID_To() != this.getC_Currency_ID()){
+					// Obtengo tasa de cambio y calculo monto destino en base a monedas y tasa
+					multiplyRate = CurrencyUtils.getCurrencyRateToAcctSchemaCurrency(getCtx(), this.getAD_Client_ID(), 0,
+							this.getC_Currency_ID_To(), this.getC_Currency_ID(), 114, this.getDateDoc(), null);
+					if (multiplyRate == null){
+						log.saveError("ATENCIÓN", "No se pudo obtener Tasa de Cambio para fecha y monedas");
+						return false;
+					}
+				}
+
+				this.setCurrencyRate(multiplyRate);
+				if (this.getC_Currency_ID() == acctSchema.getC_Currency_ID()){
+					this.setAmtTotalTo(this.getAmtTotal().divide(multiplyRate,2, RoundingMode.HALF_UP));
+				}
+				else{
+					this.setAmtTotalTo(this.getAmtTotal().multiply(multiplyRate).setScale(2, RoundingMode.HALF_UP));
+				}
+			}
+		}
+
+		return true;
 	}
-
-
-	/***
-	 * Método que obtiene y retorna lineas del documento.
-	 * Xpande. Created by Gabriel Vila on 11/10/20.
-	 * @return
-	 */
-	public List<MZMovBancoLin> getLines(){
-
-		String whereClause = X_Z_MovBancoLin.COLUMNNAME_Z_MovBanco_ID + " =" + this.get_ID();
-
-		List<MZMovBancoLin> lines = new Query(getCtx(), I_Z_MovBancoLin.Table_Name, whereClause, get_TrxName()).list();
-
-		return lines;
-	}
-
 }
