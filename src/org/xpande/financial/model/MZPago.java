@@ -240,7 +240,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		if (this.getDateAcct() == null) this.setDateAcct(this.getDateDoc());
 
-		String action = "";
+		String action;
 
 		// Me aseguro que fecha del documento y fecha contable no sean mayor a hoy
 		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
@@ -344,6 +344,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			List<MZPagoLin> pagoLinList = this.getSelectedLines();
 			List<MZPagoMedioPago> medioPagoList = this.getMediosPago();
 
+			/*
 			if (!this.isAnticipo()){
 				// Seteo flag en este documento que me indica si es un Recibo asociado solamente a anticipos.
 				this.setEsReciboAnticipo();
@@ -362,6 +363,15 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					if (this.getPayAmt().compareTo(Env.ZERO) < 0){
 						this.setPayAmt(this.getPayAmt().negate());
 					}
+				}
+			}
+			*/
+
+			// Validaciones del documento de cobro, cuando no es un anticipo.
+			if (!this.isAnticipo()){
+				m_processMsg = this.validateDocument(pagoLinList, medioPagoList);
+				if (m_processMsg != null){
+					return DocAction.STATUS_Invalid;
 				}
 			}
 
@@ -493,7 +503,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private String crearMediosPago(List<MZPagoMedioPago> medioPagoList) {
 
-		String message = null;
         String action = "";
 
 		try{
@@ -585,7 +594,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 	}
 
 	/**
@@ -699,7 +708,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private String desafectarDocumentos(List<MZPagoOrdenPago> ordenPagoList) {
 
-		String message = null;
 		String action = "";
 
 		try{
@@ -779,7 +787,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		    throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 	}
 
 	/**
@@ -1032,7 +1040,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	public String getDocumentos(String tipoAccion) {
 
-		String message = null;
+		String message;
 
 		try{
 
@@ -1093,7 +1101,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 	}
 
 
@@ -1142,7 +1150,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private String getInvoices(HashMap<Integer, Integer> hashCurrency){
 
-		String message = null;
 		String sql = "";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1260,7 +1267,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			rs = null; pstmt = null;
 		}
 
-		return message;
+		return null;
 	}
 
 
@@ -1271,7 +1278,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private String getTransferSaldos(HashMap<Integer, Integer> hashCurrency){
 
-		String message = null;
 		String sql = "";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1381,7 +1387,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			rs = null; pstmt = null;
 		}
 
-		return message;
+		return null;
 	}
 
 
@@ -1392,7 +1398,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private String getAnticipos(HashMap<Integer, Integer> hashCurrency){
 
-		String message = null;
 		String sql = "";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1492,7 +1497,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			rs = null; pstmt = null;
 		}
 
-		return message;
+		return null;
 	}
 
 
@@ -1660,8 +1665,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private String validateDocument(List<MZPagoLin> pagoLinList, List<MZPagoMedioPago> medioPagoList) {
 
-		String message = null;
-
 		try{
 
 			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
@@ -1690,7 +1693,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					return "No hay Documentos seleccionados para afectar.";
 				}
 
-
 				// Obtengo cantidad de documentos a procesar que no son anticipos
 				String sql = " select count(*) from z_pagolin where z_pago_id =" + this.get_ID() +
 							 " and isselected='Y' and ref_pago_id is null ";
@@ -1708,47 +1710,44 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 							BigDecimal amtPagoLin = pagoLin.getAmtAllocation();
 
 							// Para documentos que restan, me aseguro de considerar monto a pagar sin signo.
-							if (amtPagoLin.compareTo(Env.ZERO) < 0) amtPagoLin = amtPagoLin.negate();
-
-							/*
-							if (amtOpen.compareTo(amtPagoLin) != 0){
-								return "El monto pendiente del comprobante " + pagoLin.getDocumentNoRef() + " ha cambiado.\n" +
-										"Por favor elimine la linea del comprobante y vuelva a cargarla para refrescar información.";
+							if (amtPagoLin.compareTo(Env.ZERO) < 0){
+								amtPagoLin = amtPagoLin.negate();
 							}
-							 */
 						}
 
-						// Valido anticipos
-						if (pagoLin.getRef_Pago_ID() > 0){
+						// Valido anticipos solo para pagos
+						if (!this.isSOTrx()){
+							if (pagoLin.getRef_Pago_ID() > 0){
 
-							// Es un recibo normal consumiendo anticipo en Etapa 2.
-							if (!this.isReciboAnticipo()){
-								MZPago anticipo = new MZPago(getCtx(), pagoLin.getRef_Pago_ID(), get_TrxName());
-								if (anticipo.getZ_Pago_To_ID() <= 0){
-									return "No es posible procesar el Anticipo Nro.: " + anticipo.getDocumentNo() +
-											" ya que el mismo no tiene aún un Recibo de Proveedor asociado.";
+								// Es un recibo normal consumiendo anticipo en Etapa 2.
+								if (!this.isReciboAnticipo()){
+									MZPago anticipo = new MZPago(getCtx(), pagoLin.getRef_Pago_ID(), get_TrxName());
+									if (anticipo.getZ_Pago_To_ID() <= 0){
+										return "No es posible procesar el Anticipo Nro.: " + anticipo.getDocumentNo() +
+												" ya que el mismo no tiene aún un Recibo de Proveedor asociado.";
+									}
 								}
-							}
-							else{  // Es un recibo para afectar solamente anticipos.
+								else{  // Es un recibo para afectar solamente anticipos.
 
-								// Si tengo otros documentos en lineas del recibo que no son anticipos
-								if (cantDocsNoAnticipos > 0){
-									return "Esta Recibo contiene un Anticipo que aún no fue afectado, por lo tanto no es " +
-											"posible consumirlo con otros documentos.";
+									// Si tengo otros documentos en lineas del recibo que no son anticipos
+									if (cantDocsNoAnticipos > 0){
+										return "Esta Recibo contiene un Anticipo que aún no fue afectado, por lo tanto no es " +
+												"posible consumirlo con otros documentos.";
 
-								}
+									}
 
-								// No permito la modificación de saldos en afectacion de anticipo en etapa 1. El pago será por el total siempre.
-								if (pagoLin.getAmtOpen().compareTo(pagoLin.getAmtAllocation()) != 0){
-									return "No es posible afectar un anticipo con monto diferente al monto total del mismo.";
-								}
+									// No permito la modificación de saldos en afectacion de anticipo en etapa 1. El pago será por el total siempre.
+									if (pagoLin.getAmtOpen().compareTo(pagoLin.getAmtAllocation()) != 0){
+										return "No es posible afectar un anticipo con monto diferente al monto total del mismo.";
+									}
 
-								// Si este anticipo ya fue afectado en etapa 2 en otro recibo, no lo puedo procesar de nuevo.
-								MZPago anticipo = new MZPago(getCtx(), pagoLin.getRef_Pago_ID(), get_TrxName());
-								if ((anticipo.getZ_Pago_To_ID() > 0) && (anticipo.getZ_Pago_To_ID() != this.get_ID())){
-									MZPago pagoAux = (MZPago) anticipo.getZ_Pago_To();
-									return "No es posible procesar el Anticipo Nro.: " + anticipo.getDocumentNo() +
-											" ya que el mismo ya fue afectado en el Recibo con número interno: " + pagoAux.getDocumentNo();
+									// Si este anticipo ya fue afectado en etapa 2 en otro recibo, no lo puedo procesar de nuevo.
+									MZPago anticipo = new MZPago(getCtx(), pagoLin.getRef_Pago_ID(), get_TrxName());
+									if ((anticipo.getZ_Pago_To_ID() > 0) && (anticipo.getZ_Pago_To_ID() != this.get_ID())){
+										MZPago pagoAux = (MZPago) anticipo.getZ_Pago_To();
+										return "No es posible procesar el Anticipo Nro.: " + anticipo.getDocumentNo() +
+												" ya que el mismo ya fue afectado en el Recibo con número interno: " + pagoAux.getDocumentNo();
+									}
 								}
 							}
 						}
@@ -1771,7 +1770,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 
 	}
 
@@ -1782,7 +1781,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private String getResguardos(HashMap<Integer, Integer> hashCurrency) {
 
-		String message = null;
 		String sql = "";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1862,8 +1860,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			rs = null; pstmt = null;
 		}
 
-		return message;
-
+		return null;
 	}
 
 	/***
@@ -1872,7 +1869,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	public String getOrdenesPago() {
 
-		String message = null;
 		String sql = "";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1910,8 +1906,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			rs = null; pstmt = null;
 		}
 
-		return message;
-
+		return null;
 	}
 
 
@@ -2209,7 +2204,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private String emitirMediosPago(List<MZPagoMedioPago> medioPagoList) {
 
-		String message = null;
 		String action = "";
 
 		try{
@@ -2370,8 +2364,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 					// Completo documento de emisión de medio de pago
 					if (!emisionMedioPago.processIt(DocAction.ACTION_Complete)){
-						message = emisionMedioPago.getProcessMsg();
-						return message;
+						return emisionMedioPago.getProcessMsg();
 					}
 					emisionMedioPago.saveEx();
 
@@ -2400,7 +2393,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		    throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 	}
 
 
@@ -2411,8 +2404,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 * @return
 	 */
 	private String entregarMediosPago(List<MZPagoMedioPago> medioPagoList) {
-
-		String message = null;
 
 		try{
 			// No procede si es un cobro
@@ -2447,7 +2438,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 	}
 
 
@@ -2457,8 +2448,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 * @return
 	 */
 	private String entregarMediosPagoAnticipos(){
-
-		String message = null;
 
 		String sql = "", action = "";
 		PreparedStatement pstmt = null;
@@ -2496,7 +2485,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			rs = null; pstmt = null;
 		}
 
-		return message;
+		return null;
 	}
 
 	/***
@@ -2506,9 +2495,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 * @return
 	 */
 	private String afectarDocumentosLineas(List<MZPagoLin> pagoLinList) {
-
-		String message = null;
-		String action = "";
 
 		try{
 
@@ -2664,7 +2650,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		    throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 	}
 
 	/***
@@ -2673,9 +2659,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 * @return
 	 */
 	private String afectarResguardos() {
-
-		String message = null;
-		String action = "";
 
 		try{
 
@@ -2706,7 +2689,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		    throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 	}
 
 
@@ -2717,8 +2700,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 * @param ordenPagoList
 	 */
 	private String afectarOrdenesPago(List<MZPagoOrdenPago> ordenPagoList) {
-
-		String message = null;
 
 		try{
 
@@ -2744,7 +2725,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			throw new AdempiereException(e);
 		}
 
-		return message;
+		return null;
 	}
 
 	@Override
@@ -2822,9 +2803,9 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	public String getMediosPagoEmitidos(String tipoAccion){
 
-		String message = null;
+		String message;
 
-		String sql = "";
+		String sql;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
@@ -2922,7 +2903,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			rs = null; pstmt = null;
 		}
 
-		return message;
+		return null;
 	}
 
 
