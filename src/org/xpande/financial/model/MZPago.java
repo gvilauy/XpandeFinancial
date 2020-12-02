@@ -256,7 +256,20 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				m_processMsg = "Debe indicar importe mayor a cero para este anticipo.";
 				return DocAction.STATUS_Invalid;
 			}
+			// Si en este anticipo tengo monto de medios de pago, entonces lo marco como anticipo directo.
+			if ((this.getTotalMediosPago() != null) && (this.getTotalMediosPago().compareTo(Env.ZERO) > 0)){
+				this.setAnticipoDirecto(true);
+			}
+			else {
+				this.setAnticipoDirecto(false);
+			}
 		}
+
+		// Obtengo lineas a procesar
+		List<MZPagoLin> pagoLinList = this.getSelectedLines();
+
+		// Obtengo medios de pago a procesar
+		List<MZPagoMedioPago> medioPagoList = this.getMediosPago();
 
 		if (!this.isSOTrx()){
 
@@ -268,12 +281,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 				// Obtengo importe total de anticipos afectados en este recibo
 				this.setTotalAnticiposAfectados();
-
-				// Obtengo lineas a procesar
-				List<MZPagoLin> pagoLinList = this.getSelectedLines();
-
-				// Obtengo medios de pago a procesar
-				List<MZPagoMedioPago> medioPagoList = this.getMediosPago();
 
 				// Obtengo ordenes de pago asociadas a este documento (si existen)
 				List<MZPagoOrdenPago> ordenPagoList = this.getOrdenesPagoReferenciadas();
@@ -337,35 +344,30 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					return DocAction.STATUS_Invalid;
 				}
 			}
-		}
-		else{  // Cobranza
+			else {
+				// Es anticipo y ademas es anticipo directo (o sea tiene medios de pago)
+				if (this.isAnticipoDirecto()){
+					// Validaciones del documento
+					m_processMsg = this.validateDocument(pagoLinList, medioPagoList);
+					if (m_processMsg != null){
+						return DocAction.STATUS_Invalid;
+					}
 
-			// Obtengo lineas a procesar
-			List<MZPagoLin> pagoLinList = this.getSelectedLines();
-			List<MZPagoMedioPago> medioPagoList = this.getMediosPago();
+					// Emite medios de pago
+					m_processMsg = this.emitirMediosPago(medioPagoList);
+					if (m_processMsg != null){
+						return DocAction.STATUS_Invalid;
+					}
 
-			/*
-			if (!this.isAnticipo()){
-				// Seteo flag en este documento que me indica si es un Recibo asociado solamente a anticipos.
-				this.setEsReciboAnticipo();
-
-				// Obtengo importe total de anticipos afectados en este recibo
-				this.setTotalAnticiposAfectados();
-
-				// Validaciones del documento
-				m_processMsg = this.validateDocument(pagoLinList, medioPagoList);
-				if (m_processMsg != null){
-					return DocAction.STATUS_Invalid;
-				}
-
-				// Para recibos hechos por anticipos, me aseguro de dejar monto en positivo.
-				if (this.isReciboAnticipo()){
-					if (this.getPayAmt().compareTo(Env.ZERO) < 0){
-						this.setPayAmt(this.getPayAmt().negate());
+					// Marca medios de pago que como entregados
+					m_processMsg = this.entregarMediosPago(medioPagoList);
+					if (m_processMsg != null){
+						return DocAction.STATUS_Invalid;
 					}
 				}
 			}
-			*/
+		}
+		else{  // Cobranza
 
 			// Validaciones del documento de cobro, cuando no es un anticipo.
 			if (!this.isAnticipo()){
@@ -1765,6 +1767,21 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					}
 				}
 			}
+			else{
+				// Es un anticipo directo ( o sea tiene medios de pago asociados)
+				if (this.isAnticipoDirecto()){
+					// Valido que los medios de pago sigan disponibles para utilizar en un recibo
+					for (MZPagoMedioPago pagoMedioPago: medioPagoList){
+						if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+							MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+							if (medioPagoItem.isEntregado()){
+								return "El medio de pago número " + medioPagoItem.getNroMedioPago() + " ya fue entregado en otro comprobante.\n" +
+										"Por favor utilice otro medio de pago en este documento.";
+							}
+						}
+					}
+				}
+			}
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
@@ -2195,7 +2212,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		}
 	}
 
-
 	/***
 	 * Proceso que emite los medios de pago para un documento de pago.
 	 * Xpande. Created by Gabriel Vila on 3/8/18.
@@ -2204,15 +2220,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 	 */
 	private String emitirMediosPago(List<MZPagoMedioPago> medioPagoList) {
 
-		String action = "";
+		String action;
 
 		try{
 			// No procede si es un cobro
 			if (this.isSOTrx()){
 				return null;
 			}
-
-			Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
 			// Recorre lista de medios de pago a emitir para este documento de pago
 			for (MZPagoMedioPago pagoMedioPago: medioPagoList){
@@ -2314,7 +2328,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				}
 
 				pagoMedioPago.saveEx();
-
 
 				// Realizo emisión para este medio de pago a considerar
 				if ((!medioPagoItem.isEmitido()) || (medioPagoItem.getZ_EmisionMedioPago_ID() <= 0)){

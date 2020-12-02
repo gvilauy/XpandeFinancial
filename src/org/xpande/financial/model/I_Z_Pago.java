@@ -89,6 +89,19 @@ public interface I_Z_Pago
 	  */
 	public boolean isAnticipo();
 
+    /** Column name AnticipoDirecto */
+    public static final String COLUMNNAME_AnticipoDirecto = "AnticipoDirecto";
+
+	/** Set AnticipoDirecto.
+	  * Si un determinado pago/cobro es de Anticipo (campo Anticipo = TRUE) y además este ancitipo es directo, es decir tiene medios de pago asociados.
+	  */
+	public void setAnticipoDirecto (boolean AnticipoDirecto);
+
+	/** Get AnticipoDirecto.
+	  * Si un determinado pago/cobro es de Anticipo (campo Anticipo = TRUE) y además este ancitipo es directo, es decir tiene medios de pago asociados.
+	  */
+	public boolean isAnticipoDirecto();
+
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -644,6 +657,9 @@ public interface I_Z_Pago
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
+
+    /** Column name Z_Cobrador_ID */
+    public static final String COLUMNNAME_Z_Cobrador_ID = "Z_Cobrador_ID";
 
     /** Column name Z_LoadPago_ID */
     public static final String COLUMNNAME_Z_LoadPago_ID = "Z_LoadPago_ID";

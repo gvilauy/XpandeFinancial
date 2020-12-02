@@ -33,7 +33,7 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200619L;
+	private static final long serialVersionUID = 20201202L;
 
     /** Standard Constructor */
     public X_Z_Pago (Properties ctx, int Z_Pago_ID, String trxName)
@@ -42,6 +42,8 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
       /** if (Z_Pago_ID == 0)
         {
 			setAnticipo (false);
+// N
+			setAnticipoDirecto (false);
 // N
 			setC_BPartner_ID (0);
 			setC_Currency_ID (0);
@@ -140,6 +142,30 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 	public boolean isAnticipo () 
 	{
 		Object oo = get_Value(COLUMNNAME_Anticipo);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set AnticipoDirecto.
+		@param AnticipoDirecto 
+		Si un determinado pago/cobro es de Anticipo (campo Anticipo = TRUE) y además este ancitipo es directo, es decir tiene medios de pago asociados.
+	  */
+	public void setAnticipoDirecto (boolean AnticipoDirecto)
+	{
+		set_Value (COLUMNNAME_AnticipoDirecto, Boolean.valueOf(AnticipoDirecto));
+	}
+
+	/** Get AnticipoDirecto.
+		@return Si un determinado pago/cobro es de Anticipo (campo Anticipo = TRUE) y además este ancitipo es directo, es decir tiene medios de pago asociados.
+	  */
+	public boolean isAnticipoDirecto () 
+	{
+		Object oo = get_Value(COLUMNNAME_AnticipoDirecto);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -1001,6 +1027,26 @@ public class X_Z_Pago extends PO implements I_Z_Pago, I_Persistent
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set Z_Cobrador ID.
+		@param Z_Cobrador_ID Z_Cobrador ID	  */
+	public void setZ_Cobrador_ID (int Z_Cobrador_ID)
+	{
+		if (Z_Cobrador_ID < 1) 
+			set_Value (COLUMNNAME_Z_Cobrador_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_Cobrador_ID, Integer.valueOf(Z_Cobrador_ID));
+	}
+
+	/** Get Z_Cobrador ID.
+		@return Z_Cobrador ID	  */
+	public int getZ_Cobrador_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_Cobrador_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_LoadPago getZ_LoadPago() throws RuntimeException
