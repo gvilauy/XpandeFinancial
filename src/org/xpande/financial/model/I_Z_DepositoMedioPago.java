@@ -31,7 +31,7 @@ public interface I_Z_DepositoMedioPago
     /** TableName=Z_DepositoMedioPago */
     public static final String Table_Name = "Z_DepositoMedioPago";
 
-    /** AD_Table_ID=1000314 */
+    /** AD_Table_ID=1000276 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -56,7 +56,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Bank Account.
 	  * Account at the Bank
 	  */
-	public void setC_BankAccount_ID(int C_BankAccount_ID);
+	public void setC_BankAccount_ID (int C_BankAccount_ID);
 
 	/** Get Bank Account.
 	  * Account at the Bank
@@ -78,13 +78,28 @@ public interface I_Z_DepositoMedioPago
 
 	public I_C_BankAccount getC_BankAccount() throws RuntimeException;
 
+    /** Column name C_CashBook_ID */
+    public static final String COLUMNNAME_C_CashBook_ID = "C_CashBook_ID";
+
+	/** Set Cash Book.
+	  * Cash Book for recording petty cash transactions
+	  */
+	public void setC_CashBook_ID (int C_CashBook_ID);
+
+	/** Get Cash Book.
+	  * Cash Book for recording petty cash transactions
+	  */
+	public int getC_CashBook_ID();
+
+	public I_C_CashBook getC_CashBook() throws RuntimeException;
+
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -99,7 +114,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -130,7 +145,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Account Date.
 	  * Accounting Date
 	  */
-	public void setDateAcct(Timestamp DateAcct);
+	public void setDateAcct (Timestamp DateAcct);
 
 	/** Get Account Date.
 	  * Accounting Date
@@ -143,7 +158,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Document Date.
 	  * Date of the Document
 	  */
-	public void setDateDoc(Timestamp DateDoc);
+	public void setDateDoc (Timestamp DateDoc);
 
 	/** Get Document Date.
 	  * Date of the Document
@@ -156,7 +171,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -169,7 +184,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Document Action.
 	  * The targeted status of the document
 	  */
-	public void setDocAction(String DocAction);
+	public void setDocAction (String DocAction);
 
 	/** Get Document Action.
 	  * The targeted status of the document
@@ -182,7 +197,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Document Status.
 	  * The current status of the document
 	  */
-	public void setDocStatus(String DocStatus);
+	public void setDocStatus (String DocStatus);
 
 	/** Get Document Status.
 	  * The current status of the document
@@ -195,7 +210,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Document No.
 	  * Document sequence number of the document
 	  */
-	public void setDocumentNo(String DocumentNo);
+	public void setDocumentNo (String DocumentNo);
 
 	/** Get Document No.
 	  * Document sequence number of the document
@@ -208,7 +223,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -221,7 +236,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Approved.
 	  * Indicates if this document requires approval
 	  */
-	public void setIsApproved(boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/** Get Approved.
 	  * Indicates if this document requires approval
@@ -234,7 +249,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Sales Transaction.
 	  * This is a Sales Transaction
 	  */
-	public void setIsSOTrx(boolean IsSOTrx);
+	public void setIsSOTrx (boolean IsSOTrx);
 
 	/** Get Sales Transaction.
 	  * This is a Sales Transaction
@@ -247,7 +262,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Posted.
 	  * Posting status
 	  */
-	public void setPosted(boolean Posted);
+	public void setPosted (boolean Posted);
 
 	/** Get Posted.
 	  * Posting status
@@ -258,7 +273,7 @@ public interface I_Z_DepositoMedioPago
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
 	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
+	public void setProcessButton (String ProcessButton);
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
@@ -269,7 +284,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Processed.
 	  * The document has been processed
 	  */
-	public void setProcessed(boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/** Get Processed.
 	  * The document has been processed
@@ -282,7 +297,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Processed On.
 	  * The date+time (expressed in decimal format) when the document has been processed
 	  */
-	public void setProcessedOn(BigDecimal ProcessedOn);
+	public void setProcessedOn (BigDecimal ProcessedOn);
 
 	/** Get Processed On.
 	  * The date+time (expressed in decimal format) when the document has been processed
@@ -293,7 +308,7 @@ public interface I_Z_DepositoMedioPago
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/** Set Process Now	  */
-	public void setProcessing(boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
@@ -304,7 +319,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Reference No.
 	  * Your customer or vendor number at the Business Partner's site
 	  */
-	public void setReferenceNo(String ReferenceNo);
+	public void setReferenceNo (String ReferenceNo);
 
 	/** Get Reference No.
 	  * Your customer or vendor number at the Business Partner's site
@@ -317,7 +332,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Total Amount.
 	  * Total Amount
 	  */
-	public void setTotalAmt(BigDecimal TotalAmt);
+	public void setTotalAmt (BigDecimal TotalAmt);
 
 	/** Get Total Amount.
 	  * Total Amount
@@ -346,7 +361,7 @@ public interface I_Z_DepositoMedioPago
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -357,7 +372,7 @@ public interface I_Z_DepositoMedioPago
     public static final String COLUMNNAME_Z_DepositoMedioPago_ID = "Z_DepositoMedioPago_ID";
 
 	/** Set Z_DepositoMedioPago ID	  */
-	public void setZ_DepositoMedioPago_ID(int Z_DepositoMedioPago_ID);
+	public void setZ_DepositoMedioPago_ID (int Z_DepositoMedioPago_ID);
 
 	/** Get Z_DepositoMedioPago ID	  */
 	public int getZ_DepositoMedioPago_ID();

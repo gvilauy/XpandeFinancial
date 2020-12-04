@@ -2749,11 +2749,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			return false;
 		}
 
+		/*
 		if (this.isAnticipo()){
 			if ((this.getPayAmt() == null) || (this.getPayAmt().compareTo(Env.ZERO) <= 0)){
 				log.saveError("ATENCIÓN", "Debe indicar importe mayor a cero para este Anticipo.");
 			}
 		}
+		*/
 
 		if (this.getDateAcct() == null) this.setDateAcct(this.getDateDoc());
 

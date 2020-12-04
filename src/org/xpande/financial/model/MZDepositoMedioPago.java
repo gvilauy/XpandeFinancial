@@ -259,7 +259,12 @@ public class MZDepositoMedioPago extends X_Z_DepositoMedioPago implements DocAct
 				medioPagoItem.setDepositado(true);
 				medioPagoItem.setZ_DepositoMedioPago_ID(this.get_ID());
 				medioPagoItem.setDateRefDeposito(this.getDateDoc());
-				medioPagoItem.setC_BankAccount_ID(this.getC_BankAccount_ID());
+				if (this.getC_BankAccount_ID() > 0){
+					medioPagoItem.setC_BankAccount_ID(this.getC_BankAccount_ID());
+				}
+				if (this.getC_CashBook_ID() > 0){
+					medioPagoItem.setC_CashBook_ID(this.getC_CashBook_ID());
+				}
 				medioPagoItem.saveEx();
 			}
 		}
@@ -514,8 +519,6 @@ public class MZDepositoMedioPago extends X_Z_DepositoMedioPago implements DocAct
 	 */
 	private String validateDocument(List<MZDepositoMPagoLin> depositoMPagoLinList){
 
-    	String message = null;
-
     	try{
 
     		// Si no tengo monto total a depositar, aviso y salgo
@@ -533,7 +536,18 @@ public class MZDepositoMedioPago extends X_Z_DepositoMedioPago implements DocAct
     	    throw new AdempiereException(e);
     	}
 
-    	return message;
+    	return null;
 	}
 
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		// Me aseguro de tener cuenta bancaria o caja destino
+		if ((this.getC_BankAccount_ID() <=0) && (this.getC_CashBook_ID() <= 0)){
+			log.saveError("ATENCIÓN", "Debe Indicar Cuenta Bancaria o Caja Destino)");
+			return false;
+		}
+
+		return true;
+	}
 }

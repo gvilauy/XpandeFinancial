@@ -33,7 +33,7 @@ public class X_Z_DepositoMedioPago extends PO implements I_Z_DepositoMedioPago, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190905L;
+	private static final long serialVersionUID = 20201204L;
 
     /** Standard Constructor */
     public X_Z_DepositoMedioPago (Properties ctx, int Z_DepositoMedioPago_ID, String trxName)
@@ -41,7 +41,6 @@ public class X_Z_DepositoMedioPago extends PO implements I_Z_DepositoMedioPago, 
       super (ctx, Z_DepositoMedioPago_ID, trxName);
       /** if (Z_DepositoMedioPago_ID == 0)
         {
-			setC_BankAccount_ID (0);
 			setC_Currency_ID (0);
 			setC_DocType_ID (0);
 			setDateAcct (new Timestamp( System.currentTimeMillis() ));
@@ -118,6 +117,34 @@ public class X_Z_DepositoMedioPago extends PO implements I_Z_DepositoMedioPago, 
 	public int getC_BankAccount_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankAccount_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_CashBook getC_CashBook() throws RuntimeException
+    {
+		return (I_C_CashBook)MTable.get(getCtx(), I_C_CashBook.Table_Name)
+			.getPO(getC_CashBook_ID(), get_TrxName());	}
+
+	/** Set Cash Book.
+		@param C_CashBook_ID 
+		Cash Book for recording petty cash transactions
+	  */
+	public void setC_CashBook_ID (int C_CashBook_ID)
+	{
+		if (C_CashBook_ID < 1) 
+			set_Value (COLUMNNAME_C_CashBook_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CashBook_ID, Integer.valueOf(C_CashBook_ID));
+	}
+
+	/** Get Cash Book.
+		@return Cash Book for recording petty cash transactions
+	  */
+	public int getC_CashBook_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_CashBook_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

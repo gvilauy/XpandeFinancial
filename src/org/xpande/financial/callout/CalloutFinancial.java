@@ -38,6 +38,30 @@ public class CalloutFinancial extends CalloutEngine {
     }
 
     /***
+     * Setea moneda segun caja destino.
+     * Xpande. Created by Gabriel Vila on 12/4/20.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String currencyByCashBook(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            return "";
+        }
+
+        int cCashBook = ((Integer) value).intValue();
+
+        MCashBook cashBook = new MCashBook(ctx, cCashBook, null);
+        mTab.setValue("C_Currency_ID", cashBook.getC_Currency_ID());
+
+        return "";
+    }
+
+    /***
      * Setea moneda dewstino segun cuenta bancaria destino recibida.
      * Xpande. Created by Gabriel Vila on 11/25/20.
      * @param ctx

@@ -214,7 +214,9 @@ public class ValidatorFinancial implements ModelValidator {
                 if (amtMediosPago == null) amtMediosPago = Env.ZERO;
                 if (amtMediosPago.compareTo(Env.ZERO) > 0){
                     // Valido que el monto de medios de pago sea igual al monto del comprobante
-                    if (amtMediosPago.compareTo(model.getGrandTotal()) != 0){
+                    BigDecimal amtRounding  = (BigDecimal) model.get_Value("AmtRounding");
+                    if (amtRounding == null) amtRounding = Env.ZERO;
+                    if (amtMediosPago.compareTo(model.getGrandTotal().add(amtRounding)) != 0){
                         message = "Monto total de medios de pago debe ser igual al Total del comprobante.";
                         return message;
                     }
