@@ -33,7 +33,7 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200226L;
+	private static final long serialVersionUID = 20201214L;
 
     /** Standard Constructor */
     public X_Z_EstadoCuenta (Properties ctx, int Z_EstadoCuenta_ID, String trxName)
@@ -395,6 +395,23 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 		return (Timestamp)get_Value(COLUMNNAME_DateRefTransfSaldo);
 	}
 
+	/** Set Description.
+		@param Description 
+		Optional short description of the record
+	  */
+	public void setDescription (String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Description.
+		@return Optional short description of the record
+	  */
+	public String getDescription () 
+	{
+		return (String)get_Value(COLUMNNAME_Description);
+	}
+
 	/** DocBaseType AD_Reference_ID=183 */
 	public static final int DOCBASETYPE_AD_Reference_ID=183;
 	/** GL Journal = GLJ */
@@ -503,34 +520,72 @@ public class X_Z_EstadoCuenta extends PO implements I_Z_EstadoCuenta, I_Persiste
 	public static final String DOCBASETYPE_PPAAnticipoAProveedor = "PPA";
 	/** RDI Remito Diferencia Factura = RDI */
 	public static final String DOCBASETYPE_RDIRemitoDiferenciaFactura = "RDI";
-	/** RDC Remito Diferencia Cantidad = RDC */
-	public static final String DOCBASETYPE_RDCRemitoDiferenciaCantidad = "RDC";
 	/** CCD Cobranza a Cliente = CCD */
 	public static final String DOCBASETYPE_CCDCobranzaACliente = "CCD";
-	/** GEN General = GEN */
-	public static final String DOCBASETYPE_GENGeneral = "GEN";
-	/** CII Carga Inicial Invoices = CII */
-	public static final String DOCBASETYPE_CIICargaInicialInvoices = "CII";
-	/** TSP Transferencia Saldo a Pagar = TSP */
-	public static final String DOCBASETYPE_TSPTransferenciaSaldoAPagar = "TSP";
-	/** CIM Carga Inicial Medios de Pago = CIM */
-	public static final String DOCBASETYPE_CIMCargaInicialMediosDePago = "CIM";
-	/** CIJ Carga Inicial Asientos Contables = CIJ */
-	public static final String DOCBASETYPE_CIJCargaInicialAsientosContables = "CIJ";
-	/** AVG Generacion de Asientos de Venta POS = AVG */
-	public static final String DOCBASETYPE_AVGGeneracionDeAsientosDeVentaPOS = "AVG";
-	/** DFC Diferencia de Cambio = DFC */
-	public static final String DOCBASETYPE_DFCDiferenciaDeCambio = "DFC";
-	/** FME Formulario Movimiento Efectivo = FME */
-	public static final String DOCBASETYPE_FMEFormularioMovimientoEfectivo = "FME";
-	/** DPT Deposito Medio Pago Tercero = DPT */
-	public static final String DOCBASETYPE_DPTDepositoMedioPagoTercero = "DPT";
-	/** AVR Asiento de Reclasificación de Medios de Pago = AVR */
-	public static final String DOCBASETYPE_AVRAsientoDeReclasificaciónDeMediosDePago = "AVR";
+	/** PCV Pauta Comercial Venta = PCV */
+	public static final String DOCBASETYPE_PCVPautaComercialVenta = "PCV";
+	/** RCG Generador de Remitos = RCG */
+	public static final String DOCBASETYPE_RCGGeneradorDeRemitos = "RCG";
+	/** SCG Generador de Reservas = SCG */
+	public static final String DOCBASETYPE_SCGGeneradorDeReservas = "SCG";
+	/** RVT Reserva de Venta = RVT */
+	public static final String DOCBASETYPE_RVTReservaDeVenta = "RVT";
+	/** ATR Asignación Transporte Logistica = ATR */
+	public static final String DOCBASETYPE_ATRAsignaciónTransporteLogistica = "ATR";
+	/** PIK Picking de Mercaderia = PIK */
+	public static final String DOCBASETYPE_PIKPickingDeMercaderia = "PIK";
 	/** CEX Carga Extractos Bancarios = CEX */
 	public static final String DOCBASETYPE_CEXCargaExtractosBancarios = "CEX";
+	/** CIM Carga Inicial Medios de Pago = CIM */
+	public static final String DOCBASETYPE_CIMCargaInicialMediosDePago = "CIM";
 	/** CIP Carga Inicial de Pagoa / Cobros = CIP */
 	public static final String DOCBASETYPE_CIPCargaInicialDePagoaCobros = "CIP";
+	/** DPT Deposito Medio Pago Tercero = DPT */
+	public static final String DOCBASETYPE_DPTDepositoMedioPagoTercero = "DPT";
+	/** IMC Ingreso Medio Pago Caja = IMC */
+	public static final String DOCBASETYPE_IMCIngresoMedioPagoCaja = "IMC";
+	/** TSP Transferencia Saldo a Pagar = TSP */
+	public static final String DOCBASETYPE_TSPTransferenciaSaldoAPagar = "TSP";
+	/** GEN General = GEN */
+	public static final String DOCBASETYPE_GENGeneral = "GEN";
+	/** LCB Carga Informacion Core = LCB */
+	public static final String DOCBASETYPE_LCBCargaInformacionCore = "LCB";
+	/** CII Carga Inicial Invoices = CII */
+	public static final String DOCBASETYPE_CIICargaInicialInvoices = "CII";
+	/** AJI Asiento de Apertura de Ejercicio = AJI */
+	public static final String DOCBASETYPE_AJIAsientoDeAperturaDeEjercicio = "AJI";
+	/** CIJ Carga Inicial Asientos Contables = CIJ */
+	public static final String DOCBASETYPE_CIJCargaInicialAsientosContables = "CIJ";
+	/** CJD Cierre de Cuentas Diferenciales = CJD */
+	public static final String DOCBASETYPE_CJDCierreDeCuentasDiferenciales = "CJD";
+	/** CJI Cierre de Cuentas Integrales = CJI */
+	public static final String DOCBASETYPE_CJICierreDeCuentasIntegrales = "CJI";
+	/** DFC Diferencia de Cambio = DFC */
+	public static final String DOCBASETYPE_DFCDiferenciaDeCambio = "DFC";
+	/** AVG Generacion de Asientos de Venta POS = AVG */
+	public static final String DOCBASETYPE_AVGGeneracionDeAsientosDeVentaPOS = "AVG";
+	/** AVR Asiento de Reclasificación de Medios de Pago = AVR */
+	public static final String DOCBASETYPE_AVRAsientoDeReclasificaciónDeMediosDePago = "AVR";
+	/** CSC Carga Scanntech Comprobantes = CSC */
+	public static final String DOCBASETYPE_CSCCargaScanntechComprobantes = "CSC";
+	/** DPS Desafectacion de Productos de Socio = DPS */
+	public static final String DOCBASETYPE_DPSDesafectacionDeProductosDeSocio = "DPS";
+	/** FME Formulario Movimiento Efectivo = FME */
+	public static final String DOCBASETYPE_FMEFormularioMovimientoEfectivo = "FME";
+	/** RDC Remito Diferencia Cantidad = RDC */
+	public static final String DOCBASETYPE_RDCRemitoDiferenciaCantidad = "RDC";
+	/** CCA Anticipo de Cliente = CCA */
+	public static final String DOCBASETYPE_CCAAnticipoDeCliente = "CCA";
+	/** STT Transferencia de Stock = STT */
+	public static final String DOCBASETYPE_STTTransferenciaDeStock = "STT";
+	/** BDR Debito Bancario = BDR */
+	public static final String DOCBASETYPE_BDRDebitoBancario = "BDR";
+	/** BCR Credito Bancario = BCR */
+	public static final String DOCBASETYPE_BCRCreditoBancario = "BCR";
+	/** DPP Deposito Medio Pago Propio = DPP */
+	public static final String DOCBASETYPE_DPPDepositoMedioPagoPropio = "DPP";
+	/** TCP Transferencia Cuentas Propias = TCP */
+	public static final String DOCBASETYPE_TCPTransferenciaCuentasPropias = "TCP";
 	/** Set Document BaseType.
 		@param DocBaseType 
 		Logical type of document

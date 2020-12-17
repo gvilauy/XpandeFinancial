@@ -99,7 +99,6 @@ public final class FinancialUtils {
                             estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
                         }
 
-
                         if (!model.isSOTrx()){
                             if (docType.getDocBaseType().equalsIgnoreCase("API")){
                                 estadoCuenta.setAmtSourceCr(ips.getDueAmt());
@@ -142,6 +141,7 @@ public final class FinancialUtils {
                         estadoCuenta.setRecord_ID(model.get_ID());
                         estadoCuenta.setAD_Org_ID(model.getAD_Org_ID());
                         estadoCuenta.set_ValueOfColumn("AD_Client_ID", model.getAD_Client_ID());
+                        estadoCuenta.setDescription(model.getDescription());
 
                         if ((transferSaldo != null) && (transferSaldo.get_ID() > 0)){
                             estadoCuenta.setZ_TransferSaldo_To_ID(transferSaldo.get_ID());
@@ -220,6 +220,7 @@ public final class FinancialUtils {
                     estadoCuenta.setRecord_ID(model.get_ID());
                     estadoCuenta.setAD_Org_ID(model.getAD_Org_ID());
                     estadoCuenta.set_ValueOfColumn("AD_Client_ID", model.getAD_Client_ID());
+                    estadoCuenta.setDescription(model.getDescription());
 
                     if ((transferSaldo != null) && (transferSaldo.get_ID() > 0)){
                         estadoCuenta.setZ_TransferSaldo_To_ID(transferSaldo.get_ID());
@@ -321,6 +322,8 @@ public final class FinancialUtils {
                 estadoCuenta.setAD_Table_ID(transferSaldo.get_Table_ID());
                 estadoCuenta.setRecord_ID(transferSaldo.get_ID());
                 estadoCuenta.setAD_Org_ID(transferSaldo.getAD_Org_ID());
+                estadoCuenta.setDescription(transferSaldo.getDescription());
+
                 estadoCuenta.saveEx();
 
                 // Impacto linea en estado de cuenta para bajar la deuda del socio de negocio de la invoice
@@ -374,6 +377,8 @@ public final class FinancialUtils {
                 estadoCuentaInv.setRecord_ID(transferSaldo.get_ID());
                 estadoCuentaInv.setAD_Org_ID(transferSaldo.getAD_Org_ID());
                 estadoCuentaInv.setReferenciaPago(partner.getName());
+                estadoCuenta.setDescription(transferSaldo.getDescription());
+
                 estadoCuentaInv.saveEx();
             }
             else {  // Reactivate o Void del documento
@@ -461,6 +466,8 @@ public final class FinancialUtils {
                     estadoCuenta.setIsSOTrx(false);
                     estadoCuenta.setRecord_ID(resguardoSocio.get_ID());
                     estadoCuenta.setAD_Org_ID(resguardoSocio.getAD_Org_ID());
+                    estadoCuenta.setDescription(resguardoSocio.getDescription());
+
                     estadoCuenta.saveEx();
 
                 }
@@ -950,6 +957,7 @@ public final class FinancialUtils {
 
                 estadoCuenta.setRecord_ID(pago.get_ID());
                 estadoCuenta.setAD_Org_ID(pago.getAD_Org_ID());
+                estadoCuenta.setDescription(pago.getDescription());
 
                 if (!pago.isSOTrx()){
                     List<MZPagoOrdenPago> ordenPagoList = pago.getOrdenesPagoReferenciadas();
@@ -1142,6 +1150,8 @@ public final class FinancialUtils {
             estadoCuenta.setIsSOTrx(false);
             estadoCuenta.setRecord_ID(ordenPago.get_ID());
             estadoCuenta.setAD_Org_ID(ordenPago.getAD_Org_ID());
+            estadoCuenta.setDescription(ordenPago.getDescription());
+
             estadoCuenta.saveEx();
         }
         catch (Exception e){

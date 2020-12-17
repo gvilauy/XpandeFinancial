@@ -96,10 +96,11 @@ public class EstadoCuenta {
 
             // Cadenas de insert en tablas del reporte
             action = " insert into " + TABLA_REPORTE + "(ad_user_id, tipofiltrofecha, ad_client_id, ad_org_id, " +
-                    " tiposocionegocio, c_currency_id, c_bpartner_id, amtsourcecr, amtsourcedr, amtstart, amtacumulado) ";
+                    " tiposocionegocio, c_currency_id, c_bpartner_id, description, amtsourcecr, amtsourcedr, amtstart, amtacumulado) ";
 
             sql = " select " + this.adUserID + ", '" + this.tipoFecha + "', " +
-                    " ad_client_id, ad_org_id, tiposocionegocio, c_currency_id, c_bpartner_id, 0, 0, (sum(amtsourcedr) - sum(amtsourcecr)), (sum(amtsourcedr) - sum(amtsourcecr)) " +
+                    " ad_client_id, ad_org_id, tiposocionegocio, c_currency_id, c_bpartner_id, description, " +
+                    " 0, 0, (sum(amtsourcedr) - sum(amtsourcecr)), (sum(amtsourcedr) - sum(amtsourcecr)) " +
                     " from z_estadocuenta " +
                     " where c_bpartner_id not in (select c_bpartner_id from z_rp_estadocuenta where ad_user_id =" + this.adUserID + ") " +
                     whereClause +
@@ -151,7 +152,7 @@ public class EstadoCuenta {
 
         try{
             // Cadenas de insert en tablas del reporte
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, amtsourcecr, amtsourcedr, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, description, amtsourcecr, amtsourcedr, " +
                     " c_bp_group_id, c_bpartner_id, c_currency_id, c_doctype_id, c_invoice_id, c_invoicepayschedule_id, " +
                     " datedoc, docbasetype, documentnoref, duedate, estadoaprobacion, " +
                     " issotrx, referenciapago, z_afectacion_id, z_estadocuenta_id, " +
@@ -160,7 +161,7 @@ public class EstadoCuenta {
             // Armo condicion where dinámica del reporte
             String whereClause = this.getWhereClause();
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.amtsourcecr, a.amtsourcedr, bp.c_bp_group_id, a.c_bpartner_id, a.c_currency_id, a.c_doctype_id, a.c_invoice_id, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.description, a.amtsourcecr, a.amtsourcedr, bp.c_bp_group_id, a.c_bpartner_id, a.c_currency_id, a.c_doctype_id, a.c_invoice_id, " +
                     " a.c_invoicepayschedule_id, a.datedoc, a.docbasetype, a.documentnoref, a.duedate, a.estadoaprobacion, a.issotrx, a.referenciapago, " +
                     " a.z_afectacion_id, a.z_estadocuenta_id, a.z_ordenpago_id, a.z_pago_id, a.z_resguardosocio_id, a.z_resguardosocio_to_id, " +
                     this.adUserID + ", '" + this.tipoFecha + "', a.tiposocionegocio " +

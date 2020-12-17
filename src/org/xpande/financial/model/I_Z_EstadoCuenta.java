@@ -56,7 +56,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Table.
 	  * Database Table information
 	  */
-	public void setAD_Table_ID(int AD_Table_ID);
+	public void setAD_Table_ID (int AD_Table_ID);
 
 	/** Get Table.
 	  * Database Table information
@@ -84,7 +84,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Source Credit.
 	  * Source Credit Amount
 	  */
-	public void setAmtSourceCr(BigDecimal AmtSourceCr);
+	public void setAmtSourceCr (BigDecimal AmtSourceCr);
 
 	/** Get Source Credit.
 	  * Source Credit Amount
@@ -97,7 +97,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Source Debit.
 	  * Source Debit Amount
 	  */
-	public void setAmtSourceDr(BigDecimal AmtSourceDr);
+	public void setAmtSourceDr (BigDecimal AmtSourceDr);
 
 	/** Get Source Debit.
 	  * Source Debit Amount
@@ -110,7 +110,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Business Partner .
 	  * Identifies a Business Partner
 	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/** Get Business Partner .
 	  * Identifies a Business Partner
@@ -125,7 +125,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -140,7 +140,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -155,7 +155,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Invoice.
 	  * Invoice Identifier
 	  */
-	public void setC_Invoice_ID(int C_Invoice_ID);
+	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/** Get Invoice.
 	  * Invoice Identifier
@@ -170,7 +170,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Invoice Payment Schedule.
 	  * Invoice Payment Schedule
 	  */
-	public void setC_InvoicePaySchedule_ID(int C_InvoicePaySchedule_ID);
+	public void setC_InvoicePaySchedule_ID (int C_InvoicePaySchedule_ID);
 
 	/** Get Invoice Payment Schedule.
 	  * Invoice Payment Schedule
@@ -201,7 +201,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Account Date.
 	  * Accounting Date
 	  */
-	public void setDateAcct(Timestamp DateAcct);
+	public void setDateAcct (Timestamp DateAcct);
 
 	/** Get Account Date.
 	  * Accounting Date
@@ -214,7 +214,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Document Date.
 	  * Date of the Document
 	  */
-	public void setDateDoc(Timestamp DateDoc);
+	public void setDateDoc (Timestamp DateDoc);
 
 	/** Get Document Date.
 	  * Date of the Document
@@ -227,7 +227,7 @@ public interface I_Z_EstadoCuenta
 	/** Set DateRefOrdenPago.
 	  * Fecha referencia de Orden de Pago
 	  */
-	public void setDateRefOrdenPago(Timestamp DateRefOrdenPago);
+	public void setDateRefOrdenPago (Timestamp DateRefOrdenPago);
 
 	/** Get DateRefOrdenPago.
 	  * Fecha referencia de Orden de Pago
@@ -240,7 +240,7 @@ public interface I_Z_EstadoCuenta
 	/** Set DateRefPago.
 	  * Fecha referencia de un documento de pago / cobro
 	  */
-	public void setDateRefPago(Timestamp DateRefPago);
+	public void setDateRefPago (Timestamp DateRefPago);
 
 	/** Get DateRefPago.
 	  * Fecha referencia de un documento de pago / cobro
@@ -253,7 +253,7 @@ public interface I_Z_EstadoCuenta
 	/** Set DateRefResguardo.
 	  * Fecha referencia de un Resguardo a Socio de Negocio
 	  */
-	public void setDateRefResguardo(Timestamp DateRefResguardo);
+	public void setDateRefResguardo (Timestamp DateRefResguardo);
 
 	/** Get DateRefResguardo.
 	  * Fecha referencia de un Resguardo a Socio de Negocio
@@ -266,12 +266,25 @@ public interface I_Z_EstadoCuenta
 	/** Set DateRefTransfSaldo.
 	  * Fecha referencia de documento de Transferencia de Saldo
 	  */
-	public void setDateRefTransfSaldo(Timestamp DateRefTransfSaldo);
+	public void setDateRefTransfSaldo (Timestamp DateRefTransfSaldo);
 
 	/** Get DateRefTransfSaldo.
 	  * Fecha referencia de documento de Transferencia de Saldo
 	  */
 	public Timestamp getDateRefTransfSaldo();
+
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/** Set Description.
+	  * Optional short description of the record
+	  */
+	public void setDescription (String Description);
+
+	/** Get Description.
+	  * Optional short description of the record
+	  */
+	public String getDescription();
 
     /** Column name DocBaseType */
     public static final String COLUMNNAME_DocBaseType = "DocBaseType";
@@ -279,7 +292,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Document BaseType.
 	  * Logical type of document
 	  */
-	public void setDocBaseType(String DocBaseType);
+	public void setDocBaseType (String DocBaseType);
 
 	/** Get Document BaseType.
 	  * Logical type of document
@@ -292,7 +305,7 @@ public interface I_Z_EstadoCuenta
 	/** Set DocumentNoRef.
 	  * Numero de documento referenciado
 	  */
-	public void setDocumentNoRef(String DocumentNoRef);
+	public void setDocumentNoRef (String DocumentNoRef);
 
 	/** Get DocumentNoRef.
 	  * Numero de documento referenciado
@@ -305,7 +318,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Due Date.
 	  * Date when the payment is due
 	  */
-	public void setDueDate(Timestamp DueDate);
+	public void setDueDate (Timestamp DueDate);
 
 	/** Get Due Date.
 	  * Date when the payment is due
@@ -318,7 +331,7 @@ public interface I_Z_EstadoCuenta
 	/** Set EstadoAprobacion.
 	  * Estadode aprobacion de un comprobante
 	  */
-	public void setEstadoAprobacion(String EstadoAprobacion);
+	public void setEstadoAprobacion (String EstadoAprobacion);
 
 	/** Get EstadoAprobacion.
 	  * Estadode aprobacion de un comprobante
@@ -331,7 +344,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -344,7 +357,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Sales Transaction.
 	  * This is a Sales Transaction
 	  */
-	public void setIsSOTrx(boolean IsSOTrx);
+	public void setIsSOTrx (boolean IsSOTrx);
 
 	/** Get Sales Transaction.
 	  * This is a Sales Transaction
@@ -357,7 +370,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Record ID.
 	  * Direct internal record ID
 	  */
-	public void setRecord_ID(int Record_ID);
+	public void setRecord_ID (int Record_ID);
 
 	/** Get Record ID.
 	  * Direct internal record ID
@@ -370,7 +383,7 @@ public interface I_Z_EstadoCuenta
 	/** Set ReferenciaPago.
 	  * Referencia descriptiva para pagos
 	  */
-	public void setReferenciaPago(String ReferenciaPago);
+	public void setReferenciaPago (String ReferenciaPago);
 
 	/** Get ReferenciaPago.
 	  * Referencia descriptiva para pagos
@@ -383,7 +396,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Ref_Pago_ID.
 	  * ID de Pago Referenciado
 	  */
-	public void setRef_Pago_ID(int Ref_Pago_ID);
+	public void setRef_Pago_ID (int Ref_Pago_ID);
 
 	/** Get Ref_Pago_ID.
 	  * ID de Pago Referenciado
@@ -396,7 +409,7 @@ public interface I_Z_EstadoCuenta
 	/** Set TipoSocioNegocio.
 	  * Tipo de Socio de Negocio
 	  */
-	public void setTipoSocioNegocio(String TipoSocioNegocio);
+	public void setTipoSocioNegocio (String TipoSocioNegocio);
 
 	/** Get TipoSocioNegocio.
 	  * Tipo de Socio de Negocio
@@ -423,7 +436,7 @@ public interface I_Z_EstadoCuenta
     public static final String COLUMNNAME_Z_Afectacion_ID = "Z_Afectacion_ID";
 
 	/** Set Z_Afectacion ID	  */
-	public void setZ_Afectacion_ID(int Z_Afectacion_ID);
+	public void setZ_Afectacion_ID (int Z_Afectacion_ID);
 
 	/** Get Z_Afectacion ID	  */
 	public int getZ_Afectacion_ID();
@@ -434,7 +447,7 @@ public interface I_Z_EstadoCuenta
     public static final String COLUMNNAME_Z_EstadoCuenta_ID = "Z_EstadoCuenta_ID";
 
 	/** Set Z_EstadoCuenta ID	  */
-	public void setZ_EstadoCuenta_ID(int Z_EstadoCuenta_ID);
+	public void setZ_EstadoCuenta_ID (int Z_EstadoCuenta_ID);
 
 	/** Get Z_EstadoCuenta ID	  */
 	public int getZ_EstadoCuenta_ID();
@@ -443,7 +456,7 @@ public interface I_Z_EstadoCuenta
     public static final String COLUMNNAME_Z_OrdenPago_ID = "Z_OrdenPago_ID";
 
 	/** Set Z_OrdenPago ID	  */
-	public void setZ_OrdenPago_ID(int Z_OrdenPago_ID);
+	public void setZ_OrdenPago_ID (int Z_OrdenPago_ID);
 
 	/** Get Z_OrdenPago ID	  */
 	public int getZ_OrdenPago_ID();
@@ -456,7 +469,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Z_OrdenPago_To_ID.
 	  * Referencia a un documento de Orden de Pago
 	  */
-	public void setZ_OrdenPago_To_ID(int Z_OrdenPago_To_ID);
+	public void setZ_OrdenPago_To_ID (int Z_OrdenPago_To_ID);
 
 	/** Get Z_OrdenPago_To_ID.
 	  * Referencia a un documento de Orden de Pago
@@ -469,7 +482,7 @@ public interface I_Z_EstadoCuenta
     public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
 
 	/** Set Z_Pago ID	  */
-	public void setZ_Pago_ID(int Z_Pago_ID);
+	public void setZ_Pago_ID (int Z_Pago_ID);
 
 	/** Get Z_Pago ID	  */
 	public int getZ_Pago_ID();
@@ -482,7 +495,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Z_Pago_To_ID.
 	  * Referencia a un documento de Pago
 	  */
-	public void setZ_Pago_To_ID(int Z_Pago_To_ID);
+	public void setZ_Pago_To_ID (int Z_Pago_To_ID);
 
 	/** Get Z_Pago_To_ID.
 	  * Referencia a un documento de Pago
@@ -495,7 +508,7 @@ public interface I_Z_EstadoCuenta
     public static final String COLUMNNAME_Z_ResguardoSocio_ID = "Z_ResguardoSocio_ID";
 
 	/** Set Z_ResguardoSocio ID	  */
-	public void setZ_ResguardoSocio_ID(int Z_ResguardoSocio_ID);
+	public void setZ_ResguardoSocio_ID (int Z_ResguardoSocio_ID);
 
 	/** Get Z_ResguardoSocio ID	  */
 	public int getZ_ResguardoSocio_ID();
@@ -508,7 +521,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Z_ResguardoSocio_To_ID.
 	  * Referencia a un Resguardo Socio Destino
 	  */
-	public void setZ_ResguardoSocio_To_ID(int Z_ResguardoSocio_To_ID);
+	public void setZ_ResguardoSocio_To_ID (int Z_ResguardoSocio_To_ID);
 
 	/** Get Z_ResguardoSocio_To_ID.
 	  * Referencia a un Resguardo Socio Destino
@@ -521,7 +534,7 @@ public interface I_Z_EstadoCuenta
     public static final String COLUMNNAME_Z_TransferSaldo_ID = "Z_TransferSaldo_ID";
 
 	/** Set Z_TransferSaldo ID	  */
-	public void setZ_TransferSaldo_ID(int Z_TransferSaldo_ID);
+	public void setZ_TransferSaldo_ID (int Z_TransferSaldo_ID);
 
 	/** Get Z_TransferSaldo ID	  */
 	public int getZ_TransferSaldo_ID();
@@ -534,7 +547,7 @@ public interface I_Z_EstadoCuenta
 	/** Set Z_TransferSaldo_To_ID.
 	  * Referencia a un documento de Transferencia de Saldo
 	  */
-	public void setZ_TransferSaldo_To_ID(int Z_TransferSaldo_To_ID);
+	public void setZ_TransferSaldo_To_ID (int Z_TransferSaldo_To_ID);
 
 	/** Get Z_TransferSaldo_To_ID.
 	  * Referencia a un documento de Transferencia de Saldo
