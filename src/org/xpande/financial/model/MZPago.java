@@ -1724,7 +1724,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 								// Es un recibo normal consumiendo anticipo en Etapa 2.
 								if (!this.isReciboAnticipo()){
 									MZPago anticipo = new MZPago(getCtx(), pagoLin.getRef_Pago_ID(), get_TrxName());
-									if (anticipo.getZ_Pago_To_ID() <= 0){
+									// Si no es un anticipo directo y no tiene recibo de pago en etapa 1.
+									if ((!anticipo.isAnticipoDirecto()) && (anticipo.getZ_Pago_To_ID() <= 0)){
 										return "No es posible procesar el Anticipo Nro.: " + anticipo.getDocumentNo() +
 												" ya que el mismo no tiene aún un Recibo de Proveedor asociado.";
 									}

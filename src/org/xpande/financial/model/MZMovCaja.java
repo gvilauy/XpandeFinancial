@@ -32,24 +32,24 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-/** Generated Model for Z_MovBanco
+/** Generated Model for Z_MovCaja
  *  @author Adempiere (generated) 
  *  @version Release 3.9.0 - $Id$ */
-public class MZMovBanco extends X_Z_MovBanco implements DocAction, DocOptions {
+public class MZMovCaja extends X_Z_MovCaja implements DocAction, DocOptions {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20201110L;
+	private static final long serialVersionUID = 20201222L;
 
     /** Standard Constructor */
-    public MZMovBanco (Properties ctx, int Z_MovBanco_ID, String trxName)
+    public MZMovCaja (Properties ctx, int Z_MovCaja_ID, String trxName)
     {
-      super (ctx, Z_MovBanco_ID, trxName);
+      super (ctx, Z_MovCaja_ID, trxName);
     }
 
     /** Load Constructor */
-    public MZMovBanco (Properties ctx, ResultSet rs, String trxName)
+    public MZMovCaja (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -75,6 +75,7 @@ public class MZMovBanco extends X_Z_MovBanco implements DocAction, DocOptions {
 
 		return newIndex;
 	}
+
 
 	/**
 	 * 	Get Document Info
@@ -242,10 +243,10 @@ public class MZMovBanco extends X_Z_MovBanco implements DocAction, DocOptions {
 		}
 
 		// Obtengo lineas del documento
-		List<MZMovBancoLin> movBancoLinList = this.getLines();
+		List<MZMovCajaLin> movCajaLinList = this.getLines();
 
 		// Valido que tenga lineas
-		if (movBancoLinList.size() <= 0){
+		if (movCajaLinList.size() <= 0){
 			m_processMsg = "El Documento no tiene líneas y por lo tanto no puede Completarse";
 			return DocAction.STATUS_Invalid;
 		}
@@ -338,29 +339,10 @@ public class MZMovBanco extends X_Z_MovBanco implements DocAction, DocOptions {
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
-
-		// Before reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
-		if (m_processMsg != null)
-			return false;
-
-		// Control de período contable
-		MPeriod.testPeriodOpen(getCtx(), this.getDateAcct(), this.getC_DocType_ID(), this.getAD_Org_ID());
-
-		// Elimino asientos contables
-		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
-
-		// After reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
-		if (m_processMsg != null)
-			return false;
-
-		this.setProcessed(false);
-		this.setPosted(false);
-		this.setDocStatus(DOCSTATUS_InProgress);
-		this.setDocAction(DOCACTION_Complete);
-
-		return true;
+		setProcessed(false);
+		if (reverseCorrectIt())
+			return true;
+		return false;
 	}	//	reActivateIt
 	
 	
@@ -423,14 +405,28 @@ public class MZMovBanco extends X_Z_MovBanco implements DocAction, DocOptions {
     @Override
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("MZMovBanco[")
+      StringBuffer sb = new StringBuffer ("MZMovCaja[")
         .append(getSummary()).append("]");
       return sb.toString();
     }
 
 	/***
+	 * Método que obtiene y retorna lineas del documento.
+	 * Xpande. Created by Gabriel Vila on 12/22/20.
+	 * @return
+	 */
+	public List<MZMovCajaLin> getLines(){
+
+		String whereClause = X_Z_MovCajaLin.COLUMNNAME_Z_MovCaja_ID + " =" + this.get_ID();
+
+		List<MZMovCajaLin> lines = new Query(getCtx(), I_Z_MovCajaLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+	/***
 	 * Actualiza totales del cabezal según importes de las lineas.
-	 * Xpande. Created by Gabriel Vila on 11/10/20.
+	 * Xpande. Created by Gabriel Vila on 12/22/20.
 	 */
 	public void updateTotals() {
 
@@ -438,34 +434,20 @@ public class MZMovBanco extends X_Z_MovBanco implements DocAction, DocOptions {
 
 		try{
 			// Obtengo suma de importes en moneda de transaccion, desde las lienas.
-			sql = " select sum(coalesce(totalamtmt,0)) as total from z_movbancolin " +
-					" where z_movbanco_id =" + this.get_ID();
+			sql = " select sum(coalesce(totalamtmt,0)) as total from z_movcajalin " +
+					" where z_movcaja_id =" + this.get_ID();
 			BigDecimal sumLines = DB.getSQLValueBDEx(get_TrxName(), sql);
 			if (sumLines == null) sumLines = Env.ZERO;
 
 			// Actulizo totales en este cabezal
-			action = " update z_movbanco set totalamt =" + sumLines +
-					 " where z_movbanco_id =" + this.get_ID();
+			action = " update z_movcaja set totalamt =" + sumLines +
+					" where z_movcaja_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
 		}
-	}
-
-	/***
-	 * Método que obtiene y retorna lineas del documento.
-	 * Xpande. Created by Gabriel Vila on 11/10/20.
-	 * @return
-	 */
-	public List<MZMovBancoLin> getLines(){
-
-		String whereClause = X_Z_MovBancoLin.COLUMNNAME_Z_MovBanco_ID + " =" + this.get_ID();
-
-		List<MZMovBancoLin> lines = new Query(getCtx(), I_Z_MovBancoLin.Table_Name, whereClause, get_TrxName()).list();
-
-		return lines;
 	}
 
 }

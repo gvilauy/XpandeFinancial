@@ -524,7 +524,7 @@ public final class FinancialUtils {
                 if (pago.isSOTrx()) isVendor = false;
 
                 // Si es un anticipo, impacto en estado de cuenta para parte acreedora y deudora
-                if (pago.isAnticipo()){
+                if ((pago.isAnticipo()) && (!pago.isAnticipoDirecto())){
 
                     if (!isVendor){
                         FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), isVendor, trxName);
@@ -737,7 +737,7 @@ public final class FinancialUtils {
                     // Parte Acreedora
                     if (isVendor){
                         estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
-                        if (!pago.isAnticipo()){
+                        if ((!pago.isAnticipo()) || (pago.isAnticipoDirecto())){
                             if (considerarAmt){
                                 if (amt.compareTo(Env.ZERO) >= 0){
                                     estadoCuenta.setAmtSourceCr(Env.ZERO);
@@ -784,7 +784,7 @@ public final class FinancialUtils {
                     }
                     else{  // Parte Deudora
                         estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
-                        if (!pago.isAnticipo()){
+                        if ((!pago.isAnticipo()) || (pago.isAnticipoDirecto())){
                             if (considerarAmt){
                                 if (amt.compareTo(Env.ZERO) >= 0){
                                     estadoCuenta.setAmtSourceDr(Env.ZERO);
