@@ -617,6 +617,14 @@ public final class FinancialUtils {
                             DB.executeUpdateEx(action, trxName);
                         }
 
+                        // Impacto en anticipos directos asociados
+                        List<MZPago> anticipoDirList = pago.getAnticiposDirReferenciados();
+                        for (MZPago anticipoDir: anticipoDirList){
+                            // Elimino este anticipo directo del estado de cuenta, ya que ahora tengo un recibo.
+                            action = " delete from z_estadocuenta where z_pago_id =" + anticipoDir.get_ID();
+                            DB.executeUpdateEx(action, trxName);
+                        }
+
                         // Impacto en resguardos asociados
                         List<MZPagoResguardo> pagoResguardoList = pago.getResguardos();
                         for (MZPagoResguardo pagoResguardo: pagoResguardoList){
@@ -648,6 +656,12 @@ public final class FinancialUtils {
                         for (MZPagoOrdenPago pagoOrdenPago: ordenPagoList){
                             MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
                             FinancialUtils.setEstadoCtaOrdenPago(ctx, ordenPago, true, trxName);
+                        }
+
+                        // Impacto en anticipos directos asociados
+                        List<MZPago> anticipoDirList = pago.getAnticiposDirReferenciados();
+                        for (MZPago anticipoDir: anticipoDirList){
+                            FinancialUtils.setEstadoCtaPago(ctx, anticipoDir, true, trxName);
                         }
                     }
                 }

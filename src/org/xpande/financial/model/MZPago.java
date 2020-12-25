@@ -1183,7 +1183,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			// Query
 			sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (coalesce(hdr.documentserie,'') || hdr.documentno) as documentno, " +
-					" hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal, ips.c_invoicepayschedule_id, " +
+					" hdr.dateinvoiced, hdr.c_currency_id, hdr.description, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal, ips.c_invoicepayschedule_id, " +
 					" iop.amtopen, " +
 					" coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, coalesce(hdr.TieneDtosNC,'N') as TieneDtosNC, " +
 					" coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
@@ -1239,6 +1239,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				pagoLin.setAmtOpen(amtOpen);
 				pagoLin.setAmtAllocation(amtOpen);
 				pagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
+				pagoLin.setDescription(rs.getString("description"));
 				pagoLin.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
 				pagoLin.setDateDoc(rs.getTimestamp("dateinvoiced"));
 				pagoLin.setDueDateDoc(rs.getTimestamp("duedate"));
@@ -1305,7 +1306,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			// Query
 			sql = " select hdr.c_bpartner_id, hdr.z_transfersaldo_id, hdr.c_invoice_id, hdr.c_doctype_id, hdr.documentno, " +
-					" hdr.datedoc, hdr.c_currency_id, hdr.grandtotal, " +
+					" hdr.datedoc, hdr.c_currency_id, hdr.description, hdr.grandtotal, " +
 					" iop.amtopen, doc.docbasetype " +
 					" from z_transfersaldo hdr " +
 					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
@@ -1320,13 +1321,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					" and hdr.z_transfersaldo_id not in (select coalesce(z_transfersaldo_id,0) as transf_id from z_pagolin " +
 					" where z_transfersaldo_id is not null " +
 					" and z_pago_id =" + this.get_ID() + ") " +
-
-					/*
-					" and hdr.z_transfersaldo_id not in (select a.z_transfersaldo_id from z_ordenpagolin a " +
-					" inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
-					" where a.z_transfersaldo_id is not null and b.docstatus='CO') " +
-					 */
-
 					whereClause +
 					" order by hdr.datedoc ";
 
@@ -1365,6 +1359,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				pagoLin.setAmtOpen(amtOpen);
 				pagoLin.setAmtAllocation(amtOpen);
 				pagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
+				pagoLin.setDescription(rs.getString("description"));
 				pagoLin.setC_DocType_ID(rs.getInt("c_doctype_id"));
 				pagoLin.setDateDoc(rs.getTimestamp("datedoc"));
 				pagoLin.setDueDateDoc(dueDate);
@@ -1573,6 +1568,24 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		String whereClause = X_Z_PagoOrdenPago.COLUMNNAME_Z_Pago_ID + " =" + this.get_ID();
 
 		List<MZPagoOrdenPago> lines = new Query(getCtx(), I_Z_PagoOrdenPago.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+	/***
+	 * Obtiene y retorna documentos de pago de anticipos directos ascciados a este
+	 * documento de pago.
+	 * Xpande. Created by Gabriel Vila on 12/23/20.
+	 * @return
+	 */
+	public List<MZPago> getAnticiposDirReferenciados(){
+
+		String whereClause = X_Z_PagoOrdenPago.COLUMNNAME_Z_Pago_ID +
+				" in(select ref_pago_id from z_pagolin " +
+				" where z_pago_id =" + this.get_ID() +
+				" and ref_pago_id is not null) and anticipodirecto ='Y' ";
+
+		List<MZPago> lines = new Query(getCtx(), I_Z_Pago.Table_Name, whereClause, get_TrxName()).list();
 
 		return lines;
 	}
@@ -1956,6 +1969,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				pagoLin.setAmtDocument(ordenPagoLin.getAmtDocument());
 				pagoLin.setAmtOpen(ordenPagoLin.getAmtOpen());
 				pagoLin.setC_Currency_ID(ordenPagoLin.getC_Currency_ID());
+				pagoLin.setDescription(ordenPagoLin.getDescription());
 				pagoLin.setC_DocType_ID(ordenPagoLin.getC_DocType_ID());
 				pagoLin.setC_Invoice_ID(ordenPagoLin.getC_Invoice_ID());
 				pagoLin.setDateDoc(ordenPagoLin.getDateDoc());
@@ -1981,6 +1995,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				pagoLin.setAmtDocument(ordenPagoLin.getAmtDocument());
 				pagoLin.setAmtOpen(ordenPagoLin.getAmtOpen());
 				pagoLin.setC_Currency_ID(ordenPagoLin.getC_Currency_ID());
+				pagoLin.setDescription(ordenPagoLin.getDescription());
 				pagoLin.setC_DocType_ID(ordenPagoLin.getC_DocType_ID());
 				pagoLin.setZ_TransferSaldo_ID(ordenPagoLin.getZ_TransferSaldo_ID());
 				pagoLin.setDateDoc(ordenPagoLin.getDateDoc());
@@ -2749,14 +2764,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			log.saveError("ATENCIÓN", "Debe Indicar Organización a considerar (no se acepta organización = * )");
 			return false;
 		}
-
-		/*
-		if (this.isAnticipo()){
-			if ((this.getPayAmt() == null) || (this.getPayAmt().compareTo(Env.ZERO) <= 0)){
-				log.saveError("ATENCIÓN", "Debe indicar importe mayor a cero para este Anticipo.");
-			}
-		}
-		*/
 
 		if (this.getDateAcct() == null) this.setDateAcct(this.getDateDoc());
 

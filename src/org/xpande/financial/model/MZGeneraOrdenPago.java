@@ -583,7 +583,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
             // Query
             sql = " select hdr.c_bpartner_id, hdr.z_resguardosocio_id, hdr.c_doctype_id, hdr.documentno, " +
-                    " hdr.datedoc, hdr.c_currency_id, hdr.totalamt, doc.docbasetype, bp.PaymentRulePo " +
+                    " hdr.datedoc, hdr.c_currency_id, hdr.description, hdr.totalamt, doc.docbasetype, bp.PaymentRulePo " +
                     " from z_resguardosocio hdr " +
                     " inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
                     " inner join c_doctype doc on hdr.c_doctype_id = doc.c_doctype_id " +
@@ -651,13 +651,12 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                 ordenPagoLin.setAmtDocument(amtDocument);
                 ordenPagoLin.setAmtOpen(amtDocument);
                 ordenPagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
+                ordenPagoLin.setDescription(rs.getString("description"));
                 ordenPagoLin.setC_DocType_ID(rs.getInt("c_doctype_id"));
                 ordenPagoLin.setDateDoc(rs.getTimestamp("datedoc"));
                 ordenPagoLin.setDueDateDoc(rs.getTimestamp("datedoc"));
                 ordenPagoLin.setDocumentNoRef(rs.getString("documentno"));
-                //ordenPagoLin.setDueDateMedioPago(ordenPagoLin.getDueDateDoc());
                 ordenPagoLin.setEstadoAprobacion("APROBADO");
-                //ordenPagoLin.setResguardoEmitido();
                 ordenPagoLin.saveEx();
             }
 
@@ -926,7 +925,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
             // Query
             sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (hdr.documentserie || hdr.documentno) as documentno, " +
-                    " hdr.dateinvoiced, hdr.c_currency_id, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal, ips.c_invoicepayschedule_id, " +
+                    " hdr.dateinvoiced, hdr.c_currency_id, hdr.description, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal, ips.c_invoicepayschedule_id, " +
                     " iop.amtopen, bp.PaymentRulePO, " +
                     " coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, coalesce(hdr.TieneDtosNC,'N') as TieneDtosNC, " +
                     " coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
@@ -1025,6 +1024,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                 ordenPagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
                 ordenPagoLin.setC_DocType_ID(rs.getInt("c_doctypetarget_id"));
                 ordenPagoLin.setDateDoc(rs.getTimestamp("dateinvoiced"));
+                ordenPagoLin.setDescription(rs.getString("description"));
                 ordenPagoLin.setDueDateDoc(rs.getTimestamp("duedate"));
                 ordenPagoLin.setDocumentNoRef(rs.getString("documentno"));
                 ordenPagoLin.setDueDateMedioPago(ordenPagoLin.getDueDateDoc());
@@ -1124,7 +1124,8 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
             // Query
             sql = " select hdr.c_bpartner_id, hdr.z_transfersaldo_id, hdr.c_invoice_id, hdr.c_doctype_id, hdr.documentno, " +
-                    " hdr.datedoc, hdr.c_currency_id, hdr.grandtotal, hdr.C_BPartnerRelation_ID, " +
+                    " hdr.datedoc, hdr.c_currency_id, hdr.hdr.grandtotal, hdr.C_BPartnerRelation_ID, " +
+                    " hdr.datedoc, hdr.c_currency_id, hdr.description, hdr.grandtotal, hdr.C_BPartnerRelation_ID, " +
                     " iop.amtopen, bp.PaymentRulePO, doc.docbasetype " +
                     " from z_transfersaldo hdr " +
                     " inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
@@ -1140,12 +1141,6 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     " and hdr.z_transfersaldo_id not in (select coalesce(z_transfersaldo_id,0) as transf_id from z_generaordenpagolin " +
                     " where z_transfersaldo_id is not null " +
                     " and z_generaordenpago_id =" + this.get_ID() + ") " +
-                    /*
-                    " and hdr.z_transfersaldo_id not in (select z_transfersaldo_id from z_ordenpagolin a " +
-                    " inner join z_ordenpago b on a.z_ordenpago_id = b.z_ordenpago_id " +
-                    " where z_transfersaldo_id is not null and b.docstatus='CO') " +
-
-                     */
                     whereClause +
                     " order by hdr.c_bpartner_id ";
 
@@ -1217,6 +1212,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                 ordenPagoLin.setAmtOpen(amtOpen);
                 ordenPagoLin.setAmtAllocation(amtOpen);
                 ordenPagoLin.setC_Currency_ID(rs.getInt("c_currency_id"));
+                ordenPagoLin.setDescription(rs.getString("description"));
                 ordenPagoLin.setC_DocType_ID(rs.getInt("c_doctype_id"));
                 ordenPagoLin.setDateDoc(rs.getTimestamp("datedoc"));
                 ordenPagoLin.setDueDateDoc(dueDate);
@@ -1444,22 +1440,6 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                                 }
                             }
                         }
-
-                        // Si esta invoice tiene marcado que Lleva Nota de Cŕedito al Pago
-                        if (generaLin.isTieneDtosNC()){
-                            // Si es factura de compra
-                            if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APInvoice)){
-                                // Verifico si esta factura esta referenciada en algun documento de nota de credito
-                                // Si no esta, aviso.
-								/*
-								if (!ComercialUtils.isInvoiceReferenced(getCtx(), generaLin.getC_Invoice_ID(), get_TrxName())){
-									MBPartner partner = (MBPartner) ordenPago.getC_BPartner();
-									return " No es posible generar orden de pago para el Socio de Negocio : " + partner.getName() + "\n" +
-											" El mismo tiene un comprobante que requiere de una Nota de Crédito al Pago : " + generaLin.getDocumentNoRef();
-								}
-								*/
-                            }
-                        }
                     }
 
                     // Genero linea de orden de pago para este documento
@@ -1470,6 +1450,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     ordenPagoLin.setAmtDocument(generaLin.getAmtDocument());
                     ordenPagoLin.setAmtOpen(generaLin.getAmtOpen());
                     ordenPagoLin.setC_Currency_ID(generaLin.getC_Currency_ID());
+                    ordenPagoLin.setDescription(generaLin.getDescription());
                     ordenPagoLin.setC_DocType_ID(generaLin.getC_DocType_ID());
                     ordenPagoLin.setDateDoc(generaLin.getDateDoc());
                     ordenPagoLin.setDueDateDoc(generaLin.getDueDateDoc());

@@ -33,7 +33,7 @@ public class X_Z_OrdenPagoLin extends PO implements I_Z_OrdenPagoLin, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190324L;
+	private static final long serialVersionUID = 20201225L;
 
     /** Standard Constructor */
     public X_Z_OrdenPagoLin (Properties ctx, int Z_OrdenPagoLin_ID, String trxName)
@@ -281,6 +281,23 @@ public class X_Z_OrdenPagoLin extends PO implements I_Z_OrdenPagoLin, I_Persiste
 	public Timestamp getDateDoc () 
 	{
 		return (Timestamp)get_Value(COLUMNNAME_DateDoc);
+	}
+
+	/** Set Description.
+		@param Description 
+		Optional short description of the record
+	  */
+	public void setDescription (String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Description.
+		@return Optional short description of the record
+	  */
+	public String getDescription () 
+	{
+		return (String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set DocumentNoRef.

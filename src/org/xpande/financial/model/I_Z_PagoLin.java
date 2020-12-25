@@ -56,7 +56,7 @@ public interface I_Z_PagoLin
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_PagoLin
 	/** Set AmtAllocation.
 	  * Monto afectación
 	  */
-	public void setAmtAllocation(BigDecimal AmtAllocation);
+	public void setAmtAllocation (BigDecimal AmtAllocation);
 
 	/** Get AmtAllocation.
 	  * Monto afectación
@@ -82,7 +82,7 @@ public interface I_Z_PagoLin
 	/** Set AmtAllocationMT.
 	  * Monto afectación en moneda de la transacción
 	  */
-	public void setAmtAllocationMT(BigDecimal AmtAllocationMT);
+	public void setAmtAllocationMT (BigDecimal AmtAllocationMT);
 
 	/** Get AmtAllocationMT.
 	  * Monto afectación en moneda de la transacción
@@ -95,7 +95,7 @@ public interface I_Z_PagoLin
 	/** Set AmtDocument.
 	  * Monto documento
 	  */
-	public void setAmtDocument(BigDecimal AmtDocument);
+	public void setAmtDocument (BigDecimal AmtDocument);
 
 	/** Get AmtDocument.
 	  * Monto documento
@@ -108,7 +108,7 @@ public interface I_Z_PagoLin
 	/** Set AmtOpen.
 	  * Monto pendiente
 	  */
-	public void setAmtOpen(BigDecimal AmtOpen);
+	public void setAmtOpen (BigDecimal AmtOpen);
 
 	/** Get AmtOpen.
 	  * Monto pendiente
@@ -121,7 +121,7 @@ public interface I_Z_PagoLin
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -136,7 +136,7 @@ public interface I_Z_PagoLin
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -151,7 +151,7 @@ public interface I_Z_PagoLin
 	/** Set Invoice.
 	  * Invoice Identifier
 	  */
-	public void setC_Invoice_ID(int C_Invoice_ID);
+	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/** Get Invoice.
 	  * Invoice Identifier
@@ -166,7 +166,7 @@ public interface I_Z_PagoLin
 	/** Set Invoice Payment Schedule.
 	  * Invoice Payment Schedule
 	  */
-	public void setC_InvoicePaySchedule_ID(int C_InvoicePaySchedule_ID);
+	public void setC_InvoicePaySchedule_ID (int C_InvoicePaySchedule_ID);
 
 	/** Get Invoice Payment Schedule.
 	  * Invoice Payment Schedule
@@ -197,12 +197,25 @@ public interface I_Z_PagoLin
 	/** Set Document Date.
 	  * Date of the Document
 	  */
-	public void setDateDoc(Timestamp DateDoc);
+	public void setDateDoc (Timestamp DateDoc);
 
 	/** Get Document Date.
 	  * Date of the Document
 	  */
 	public Timestamp getDateDoc();
+
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/** Set Description.
+	  * Optional short description of the record
+	  */
+	public void setDescription (String Description);
+
+	/** Get Description.
+	  * Optional short description of the record
+	  */
+	public String getDescription();
 
     /** Column name DocumentNoRef */
     public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
@@ -210,7 +223,7 @@ public interface I_Z_PagoLin
 	/** Set DocumentNoRef.
 	  * Numero de documento referenciado
 	  */
-	public void setDocumentNoRef(String DocumentNoRef);
+	public void setDocumentNoRef (String DocumentNoRef);
 
 	/** Get DocumentNoRef.
 	  * Numero de documento referenciado
@@ -223,7 +236,7 @@ public interface I_Z_PagoLin
 	/** Set DueDateDoc.
 	  * Vencimiento del documento
 	  */
-	public void setDueDateDoc(Timestamp DueDateDoc);
+	public void setDueDateDoc (Timestamp DueDateDoc);
 
 	/** Get DueDateDoc.
 	  * Vencimiento del documento
@@ -236,7 +249,7 @@ public interface I_Z_PagoLin
 	/** Set EstadoAprobacion.
 	  * Estadode aprobacion de un comprobante
 	  */
-	public void setEstadoAprobacion(String EstadoAprobacion);
+	public void setEstadoAprobacion (String EstadoAprobacion);
 
 	/** Get EstadoAprobacion.
 	  * Estadode aprobacion de un comprobante
@@ -249,7 +262,7 @@ public interface I_Z_PagoLin
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -260,7 +273,7 @@ public interface I_Z_PagoLin
     public static final String COLUMNNAME_IsSelected = "IsSelected";
 
 	/** Set Selected	  */
-	public void setIsSelected(boolean IsSelected);
+	public void setIsSelected (boolean IsSelected);
 
 	/** Get Selected	  */
 	public boolean isSelected();
@@ -271,7 +284,7 @@ public interface I_Z_PagoLin
 	/** Set Multiply Rate.
 	  * Rate to multiple the source by to calculate the target.
 	  */
-	public void setMultiplyRate(BigDecimal MultiplyRate);
+	public void setMultiplyRate (BigDecimal MultiplyRate);
 
 	/** Get Multiply Rate.
 	  * Rate to multiple the source by to calculate the target.
@@ -284,7 +297,7 @@ public interface I_Z_PagoLin
 	/** Set Ref_Pago_ID.
 	  * ID de Pago Referenciado
 	  */
-	public void setRef_Pago_ID(int Ref_Pago_ID);
+	public void setRef_Pago_ID (int Ref_Pago_ID);
 
 	/** Get Ref_Pago_ID.
 	  * ID de Pago Referenciado
@@ -297,7 +310,7 @@ public interface I_Z_PagoLin
 	/** Set ResguardoEmitido.
 	  * Si tiene o no resguardo emitido
 	  */
-	public void setResguardoEmitido(boolean ResguardoEmitido);
+	public void setResguardoEmitido (boolean ResguardoEmitido);
 
 	/** Get ResguardoEmitido.
 	  * Si tiene o no resguardo emitido
@@ -324,7 +337,7 @@ public interface I_Z_PagoLin
     public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";
 
 	/** Set Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID(int Z_MedioPago_ID);
+	public void setZ_MedioPago_ID (int Z_MedioPago_ID);
 
 	/** Get Z_MedioPago ID	  */
 	public int getZ_MedioPago_ID();
@@ -335,7 +348,7 @@ public interface I_Z_PagoLin
     public static final String COLUMNNAME_Z_OrdenPago_ID = "Z_OrdenPago_ID";
 
 	/** Set Z_OrdenPago ID	  */
-	public void setZ_OrdenPago_ID(int Z_OrdenPago_ID);
+	public void setZ_OrdenPago_ID (int Z_OrdenPago_ID);
 
 	/** Get Z_OrdenPago ID	  */
 	public int getZ_OrdenPago_ID();
@@ -346,7 +359,7 @@ public interface I_Z_PagoLin
     public static final String COLUMNNAME_Z_Pago_ID = "Z_Pago_ID";
 
 	/** Set Z_Pago ID	  */
-	public void setZ_Pago_ID(int Z_Pago_ID);
+	public void setZ_Pago_ID (int Z_Pago_ID);
 
 	/** Get Z_Pago ID	  */
 	public int getZ_Pago_ID();
@@ -357,7 +370,7 @@ public interface I_Z_PagoLin
     public static final String COLUMNNAME_Z_PagoLin_ID = "Z_PagoLin_ID";
 
 	/** Set Z_PagoLin ID	  */
-	public void setZ_PagoLin_ID(int Z_PagoLin_ID);
+	public void setZ_PagoLin_ID (int Z_PagoLin_ID);
 
 	/** Get Z_PagoLin ID	  */
 	public int getZ_PagoLin_ID();
@@ -366,7 +379,7 @@ public interface I_Z_PagoLin
     public static final String COLUMNNAME_Z_TransferSaldo_ID = "Z_TransferSaldo_ID";
 
 	/** Set Z_TransferSaldo ID	  */
-	public void setZ_TransferSaldo_ID(int Z_TransferSaldo_ID);
+	public void setZ_TransferSaldo_ID (int Z_TransferSaldo_ID);
 
 	/** Get Z_TransferSaldo ID	  */
 	public int getZ_TransferSaldo_ID();
