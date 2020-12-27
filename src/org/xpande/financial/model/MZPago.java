@@ -251,6 +251,22 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			this.setDateAcct(fechaHoy);
 		}
 
+		// Si es un recibo de pago o cobro, que solo tiene medios de pago y no tiene documentos para afectar,
+		// asumo que es un recibo deirecto como anticipo. Por lo tanto lo marco como anticipo y sigo adelante.
+		BigDecimal amtMediosPago = this.getTotalMediosPago();
+		BigDecimal amtDocumentos = this.getPayAmt();
+		if (amtMediosPago == null) amtMediosPago = Env.ZERO;
+		if (amtDocumentos == null) amtDocumentos = Env.ZERO;
+		if (amtMediosPago.compareTo(Env.ZERO) > 0){
+			if (amtDocumentos.compareTo(Env.ZERO) == 0){
+				this.setAnticipo(true);
+				this.setAnticipoDirecto(true);
+				// Monto del recibo es igual al monto de los medios de pago
+				this.setPayAmt(amtMediosPago);
+			}
+		}
+
+		// Si es un anticipo
 		if (this.isAnticipo()){
 			if ((this.getPayAmt() == null) || (this.getPayAmt().compareTo(Env.ZERO) <= 0)){
 				m_processMsg = "Debe indicar importe mayor a cero para este anticipo.";

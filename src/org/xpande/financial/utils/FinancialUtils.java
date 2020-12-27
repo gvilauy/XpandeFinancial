@@ -550,20 +550,24 @@ public final class FinancialUtils {
                     }
                     else{
 
-                        BigDecimal amtAnticipo = pago.getAmtAnticipo();
-                        if (amtAnticipo == null) amtAnticipo = Env.ZERO;
+                        // Si tengo medios de pago, entonces este documento debe salir en el estado de cuento, sino no tiene sentido
+                        if ((pago.getTotalMediosPago() != null) && (pago.getTotalMediosPago().compareTo(Env.ZERO) != 0)){
 
-                        // Impacto parte acreedora para pagos y deudora para cobros, por monto total menos anticipos
-                        if (amtAnticipo.compareTo(Env.ZERO) <= 0){
-                            FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), isVendor, trxName);
-                        }
-                        else{
-                            FinancialUtils.setEstadoCtaPago(ctx, pago, true, pago.getPayAmt().add(amtAnticipo), isVendor, trxName);
-                        }
+                            BigDecimal amtAnticipo = pago.getAmtAnticipo();
+                            if (amtAnticipo == null) amtAnticipo = Env.ZERO;
 
-                        // Impacto parte deudora para pagos y acreedora para cobros por monto anticipos (si es mayor a cero)
-                        if (amtAnticipo.compareTo(Env.ZERO) > 0){
-                            FinancialUtils.setEstadoCtaPago(ctx, pago, true, amtAnticipo, !isVendor, trxName);
+                            // Impacto parte acreedora para pagos y deudora para cobros, por monto total menos anticipos
+                            if (amtAnticipo.compareTo(Env.ZERO) <= 0){
+                                FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), isVendor, trxName);
+                            }
+                            else{
+                                FinancialUtils.setEstadoCtaPago(ctx, pago, true, pago.getPayAmt().add(amtAnticipo), isVendor, trxName);
+                            }
+
+                            // Impacto parte deudora para pagos y acreedora para cobros por monto anticipos (si es mayor a cero)
+                            if (amtAnticipo.compareTo(Env.ZERO) > 0){
+                                FinancialUtils.setEstadoCtaPago(ctx, pago, true, amtAnticipo, !isVendor, trxName);
+                            }
                         }
                     }
                 }
@@ -617,6 +621,7 @@ public final class FinancialUtils {
                             DB.executeUpdateEx(action, trxName);
                         }
 
+                        /*
                         // Impacto en anticipos directos asociados
                         List<MZPago> anticipoDirList = pago.getAnticiposDirReferenciados();
                         for (MZPago anticipoDir: anticipoDirList){
@@ -624,6 +629,7 @@ public final class FinancialUtils {
                             action = " delete from z_estadocuenta where z_pago_id =" + anticipoDir.get_ID();
                             DB.executeUpdateEx(action, trxName);
                         }
+                        */
 
                         // Impacto en resguardos asociados
                         List<MZPagoResguardo> pagoResguardoList = pago.getResguardos();
@@ -658,11 +664,13 @@ public final class FinancialUtils {
                             FinancialUtils.setEstadoCtaOrdenPago(ctx, ordenPago, true, trxName);
                         }
 
+                        /*
                         // Impacto en anticipos directos asociados
                         List<MZPago> anticipoDirList = pago.getAnticiposDirReferenciados();
                         for (MZPago anticipoDir: anticipoDirList){
                             FinancialUtils.setEstadoCtaPago(ctx, anticipoDir, true, trxName);
                         }
+                        */
                     }
                 }
 

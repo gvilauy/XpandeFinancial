@@ -1,7 +1,10 @@
 package org.xpande.financial.model;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.MAcctSchema;
+import org.compiere.model.MClient;
 import org.compiere.model.Query;
+import org.compiere.util.Env;
 import org.xpande.core.utils.CurrencyUtils;
 
 import java.math.BigDecimal;
@@ -130,13 +133,18 @@ public class MZPagoMoneda extends X_Z_PagoMoneda {
             pagoMoneda = MZPagoMoneda.getByCurrencyPago(ctx, zPagoID, cCurrencyID, trxName);
             if (pagoMoneda == null){
 
-                // Tasa de Cambio para moneda recibida en moneda del documento de pago/cobro.
-                MZPago pago = new MZPago(ctx, zPagoID, trxName);
-                BigDecimal multiplyRate = CurrencyUtils.getCurrencyRate(ctx, pago.getAD_Client_ID(), 0,
-                        cCurrencyID, pago.getC_Currency_ID(), 114, pago.getDateDoc(), null);
+                BigDecimal multiplyRate = Env.ONE;
 
-                if (multiplyRate == null){
-                    throw new AdempiereException("No se pudo obtener Tasa de Cambio para Moneda : " + cCurrencyID + ", Fecha : " + pago.getDateDoc().toString());
+                MZPago pago = new MZPago(ctx, zPagoID, trxName);
+                // Si moneda recibida no es igual a la moneda del documento de pago/cobro
+                if (pago.getC_Currency_ID() != cCurrencyID){
+                    // Tasa de Cambio para moneda recibida en moneda del documento de pago/cobro.
+                    multiplyRate = CurrencyUtils.getCurrencyRate(ctx, pago.getAD_Client_ID(), 0,
+                            cCurrencyID, pago.getC_Currency_ID(), 114, pago.getDateDoc(), null);
+
+                    if (multiplyRate == null){
+                        throw new AdempiereException("No se pudo obtener Tasa de Cambio para Moneda : " + cCurrencyID + ", Fecha : " + pago.getDateDoc().toString());
+                    }
                 }
                 pagoMoneda = new MZPagoMoneda(ctx, 0, trxName);
                 pagoMoneda.setZ_Pago_ID(zPagoID);
