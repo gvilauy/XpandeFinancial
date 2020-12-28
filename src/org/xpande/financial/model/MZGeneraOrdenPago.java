@@ -1124,8 +1124,8 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
 
             // Query
             sql = " select hdr.c_bpartner_id, hdr.z_transfersaldo_id, hdr.c_invoice_id, hdr.c_doctype_id, hdr.documentno, " +
-                    " hdr.datedoc, hdr.c_currency_id, hdr.hdr.grandtotal, hdr.C_BPartnerRelation_ID, " +
-                    " hdr.datedoc, hdr.c_currency_id, hdr.description, hdr.grandtotal, hdr.C_BPartnerRelation_ID, " +
+                    " hdr.datedoc, hdr.c_currency_id, hdr.grandtotal, hdr.C_BPartnerRelation_ID, " +
+                    " hdr.description, " +
                     " iop.amtopen, bp.PaymentRulePO, doc.docbasetype " +
                     " from z_transfersaldo hdr " +
                     " inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
