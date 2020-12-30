@@ -30,7 +30,7 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200812L;
+	private static final long serialVersionUID = 20201230L;
 
     /** Standard Constructor */
     public X_Z_FinancialConfig (Properties ctx, int Z_FinancialConfig_ID, String trxName)
@@ -38,6 +38,10 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
       super (ctx, Z_FinancialConfig_ID, trxName);
       /** if (Z_FinancialConfig_ID == 0)
         {
+			setAperturaMoneda (false);
+// N
+			setAperturaVenc (false);
+// N
 			setControlaCobros (true);
 // Y
 			setControlaPagos (true);
@@ -76,6 +80,54 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set AperturaMoneda.
+		@param AperturaMoneda 
+		Si se desea una apertura por moneda o no
+	  */
+	public void setAperturaMoneda (boolean AperturaMoneda)
+	{
+		set_Value (COLUMNNAME_AperturaMoneda, Boolean.valueOf(AperturaMoneda));
+	}
+
+	/** Get AperturaMoneda.
+		@return Si se desea una apertura por moneda o no
+	  */
+	public boolean isAperturaMoneda () 
+	{
+		Object oo = get_Value(COLUMNNAME_AperturaMoneda);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set AperturaVenc.
+		@param AperturaVenc 
+		Si tiene apertura o no por vencimiento
+	  */
+	public void setAperturaVenc (boolean AperturaVenc)
+	{
+		set_Value (COLUMNNAME_AperturaVenc, Boolean.valueOf(AperturaVenc));
+	}
+
+	/** Get AperturaVenc.
+		@return Si tiene apertura o no por vencimiento
+	  */
+	public boolean isAperturaVenc () 
+	{
+		Object oo = get_Value(COLUMNNAME_AperturaVenc);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	/** Set ControlaCobros.
 		@param ControlaCobros 

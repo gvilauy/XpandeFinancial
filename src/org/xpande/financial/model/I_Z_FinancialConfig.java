@@ -63,6 +63,32 @@ public interface I_Z_FinancialConfig
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AperturaMoneda */
+    public static final String COLUMNNAME_AperturaMoneda = "AperturaMoneda";
+
+	/** Set AperturaMoneda.
+	  * Si se desea una apertura por moneda o no
+	  */
+	public void setAperturaMoneda (boolean AperturaMoneda);
+
+	/** Get AperturaMoneda.
+	  * Si se desea una apertura por moneda o no
+	  */
+	public boolean isAperturaMoneda();
+
+    /** Column name AperturaVenc */
+    public static final String COLUMNNAME_AperturaVenc = "AperturaVenc";
+
+	/** Set AperturaVenc.
+	  * Si tiene apertura o no por vencimiento
+	  */
+	public void setAperturaVenc (boolean AperturaVenc);
+
+	/** Get AperturaVenc.
+	  * Si tiene apertura o no por vencimiento
+	  */
+	public boolean isAperturaVenc();
+
     /** Column name ControlaCobros */
     public static final String COLUMNNAME_ControlaCobros = "ControlaCobros";
 

@@ -61,6 +61,8 @@ public final class FinancialUtils {
 
         try{
 
+            MZFinancialConfig financialConfig = MZFinancialConfig.getDefault(ctx, null);
+
             // Si el socio de negocio tiene tipo de identificación OTROS, no impacto nada.
             MBPartner partner = (MBPartner) model.getC_BPartner();
             if ((partner != null) && (partner.get_ID() > 0)){
@@ -82,15 +84,34 @@ public final class FinancialUtils {
 
             if (onComplete){
 
+                // No se porque razón el grandtotal en esta etapa me lo guarda sin el redondeo.
+                // Fuerzo el redondeo aca para el estado de cuenta
+                BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
+                if (amtRounding == null) amtRounding = Env.ZERO;
+                BigDecimal amtTotal = model.getGrandTotal().add(amtRounding);
+
                 // Impacto según vencimientos o no de esta invoice
                 MInvoicePaySchedule[] paySchedules = MInvoicePaySchedule.getInvoicePaySchedule(model.getCtx(), model.get_ID(), 0, trxName);
                 if (paySchedules.length > 0){
-                    for (int i = 0; i < paySchedules.length; i++){
+                    boolean finLoop = false;
+
+                    for (int i = 0; (i < paySchedules.length && !finLoop); i++){
+
                         MInvoicePaySchedule ips = paySchedules[i];
                         MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(model.getCtx(), 0, trxName);
                         estadoCuenta.setC_Invoice_ID(model.get_ID());
                         estadoCuenta.setC_InvoicePaySchedule_ID(ips.get_ID());
                         estadoCuenta.setAD_Table_ID(model.get_Table_ID());
+
+                        BigDecimal amt = ips.getDueAmt();
+
+                        // Si en las configuraciones financieras se indica que no se haga apartura por vencimiento en el
+                        // reporte de estado de cuenta, entonces solo impacto el primer vencimiento por el total del documento,
+                        // y primer fecha de vencimiento.
+                        if (!financialConfig.isAperturaVenc()){
+                            amt = amtTotal;
+                            finLoop = true;
+                        }
 
                         if (!model.isSOTrx()){
                             estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
@@ -101,30 +122,30 @@ public final class FinancialUtils {
 
                         if (!model.isSOTrx()){
                             if (docType.getDocBaseType().equalsIgnoreCase("API")){
-                                estadoCuenta.setAmtSourceCr(ips.getDueAmt());
+                                estadoCuenta.setAmtSourceCr(amt);
                                 estadoCuenta.setAmtSourceDr(Env.ZERO);
                             }
                             else if (docType.getDocBaseType().equalsIgnoreCase("APC")){
                                 estadoCuenta.setAmtSourceCr(Env.ZERO);
-                                estadoCuenta.setAmtSourceDr(ips.getDueAmt());
+                                estadoCuenta.setAmtSourceDr(amt);
                             }
                             else{
-                                estadoCuenta.setAmtSourceCr(ips.getDueAmt());
+                                estadoCuenta.setAmtSourceCr(amt);
                                 estadoCuenta.setAmtSourceDr(Env.ZERO);
                             }
                         }
                         else{
                             if (docType.getDocBaseType().equalsIgnoreCase("ARC")){
-                                estadoCuenta.setAmtSourceCr(ips.getDueAmt());
+                                estadoCuenta.setAmtSourceCr(amt);
                                 estadoCuenta.setAmtSourceDr(Env.ZERO);
                             }
                             else if (docType.getDocBaseType().equalsIgnoreCase("ARI")){
                                 estadoCuenta.setAmtSourceCr(Env.ZERO);
-                                estadoCuenta.setAmtSourceDr(ips.getDueAmt());
+                                estadoCuenta.setAmtSourceDr(amt);
                             }
                             else{
                                 estadoCuenta.setAmtSourceCr(Env.ZERO);
-                                estadoCuenta.setAmtSourceDr(ips.getDueAmt());
+                                estadoCuenta.setAmtSourceDr(amt);
                             }
                         }
 
@@ -171,12 +192,6 @@ public final class FinancialUtils {
                     else{
                         estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
                     }
-
-                    // No se porque razón el grandtotal en esta etapa me lo guarda sin el redondeo.
-                    // Fuerzo el redondeo aca para el estado de cuenta
-                    BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
-                    if (amtRounding == null) amtRounding = Env.ZERO;
-                    BigDecimal amtTotal = model.getGrandTotal().add(amtRounding);
 
                     if (!model.isSOTrx()){
 
@@ -516,6 +531,8 @@ public final class FinancialUtils {
                 }
             }
 
+            MZFinancialConfig financialConfig = MZFinancialConfig.getDefault(ctx, null);
+
             // Si esta completando este documento
             if (onComplete){
 
@@ -558,7 +575,14 @@ public final class FinancialUtils {
 
                             // Impacto parte acreedora para pagos y deudora para cobros, por monto total menos anticipos
                             if (amtAnticipo.compareTo(Env.ZERO) <= 0){
-                                FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), isVendor, trxName);
+
+                                // Si en la configuración financiera esta seteado para un estado de cuenta con apertura por moneda
+                                if (financialConfig.isAperturaMoneda()){
+                                    FinancialUtils.setEstadoCtaPago(ctx, pago, false, pago.getPayAmt(), isVendor, trxName);
+                                }
+                                else{
+                                    FinancialUtils.setEstadoCtaPago(ctx, pago, pago.getPayAmt(), isVendor, trxName);
+                                }
                             }
                             else{
                                 FinancialUtils.setEstadoCtaPago(ctx, pago, true, pago.getPayAmt().add(amtAnticipo), isVendor, trxName);
@@ -621,16 +645,6 @@ public final class FinancialUtils {
                             DB.executeUpdateEx(action, trxName);
                         }
 
-                        /*
-                        // Impacto en anticipos directos asociados
-                        List<MZPago> anticipoDirList = pago.getAnticiposDirReferenciados();
-                        for (MZPago anticipoDir: anticipoDirList){
-                            // Elimino este anticipo directo del estado de cuenta, ya que ahora tengo un recibo.
-                            action = " delete from z_estadocuenta where z_pago_id =" + anticipoDir.get_ID();
-                            DB.executeUpdateEx(action, trxName);
-                        }
-                        */
-
                         // Impacto en resguardos asociados
                         List<MZPagoResguardo> pagoResguardoList = pago.getResguardos();
                         for (MZPagoResguardo pagoResguardo: pagoResguardoList){
@@ -663,14 +677,6 @@ public final class FinancialUtils {
                             MZOrdenPago ordenPago = (MZOrdenPago) pagoOrdenPago.getZ_OrdenPago();
                             FinancialUtils.setEstadoCtaOrdenPago(ctx, ordenPago, true, trxName);
                         }
-
-                        /*
-                        // Impacto en anticipos directos asociados
-                        List<MZPago> anticipoDirList = pago.getAnticiposDirReferenciados();
-                        for (MZPago anticipoDir: anticipoDirList){
-                            FinancialUtils.setEstadoCtaPago(ctx, anticipoDir, true, trxName);
-                        }
-                        */
                     }
                 }
 
@@ -683,10 +689,11 @@ public final class FinancialUtils {
     }
 
     /***
-     * Método que impacta información de Pago / Cobro / Anticipo en estado de cuenta.
+     * Método que impacta información de Pago / Cobro / Anticipo en estado de cuenta, con apertura por moneda.
      * Xpande. Created by Gabriel Vila on 6/29/19.
      * @param ctx
      * @param pago
+     * @param considerarAmt
      * @param amt
      * @param isVendor
      * @param trxName
@@ -737,7 +744,6 @@ public final class FinancialUtils {
                     estadoCuenta.setC_Currency_ID(pago.getC_Currency_ID());
                 }
                 else{
-                    //estadoCuenta.setC_Currency_ID(pago.getC_Currency_ID());
                     estadoCuenta.setC_Currency_ID(entry.getValue().cuurencyID);
                 }
 
@@ -996,6 +1002,112 @@ public final class FinancialUtils {
             throw new AdempiereException(e);
         }
 
+    }
+
+    /***
+     * Método que impacta información de Pago / Cobro / Anticipo en estado de cuenta, sin apertura por moneda.
+     * Xpande. Created by Gabriel Vila on 6/29/19.
+     * @param ctx
+     * @param pago
+     * @param amt
+     * @param isVendor
+     * @param trxName
+     */
+    private static void setEstadoCtaPago(Properties ctx, MZPago pago, BigDecimal amt, boolean isVendor, String trxName){
+
+        try{
+
+            MDocType docType = (MDocType) pago.getC_DocType();
+            MBPartner partner = (MBPartner) pago.getC_BPartner();
+
+            // Impacto documento en estado de cuenta
+            MZEstadoCuenta estadoCuenta = new MZEstadoCuenta(ctx, 0, trxName);
+            estadoCuenta.setZ_Pago_ID(pago.get_ID());
+            estadoCuenta.setAD_Table_ID(pago.get_Table_ID());
+            estadoCuenta.setC_BPartner_ID(pago.getC_BPartner_ID());
+            estadoCuenta.setC_Currency_ID(pago.getC_Currency_ID());
+            estadoCuenta.setC_DocType_ID(pago.getC_DocType_ID());
+            estadoCuenta.setDateDoc(pago.getDateDoc());
+            estadoCuenta.setDateAcct(pago.getDateDoc());
+            estadoCuenta.setDocBaseType(docType.getDocBaseType());
+            if ((pago.getNroRecibo() != null) && (!pago.getNroRecibo().trim().equalsIgnoreCase(""))){
+                estadoCuenta.setDocumentNoRef(pago.getNroRecibo());
+            }
+            else{
+                estadoCuenta.setDocumentNoRef(pago.getDocumentNo());
+            }
+            estadoCuenta.setIsSOTrx(pago.isSOTrx());
+
+            // Si es Recibo de Proveedor
+            if (!pago.isSOTrx()){
+                // Parte Acreedora
+                if (isVendor){
+                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
+                    if (pago.getPayAmt().compareTo(Env.ZERO) >= 0){
+                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        estadoCuenta.setAmtSourceDr(pago.getPayAmt());
+                    }
+                    else {
+                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                        estadoCuenta.setAmtSourceCr(pago.getPayAmt().negate());
+                    }
+                }
+                else{  // Parte Deudora
+                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
+                    if (pago.getPayAmt().compareTo(Env.ZERO) >= 0){
+                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                        estadoCuenta.setAmtSourceCr(pago.getPayAmt());
+                    }
+                    else {
+                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        estadoCuenta.setAmtSourceDr(pago.getPayAmt().negate());
+                    }
+                }
+            }
+            else{  // Es Recibo de Cobro
+
+                // Parte Deudora
+                if (!isVendor){
+                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_CLIENTES);
+                    if (pago.getPayAmt().compareTo(Env.ZERO) >= 0){
+                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                        estadoCuenta.setAmtSourceCr(pago.getPayAmt());
+                    }
+                    else{
+                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        estadoCuenta.setAmtSourceDr(pago.getPayAmt().negate());
+                    }
+                }
+                else{  // Parte Acreedora
+                    estadoCuenta.setTipoSocioNegocio(X_Z_EstadoCuenta.TIPOSOCIONEGOCIO_PROVEEDORES);
+                    if (pago.getPayAmt().compareTo(Env.ZERO) >= 0){
+                        estadoCuenta.setAmtSourceCr(Env.ZERO);
+                        estadoCuenta.setAmtSourceDr(pago.getPayAmt());
+                    }
+                    else {
+                        estadoCuenta.setAmtSourceDr(Env.ZERO);
+                        estadoCuenta.setAmtSourceCr(pago.getPayAmt().negate());
+                    }
+                }
+            }
+
+            estadoCuenta.setRecord_ID(pago.get_ID());
+            estadoCuenta.setAD_Org_ID(pago.getAD_Org_ID());
+            estadoCuenta.setDescription(pago.getDescription());
+
+            if (!pago.isSOTrx()){
+                List<MZPagoOrdenPago> ordenPagoList = pago.getOrdenesPagoReferenciadas();
+                if (ordenPagoList.size() > 0){
+                    estadoCuenta.setZ_OrdenPago_To_ID(ordenPagoList.get(0).getZ_OrdenPago_ID());
+                    estadoCuenta.setDateRefOrdenPago(ordenPagoList.get(0).getDateTrx());
+                }
+            }
+
+            estadoCuenta.saveEx();
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
     }
 
     /***

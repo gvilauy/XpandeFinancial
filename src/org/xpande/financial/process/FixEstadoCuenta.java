@@ -44,7 +44,7 @@ public class FixEstadoCuenta extends SvrProcess {
                 else if (name.trim().equalsIgnoreCase("AD_Org_ID")){
                     this.adOrgID = ((BigDecimal)para[i].getParameter()).intValueExact();
                 }
-                else if (name.trim().equalsIgnoreCase("DocumentSerie")){
+                else if (name.trim().equalsIgnoreCase("TipoFixEstadoCta")){
                     this.tipoFix = para[i].getParameter().toString();
                 }
                 else if (name.trim().equalsIgnoreCase("DateDoc")){
@@ -58,13 +58,13 @@ public class FixEstadoCuenta extends SvrProcess {
     @Override
     protected String doIt() throws Exception {
 
-        if (this.tipoFix.equalsIgnoreCase("1")){
+        if (this.tipoFix.equalsIgnoreCase("TODOS")){
             this.fixDocumentosTodos();
         }
-        else if (this.tipoFix.equalsIgnoreCase("2")){
+        else if (this.tipoFix.equalsIgnoreCase("RESGUARDOS")){
             this.fixResguardos();
         }
-        else if (this.tipoFix.equalsIgnoreCase("3")){
+        else if (this.tipoFix.equalsIgnoreCase("PAGOS")){
             this.fixPagos();
         }
 
@@ -100,19 +100,22 @@ public class FixEstadoCuenta extends SvrProcess {
             this.setResguardos(whereClause);
 
             // Proceso anticipos de pago / cobro
-            this.setAnticipos(whereClause);
+            //this.setAnticipos(whereClause);
 
             // Proceso Ordenes de Pago para anticipos
-            this.setOrdenesPago(whereClause, true);
+            //this.setOrdenesPago(whereClause, true);
 
             // Proceso recibos de pago / cobro para anticipos
-            this.setPagos(whereClause, true);
+            //this.setPagos(whereClause, true);
 
             // Proceso ordenes de pago normales
             this.setOrdenesPago(whereClause, false);
 
             // Proceso recibos de pago / cobro normales
-            this.setPagos(whereClause, false);
+            //this.setPagos(whereClause, false);
+
+
+            this.setPagos(whereClause);
 
         }
         catch (Exception e){
@@ -168,6 +171,33 @@ public class FixEstadoCuenta extends SvrProcess {
 
             // Proceso Pagos
             this.setPagos2();
+
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
+
+    private void fixInvoices(){
+
+        String action = "";
+
+        try{
+
+            String whereClause = "";
+
+            if (this.adOrgID > 0){
+                whereClause += " and a.ad_org_id =" + this.adOrgID;
+            }
+
+            // Elimino información actual en estado de cuenta según filtros indicados
+            action = " delete from z_estadocuenta  " +
+                    " where c_invice_id is not null " +
+                    " and c_invoice_id in (select c_invoice_id from aux_pago) ";
+            DB.executeUpdateEx(action, get_TrxName());
+
+            // Proceso Pagos
+            //this.setPagos2();
 
         }
         catch (Exception e){
@@ -362,6 +392,39 @@ public class FixEstadoCuenta extends SvrProcess {
                     " where a.ad_client_id =" + this.adClientID + whereClause +
                     " and a.docstatus ='CO' " +
                     ((esReciboAnticipo) ? " and ReciboAnticipo ='Y' " :  " and ReciboAnticipo ='N' ") +
+                    " and a.datedoc between '" + this.startDate + "' and '" + this.endDate + "' " +
+                    " order by a.datedoc ";
+
+            pstmt = DB.prepareStatement(sql, get_TrxName());
+            rs = pstmt.executeQuery();
+
+            while(rs.next()){
+
+                MZPago pago = new MZPago(getCtx(), rs.getInt("z_pago_id"), get_TrxName());
+
+                FinancialUtils.setEstadoCtaPago(getCtx(), pago, true, get_TrxName());
+            }
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+            rs = null; pstmt = null;
+        }
+    }
+
+    private void setPagos(String whereClause){
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.z_pago_id " +
+                    " from z_pago a " +
+                    " where a.ad_client_id =" + this.adClientID + whereClause +
+                    " and a.docstatus ='CO' " +
                     " and a.datedoc between '" + this.startDate + "' and '" + this.endDate + "' " +
                     " order by a.datedoc ";
 
