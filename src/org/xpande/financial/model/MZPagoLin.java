@@ -83,7 +83,7 @@ public class MZPagoLin extends X_Z_PagoLin {
     @Override
     protected boolean afterSave(boolean newRecord, boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         MZPago pago = (MZPago) this.getZ_Pago();
 

@@ -69,7 +69,7 @@ public class MZPagoMoneda extends X_Z_PagoMoneda {
             throw new AdempiereException(e);
         }
 
-        return message;
+        return null;
     }
 
     /***
@@ -113,7 +113,7 @@ public class MZPagoMoneda extends X_Z_PagoMoneda {
             throw new AdempiereException(e);
         }
 
-        return message;
+        return null;
     }
 
     /***
