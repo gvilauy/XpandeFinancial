@@ -135,7 +135,7 @@ public class SaldoPendiente {
         try{
 
             // Incluyo invoices
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, c_bp_group_id, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, " +
                     " c_invoice_id, c_invoicepayschedule_id, " +
                     " c_doctype_id, documentnoref, c_currency_id, description, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
@@ -150,6 +150,10 @@ public class SaldoPendiente {
 
             if (this.cBPartnerID > 0){
                 whereClause += " and a.c_bpartner_id =" + this.cBPartnerID;
+            }
+
+            if (this.cBPGroupID > 0){
+                whereClause += " and bp.c_bp_group_id =" + this.cBPGroupID;
             }
 
             if (this.cCurrencyID > 0){
@@ -191,7 +195,7 @@ public class SaldoPendiente {
             }
 
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, bp.c_bp_group_id, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, " +
                     " a.c_invoice_id, ips.c_invoicepayschedule_id, a.c_doctypetarget_id, " +
                     " (coalesce(a.documentserie, '') || a.documentno) as documentnoref, a.c_currency_id, a.description, a.dateinvoiced, " +
                     " coalesce(coalesce(ips.duedate, paymentTermDueDate(a.C_PaymentTerm_ID, a.DateInvoiced)), " +
@@ -227,7 +231,7 @@ public class SaldoPendiente {
 
         try{
 
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, c_bp_group_id, z_transfersaldo_id, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, z_transfersaldo_id, " +
                     " c_invoicepayschedule_id, " +
                     " c_doctype_id, documentnoref, c_currency_id, description, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
@@ -243,6 +247,10 @@ public class SaldoPendiente {
 
             if (this.cBPartnerID > 0){
                 whereClause += " and a.c_bpartner_id =" + this.cBPartnerID;
+            }
+
+            if (this.cBPGroupID > 0){
+                whereClause += " and bp.c_bp_group_id =" + this.cBPGroupID;
             }
 
             if (this.cCurrencyID > 0){
@@ -283,7 +291,7 @@ public class SaldoPendiente {
                 fieldStartDate = "'" + this.startDate + "'";
             }
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, bp.c_bp_group_id, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, " +
                     " a.z_transfersaldo_id, ips.c_invoicepayschedule_id, a.c_doctype_id, " +
                     " a.documentno, a.c_currency_id, a.description, a.datedoc, " +
                     " coalesce(coalesce(ips.duedate, paymentTermDueDate(inv.C_PaymentTerm_ID, inv.DateInvoiced)), a.datedoc)::timestamp without time zone as duedate, " +
@@ -319,7 +327,7 @@ public class SaldoPendiente {
         try{
 
             // Incluyo invoices
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, c_bp_group_id, z_pago_id, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, z_pago_id, " +
                     " c_doctype_id, documentnoref, c_currency_id, description, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
@@ -335,6 +343,10 @@ public class SaldoPendiente {
 
             if (this.cBPartnerID > 0){
                 whereClause += " and a.c_bpartner_id =" + this.cBPartnerID;
+            }
+
+            if (this.cBPGroupID > 0){
+                whereClause += " and bp.c_bp_group_id =" + this.cBPGroupID;
             }
 
             if (this.cCurrencyID > 0){
@@ -398,7 +410,7 @@ public class SaldoPendiente {
                 fieldStartDate = "'" + this.startDate + "'";
             }
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, bp.c_bp_group_id, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, " +
                     " a.z_pago_id, a.c_doctype_id, " +
                     " a.documentno, a.c_currency_id, a.description, a.datedoc, a.datedoc, a.datedoc, a.issotrx, doc.docbasetype, " +
                     " a.payamt as amtdocument, a.payamt as amtopen, " +
@@ -433,7 +445,7 @@ public class SaldoPendiente {
 
         try{
             // Incluyo Resguardos
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, c_bp_group_id, z_resguardosocio_id, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, z_resguardosocio_id, " +
                     " c_doctype_id, documentnoref, c_currency_id, description, datedoc, duedate, dateacct, issotrx, docbasetype, " +
                     " amtdocument, amtopen, amtdocumentmn, amtopenmn, amtallocated,  " +
                     " ad_user_id, tipofiltrofecha, tiposocionegocio, tieneacct, tipoconceptodoc, startdate, enddate, " +
@@ -447,6 +459,10 @@ public class SaldoPendiente {
 
             if (this.cBPartnerID > 0){
                 whereClause += " and a.c_bpartner_id =" + this.cBPartnerID;
+            }
+
+            if (this.cBPGroupID > 0){
+                whereClause += " and bp.c_bp_group_id =" + this.cBPGroupID;
             }
 
             if (this.cCurrencyID > 0){
@@ -480,7 +496,7 @@ public class SaldoPendiente {
                 fieldStartDate = "'" + this.startDate + "'";
             }
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, bp.c_bp_group_id, a.z_resguardosocio_id, a.c_doctype_id, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, a.z_resguardosocio_id, a.c_doctype_id, " +
                     " a.documentno, a.c_currency_id, a.description, a.datedoc, a.datedoc, a.datedoc, 'N', doc.docbasetype, " +
 
                     " case when (a.totalamtme is not null and a.totalamtme > 0) then a.totalamtme else a.totalamt end as amtdocumentmo, " +
@@ -525,7 +541,7 @@ public class SaldoPendiente {
         try{
 
             // Incluyo medios de pago emitidos
-            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, c_bp_group_id, " +
+            action = " insert into " + TABLA_REPORTE + "(ad_client_id, ad_org_id, c_bpartner_id, taxid, " +
                     " z_mediopago_id, nromediopago, z_mediopagoitem_id, z_emisionmediopago_id, " +
                     " c_bankaccount_id, c_currency_id, datedoc, duedate, dateacct, issotrx, " +
                     " amtdocument, amtopen, amtallocated,  " +
@@ -540,6 +556,10 @@ public class SaldoPendiente {
 
             if (this.cBPartnerID > 0){
                 whereClause += " and a.c_bpartner_id =" + this.cBPartnerID;
+            }
+
+            if (this.cBPGroupID > 0){
+                whereClause += " and bp.c_bp_group_id =" + this.cBPGroupID;
             }
 
             if (this.cCurrencyID > 0){
@@ -580,7 +600,7 @@ public class SaldoPendiente {
                 fieldStartDate = "'" + this.startDate + "'";
             }
 
-            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, bp.c_bp_group_id, " +
+            sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, " +
                     " a.z_mediopago_id, a.nromediopago, " +
                     " a.z_mediopagoitem_id, a.z_emisionmediopago_id, a.c_bankaccount_id, a.c_currency_id, a.dateemitted, " +
                     " a.duedate, a.dateemitted, a.isreceipt, " +
