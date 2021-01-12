@@ -238,6 +238,8 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		log.info(toString());
 		//
 
+		MAcctSchema acctSchema = MClient.get(getCtx(), this.getAD_Client_ID()).getAcctSchema();
+
 		if (this.getDateAcct() == null) this.setDateAcct(this.getDateDoc());
 
 		String action;
@@ -384,6 +386,16 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			}
 		}
 		else{  // Cobranza
+
+			// Si la moneda de este documento no es la moneda del esquema contable por defecto
+			if (this.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
+				// Valido que tengo tasa de cambio entre moneda del documento y moneda del esquema contable
+				MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.get_ID(), acctSchema.getC_Currency_ID(), null);
+				if ((pagoMoneda == null) || (pagoMoneda.get_ID() <= 0)){
+					m_processMsg = "Debe indicar Tasa de Cambio para moneda Nacional. Debe ingredarlo en la pestaña: Monedas";
+					return DocAction.STATUS_Invalid;
+				}
+			}
 
 			// Validaciones del documento de cobro, cuando no es un anticipo.
 			if (!this.isAnticipo()){

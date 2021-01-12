@@ -36,6 +36,11 @@ public class SaldoPendienteRV extends SvrProcess {
                         this.saldoPendProcessor.cBPartnerID = ((BigDecimal)para[i].getParameter()).intValueExact();
                     }
                 }
+                else if (name.trim().equalsIgnoreCase("C_BP_Group_ID")){
+                    if (para[i].getParameter() != null){
+                        this.saldoPendProcessor.cBPGroupID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                }
                 else if (name.trim().equalsIgnoreCase("C_Currency_ID_To")){
                     if (para[i].getParameter() != null){
                         this.saldoPendProcessor.cCurrencyID = ((BigDecimal)para[i].getParameter()).intValueExact();
