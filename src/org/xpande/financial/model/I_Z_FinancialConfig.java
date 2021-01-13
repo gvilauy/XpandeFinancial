@@ -89,6 +89,19 @@ public interface I_Z_FinancialConfig
 	  */
 	public boolean isAperturaVenc();
 
+    /** Column name ConsideraSigno */
+    public static final String COLUMNNAME_ConsideraSigno = "ConsideraSigno";
+
+	/** Set ConsideraSigno.
+	  * Si se considera o no el signo de un importe
+	  */
+	public void setConsideraSigno (boolean ConsideraSigno);
+
+	/** Get ConsideraSigno.
+	  * Si se considera o no el signo de un importe
+	  */
+	public boolean isConsideraSigno();
+
     /** Column name ControlaCobros */
     public static final String COLUMNNAME_ControlaCobros = "ControlaCobros";
 

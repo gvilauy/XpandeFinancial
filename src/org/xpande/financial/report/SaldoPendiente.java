@@ -4,10 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.xpande.financial.model.X_Z_EmisionMedioPago;
-import org.xpande.financial.model.X_Z_Pago;
-import org.xpande.financial.model.X_Z_ResguardoSocio;
-import org.xpande.financial.model.X_Z_TransferSaldo;
+import org.xpande.financial.model.*;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -633,6 +630,8 @@ public class SaldoPendiente {
 
         try{
 
+            MZFinancialConfig financialConfig = MZFinancialConfig.getDefault(Env.getCtx(), null);
+
             // Actualizo saldo afectacion
             this.updateSaldoAfectacion();
 
@@ -648,13 +647,21 @@ public class SaldoPendiente {
                      " and amtopen = 0";
             DB.executeUpdateEx(action, null);
 
-            // Signos segun tipo de documento
-            action = " update " + TABLA_REPORTE +
-                    " set amtopen = (amtopen * -1), amtdocument = (amtdocument * -1), amtallocated = (amtallocated * -1) " +
-                    " where ad_user_id =" + this.adUserID +
-                    //" and docbasetype in ('APC', 'ARC', 'PPA', 'CCA') ";
-                    " and docbasetype in ('APC', 'ARC', 'RGU') ";
+            // Signos segun tipo de documento y configuracion financiera
+            if (financialConfig.isConsideraSigno()){
+                action = " update " + TABLA_REPORTE +
+                        " set amtopen = (amtopen * -1), amtdocument = (amtdocument * -1), amtallocated = (amtallocated * -1) " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and docbasetype in ('API', 'ARC', 'CCD','CCA') ";
+            }
+            else{
+                action = " update " + TABLA_REPORTE +
+                        " set amtopen = (amtopen * -1), amtdocument = (amtdocument * -1), amtallocated = (amtallocated * -1) " +
+                        " where ad_user_id =" + this.adUserID +
+                        " and docbasetype in ('APC', 'ARC', 'RGU') ";
+            }
             DB.executeUpdateEx(action, null);
+
 
             // Actualizo información de ultimo recibo y/o orden de pago
             this.updateInfoPago();

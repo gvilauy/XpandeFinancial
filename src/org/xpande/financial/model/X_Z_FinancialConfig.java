@@ -30,7 +30,7 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20201230L;
+	private static final long serialVersionUID = 20210113L;
 
     /** Standard Constructor */
     public X_Z_FinancialConfig (Properties ctx, int Z_FinancialConfig_ID, String trxName)
@@ -42,6 +42,8 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 // N
 			setAperturaVenc (false);
 // N
+			setConsideraSigno (true);
+// Y
 			setControlaCobros (true);
 // Y
 			setControlaPagos (true);
@@ -120,6 +122,30 @@ public class X_Z_FinancialConfig extends PO implements I_Z_FinancialConfig, I_Pe
 	public boolean isAperturaVenc () 
 	{
 		Object oo = get_Value(COLUMNNAME_AperturaVenc);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set ConsideraSigno.
+		@param ConsideraSigno 
+		Si se considera o no el signo de un importe
+	  */
+	public void setConsideraSigno (boolean ConsideraSigno)
+	{
+		set_Value (COLUMNNAME_ConsideraSigno, Boolean.valueOf(ConsideraSigno));
+	}
+
+	/** Get ConsideraSigno.
+		@return Si se considera o no el signo de un importe
+	  */
+	public boolean isConsideraSigno () 
+	{
+		Object oo = get_Value(COLUMNNAME_ConsideraSigno);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
