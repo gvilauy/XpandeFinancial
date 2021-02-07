@@ -15,7 +15,7 @@ import java.sql.ResultSet;
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
  * Xpande. Created by Gabriel Vila on 2/2/21.
  */
-public class SetEstadoCtaLoadInv extends SvrProcess {
+    public class SetEstadoCtaLoadInv extends SvrProcess {
 
     private MZLoadInvoice loadInvoice = null;
 
