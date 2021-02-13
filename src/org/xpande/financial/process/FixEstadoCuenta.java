@@ -27,6 +27,8 @@ public class FixEstadoCuenta extends SvrProcess {
     private String tipoFix = null;
     private Timestamp startDate = null;
     private Timestamp endDate = null;
+    private int cBPartnerID = 0;
+    private int cBPGroupID = 0;
 
     @Override
     protected void prepare() {
@@ -38,18 +40,27 @@ public class FixEstadoCuenta extends SvrProcess {
             String name = para[i].getParameterName();
 
             if (name != null){
-                if (name.trim().equalsIgnoreCase("AD_Client_ID")){
-                    this.adClientID = ((BigDecimal)para[i].getParameter()).intValueExact();
-                }
-                else if (name.trim().equalsIgnoreCase("AD_Org_ID")){
-                    this.adOrgID = ((BigDecimal)para[i].getParameter()).intValueExact();
-                }
-                else if (name.trim().equalsIgnoreCase("TipoFixEstadoCta")){
-                    this.tipoFix = para[i].getParameter().toString();
-                }
-                else if (name.trim().equalsIgnoreCase("DateDoc")){
-                    this.startDate = (Timestamp)para[i].getParameter();
-                    this.endDate = (Timestamp)para[i].getParameter_To();
+
+                if (para[i].getParameter() != null){
+                    if (name.trim().equalsIgnoreCase("AD_Client_ID")){
+                        this.adClientID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                    else if (name.trim().equalsIgnoreCase("AD_Org_ID")){
+                        this.adOrgID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                    else if (name.trim().equalsIgnoreCase("C_BPartner_ID")){
+                        this.cBPartnerID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                    else if (name.trim().equalsIgnoreCase("C_BP_Group_ID")){
+                        this.cBPGroupID = ((BigDecimal)para[i].getParameter()).intValueExact();
+                    }
+                    else if (name.trim().equalsIgnoreCase("TipoFixEstadoCta")){
+                        this.tipoFix = para[i].getParameter().toString();
+                    }
+                    else if (name.trim().equalsIgnoreCase("DateDoc")){
+                        this.startDate = (Timestamp)para[i].getParameter();
+                        this.endDate = (Timestamp)para[i].getParameter_To();
+                    }
                 }
             }
         }
@@ -84,11 +95,25 @@ public class FixEstadoCuenta extends SvrProcess {
                 whereClause += " and a.ad_org_id =" + this.adOrgID;
             }
 
+            if (this.cBPartnerID > 0){
+                whereClause += " and a.c_bpartner_id =" + this.cBPartnerID;
+            }
+
             // Elimino información actual en estado de cuenta según filtros indicados
+            String whereBPGroup ="";
+            if (this.cBPGroupID > 0){
+                whereBPGroup = " and a.c_bpartner_id in (select c_bpartner_id " +
+                        " from c_bpartner where c_bp_group_id =" + this.cBPGroupID + ") ";
+            }
+
             action = " delete from z_estadocuenta a " +
-                    " where a.ad_client_id =" + this.adClientID + whereClause +
+                    " where a.ad_client_id =" + this.adClientID + whereClause + whereBPGroup +
                     " and a.datedoc between '" + this.startDate + "' and '" + this.endDate + "' ";
             DB.executeUpdateEx(action, get_TrxName());
+
+            if (this.cBPGroupID > 0){
+                whereClause += " and bp.c_bp_group_id =" + this.cBPGroupID;
+            }
 
             // Proceso Invoices
             this.setInvoices(whereClause);
@@ -215,6 +240,7 @@ public class FixEstadoCuenta extends SvrProcess {
         try{
             sql = " select a.c_invoice_id " +
                     " from c_invoice a " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.ad_client_id =" + this.adClientID + whereClause +
                     " and a.docstatus ='CO' " +
                     " and a.dateinvoiced between '" + this.startDate + "' and '" + this.endDate + "' " +
@@ -248,6 +274,7 @@ public class FixEstadoCuenta extends SvrProcess {
         try{
             sql = " select a.z_transfersaldo_id " +
                     " from z_transfersaldo a " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.ad_client_id =" + this.adClientID + whereClause +
                     " and a.docstatus ='CO' " +
                     " and a.datedoc between '" + this.startDate + "' and '" + this.endDate + "' " +
@@ -291,6 +318,7 @@ public class FixEstadoCuenta extends SvrProcess {
         try{
             sql = " select a.z_resguardosocio_id " +
                     " from z_resguardosocio a " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.ad_client_id =" + this.adClientID + whereClause +
                     " and a.docstatus ='CO' " +
                     " and a.datedoc between '" + this.startDate + "' and '" + this.endDate + "' " +
@@ -355,6 +383,7 @@ public class FixEstadoCuenta extends SvrProcess {
         try{
             sql = " select a.z_ordenpago_id " +
                     " from z_ordenpago a " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.ad_client_id =" + this.adClientID + whereClause +
                     " and a.docstatus ='CO' " +
                     ((esOrdenAnticipo) ? " and OrdPagoAnticipo ='Y' " :  " and OrdPagoAnticipo ='N' ") +
@@ -389,6 +418,7 @@ public class FixEstadoCuenta extends SvrProcess {
         try{
             sql = " select a.z_pago_id " +
                     " from z_pago a " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.ad_client_id =" + this.adClientID + whereClause +
                     " and a.docstatus ='CO' " +
                     ((esReciboAnticipo) ? " and ReciboAnticipo ='Y' " :  " and ReciboAnticipo ='N' ") +
@@ -423,6 +453,7 @@ public class FixEstadoCuenta extends SvrProcess {
         try{
             sql = " select a.z_pago_id " +
                     " from z_pago a " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.ad_client_id =" + this.adClientID + whereClause +
                     " and a.docstatus ='CO' " +
                     " and a.datedoc between '" + this.startDate + "' and '" + this.endDate + "' " +
@@ -485,6 +516,7 @@ public class FixEstadoCuenta extends SvrProcess {
         try{
             sql = " select a.z_pago_id " +
                     " from z_pago a " +
+                    " inner join c_bpartner bp on a.c_bpartner_id = bp.c_bpartner_id " +
                     " where a.ad_client_id =" + this.adClientID + whereClause +
                     " and a.docstatus ='CO' " +
                     " and anticipo ='Y' " +

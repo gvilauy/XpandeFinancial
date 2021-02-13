@@ -106,8 +106,7 @@ public final class FinancialUtils {
                         BigDecimal amt = ips.getDueAmt();
 
                         // Si en las configuraciones financieras se indica que no se haga apartura por vencimiento en el
-                        // reporte de estado de cuenta, entonces solo impacto el primer vencimiento por el total del documento,
-                        // y primer fecha de vencimiento.
+                        // reporte de estado de cuenta, entonces solo impacto el primer vencimiento por el total del documento.
                         if (!financialConfig.isAperturaVenc()){
                             amt = amtTotal;
                             finLoop = true;
