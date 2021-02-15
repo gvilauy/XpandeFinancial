@@ -389,8 +389,14 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 			// Si la moneda de este documento no es la moneda del esquema contable por defecto
 			if (this.getC_Currency_ID() != acctSchema.getC_Currency_ID()){
+
 				// Valido que tengo tasa de cambio entre moneda del documento y moneda del esquema contable
 				MZPagoMoneda pagoMoneda = MZPagoMoneda.getByCurrencyPago(getCtx(), this.get_ID(), acctSchema.getC_Currency_ID(), null);
+
+				if (!this.reciboMultimoneda()){
+					pagoMoneda = MZPagoMoneda.setByCurrencyPago(getCtx(), this.getZ_Pago_ID(), acctSchema.getC_Currency_ID(), get_TrxName());
+				}
+
 				if ((pagoMoneda == null) || (pagoMoneda.get_ID() <= 0)){
 					m_processMsg = "Debe indicar Tasa de Cambio para moneda Nacional. Debe ingredarlo en la pestaña: Monedas";
 					return DocAction.STATUS_Invalid;
@@ -447,6 +453,55 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
+
+
+	/***
+	 * Verifica si este documento es multimoneda. Para ello verifica si hay mas de una moneda entre cabezal,
+	 * documentos afectados y medios de pago.
+	 * Xpande. Created by Gabriel Vila on 2/15/21.
+	 * @return
+	 */
+	public boolean reciboMultimoneda() {
+
+		String sql;
+		int contador = -1;
+
+		try{
+
+			// Verifico si tengo moneda en lineas distintas al cabezal
+			sql = " select count(*) from z_pagolin " +
+					" where z_pago_id =" + this.get_ID() +
+					" and c_currency_id != " + this.getC_Currency_ID();
+			contador = DB.getSQLValueEx(get_TrxName(), sql);
+			if (contador > 0){
+				return true;
+			}
+
+			// Verifico si tengo moneda en medios de pago distintas al cabezal
+			sql = " select count(*) from z_pagomediopago " +
+					" where z_pago_id =" + this.get_ID() +
+					" and c_currency_id != " + this.getC_Currency_ID();
+			contador = DB.getSQLValueEx(get_TrxName(), sql);
+			if (contador > 0){
+				return true;
+			}
+
+			// Verifico si tengo moneda en resguardos distintas al cabezal
+			sql = " select count(*) from z_pagoresguardo " +
+					" where z_pago_id =" + this.get_ID() +
+					" and c_currency_id != " + this.getC_Currency_ID();
+			contador = DB.getSQLValueEx(get_TrxName(), sql);
+			if (contador > 0){
+				return true;
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return false;
+	}
 
 
 	/***
