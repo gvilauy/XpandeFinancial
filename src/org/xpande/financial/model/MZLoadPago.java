@@ -261,6 +261,11 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 			pago.setAD_Org_ID(loadPagoFile.getAD_OrgTrx_ID());
 			pago.setIsSOTrx(this.isSOTrx());
 			pago.setC_BPartner_ID(loadPagoFile.getC_BPartner_ID());
+
+			if ((loadPagoFile.getDocumentNoRef() != null) && (!loadPagoFile.getDocumentNoRef().trim().equalsIgnoreCase(""))){
+				pago.setDocumentNo(loadPagoFile.getDocumentNoRef().trim());
+			}
+
 			pago.setC_Currency_ID(loadPagoFile.getC_Currency_ID());
 			pago.setDateDoc(loadPagoFile.getDateTrx());
 			pago.setDateAcct(loadPagoFile.getDateTrx());
@@ -268,8 +273,16 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 			pago.setC_DocType_ID(this.getC_DocTypeTarget_ID());
 			pago.setPayAmt(loadPagoFile.getTotalAmt());
 			pago.setTotalMediosPago(loadPagoFile.getTotalAmt());
-			pago.setDescription("Generada Automáticamente desde Generación de Recibos Cta.Cte.");
+
+			if ((loadPagoFile.getDescription() == null) || (loadPagoFile.getDescription().trim().equalsIgnoreCase(""))){
+				pago.setDescription("Generada Automáticamente desde Generación de Recibos Cta.Cte.");
+			}
+			else {
+				pago.setDescription(loadPagoFile.getDescription().trim());
+			}
+
 			pago.setAnticipo(true);
+			pago.setAnticipoDirecto(true);
 			pago.setZ_LoadPago_ID(this.get_ID());
 			pago.saveEx();
 
@@ -292,19 +305,28 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 			pagoMedioPago.setTieneFolio(false);
 			pagoMedioPago.saveEx();
 
-			// Instancio de nuevo el modelo de pago porque se actulizaron datos del mismo via DB directo y no quedan en el modelo
-			int pagoIDAux = pago.get_ID();
-			pago = new MZPago(getCtx(), pagoIDAux, get_TrxName());
-			//pago.setPayAmt(pago.getTotalMediosPago());
+			// Si no tengo que contabilizar las invoices generadas, la dejo como completa y posteada.
+			if (!this.isContabilizar()){
+				pago.setDocStatus(DocAction.STATUS_Completed);
+				pago.setDocAction(DocAction.ACTION_None);
+				pago.setProcessed(true);
+				pago.setPosted(true);
+			}
+			else{
+				// Instancio de nuevo el modelo de pago porque se actulizaron datos del mismo via DB directo y no quedan en el modelo
+				int pagoIDAux = pago.get_ID();
+				pago = new MZPago(getCtx(), pagoIDAux, get_TrxName());
+				//pago.setPayAmt(pago.getTotalMediosPago());
 
-			// Completo recibo
-			if (!pago.processIt(DocAction.ACTION_Complete)){
-				String message = pago.getProcessMsg();
-				if (message == null){
-					message = "Problemas al completar el Recibo";
+				// Completo recibo
+				if (!pago.processIt(DocAction.ACTION_Complete)){
+					String message = pago.getProcessMsg();
+					if (message == null){
+						message = "Problemas al completar el Recibo";
+					}
+					m_processMsg = message;
+					return DocAction.STATUS_Invalid;
 				}
-				m_processMsg = message;
-				return DocAction.STATUS_Invalid;
 			}
 			pago.saveEx();
 		}

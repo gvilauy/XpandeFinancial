@@ -24,14 +24,14 @@ import org.compiere.model.*;
 
 /** Generated Model for Z_LoadPago
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_LoadPago extends PO implements I_Z_LoadPago, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200210L;
+	private static final long serialVersionUID = 20210225L;
 
     /** Standard Constructor */
     public X_Z_LoadPago (Properties ctx, int Z_LoadPago_ID, String trxName)
@@ -41,6 +41,8 @@ public class X_Z_LoadPago extends PO implements I_Z_LoadPago, I_Persistent
         {
 			setC_DocType_ID (0);
 			setC_DocTypeTarget_ID (0);
+			setContabilizar (false);
+// N
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
 			setDocAction (null);
@@ -143,6 +145,30 @@ public class X_Z_LoadPago extends PO implements I_Z_LoadPago, I_Persistent
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Contabilizar.
+		@param Contabilizar 
+		Si se desea contabilizar o no un documento
+	  */
+	public void setContabilizar (boolean Contabilizar)
+	{
+		set_Value (COLUMNNAME_Contabilizar, Boolean.valueOf(Contabilizar));
+	}
+
+	/** Get Contabilizar.
+		@return Si se desea contabilizar o no un documento
+	  */
+	public boolean isContabilizar () 
+	{
+		Object oo = get_Value(COLUMNNAME_Contabilizar);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Document Date.
@@ -365,6 +391,23 @@ public class X_Z_LoadPago extends PO implements I_Z_LoadPago, I_Persistent
 	public String getProcessButton () 
 	{
 		return (String)get_Value(COLUMNNAME_ProcessButton);
+	}
+
+	/** Set ProcessButton2.
+		@param ProcessButton2 
+		Botón de Proceso
+	  */
+	public void setProcessButton2 (String ProcessButton2)
+	{
+		set_Value (COLUMNNAME_ProcessButton2, ProcessButton2);
+	}
+
+	/** Get ProcessButton2.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton2 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton2);
 	}
 
 	/** Set Processed.

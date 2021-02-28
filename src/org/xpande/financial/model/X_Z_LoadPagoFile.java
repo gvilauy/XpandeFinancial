@@ -26,14 +26,14 @@ import org.compiere.util.Env;
 
 /** Generated Model for Z_LoadPagoFile
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_LoadPagoFile extends PO implements I_Z_LoadPagoFile, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200210L;
+	private static final long serialVersionUID = 20210226L;
 
     /** Standard Constructor */
     public X_Z_LoadPagoFile (Properties ctx, int Z_LoadPagoFile_ID, String trxName)
@@ -50,7 +50,6 @@ public class X_Z_LoadPagoFile extends PO implements I_Z_LoadPagoFile, I_Persiste
 			setProcessed (false);
 // N
 			setZ_LoadPagoFile_ID (0);
-			setZ_LoadPago_ID (0);
         } */
     }
 
@@ -193,6 +192,23 @@ public class X_Z_LoadPagoFile extends PO implements I_Z_LoadPagoFile, I_Persiste
 	public String getDescription () 
 	{
 		return (String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set DocumentNoRef.
+		@param DocumentNoRef 
+		Numero de documento referenciado
+	  */
+	public void setDocumentNoRef (String DocumentNoRef)
+	{
+		set_Value (COLUMNNAME_DocumentNoRef, DocumentNoRef);
+	}
+
+	/** Get DocumentNoRef.
+		@return Numero de documento referenciado
+	  */
+	public String getDocumentNoRef () 
+	{
+		return (String)get_Value(COLUMNNAME_DocumentNoRef);
 	}
 
 	/** Set Error Msg.

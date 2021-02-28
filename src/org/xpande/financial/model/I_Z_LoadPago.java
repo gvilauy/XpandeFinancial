@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_LoadPago
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_LoadPago 
 {
@@ -31,7 +31,7 @@ public interface I_Z_LoadPago
     /** TableName=Z_LoadPago */
     public static final String Table_Name = "Z_LoadPago";
 
-    /** AD_Table_ID=1000338 */
+    /** AD_Table_ID=1000274 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -56,7 +56,7 @@ public interface I_Z_LoadPago
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_LoadPago
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -84,7 +84,7 @@ public interface I_Z_LoadPago
 	/** Set Target Document Type.
 	  * Target document type for conversing documents
 	  */
-	public void setC_DocTypeTarget_ID(int C_DocTypeTarget_ID);
+	public void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/** Get Target Document Type.
 	  * Target document type for conversing documents
@@ -92,6 +92,19 @@ public interface I_Z_LoadPago
 	public int getC_DocTypeTarget_ID();
 
 	public I_C_DocType getC_DocTypeTarget() throws RuntimeException;
+
+    /** Column name Contabilizar */
+    public static final String COLUMNNAME_Contabilizar = "Contabilizar";
+
+	/** Set Contabilizar.
+	  * Si se desea contabilizar o no un documento
+	  */
+	public void setContabilizar (boolean Contabilizar);
+
+	/** Get Contabilizar.
+	  * Si se desea contabilizar o no un documento
+	  */
+	public boolean isContabilizar();
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
@@ -115,7 +128,7 @@ public interface I_Z_LoadPago
 	/** Set Document Date.
 	  * Date of the Document
 	  */
-	public void setDateDoc(Timestamp DateDoc);
+	public void setDateDoc (Timestamp DateDoc);
 
 	/** Get Document Date.
 	  * Date of the Document
@@ -128,7 +141,7 @@ public interface I_Z_LoadPago
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -141,7 +154,7 @@ public interface I_Z_LoadPago
 	/** Set Document Action.
 	  * The targeted status of the document
 	  */
-	public void setDocAction(String DocAction);
+	public void setDocAction (String DocAction);
 
 	/** Get Document Action.
 	  * The targeted status of the document
@@ -154,7 +167,7 @@ public interface I_Z_LoadPago
 	/** Set Document Status.
 	  * The current status of the document
 	  */
-	public void setDocStatus(String DocStatus);
+	public void setDocStatus (String DocStatus);
 
 	/** Get Document Status.
 	  * The current status of the document
@@ -167,7 +180,7 @@ public interface I_Z_LoadPago
 	/** Set Document No.
 	  * Document sequence number of the document
 	  */
-	public void setDocumentNo(String DocumentNo);
+	public void setDocumentNo (String DocumentNo);
 
 	/** Get Document No.
 	  * Document sequence number of the document
@@ -180,7 +193,7 @@ public interface I_Z_LoadPago
 	/** Set File Name.
 	  * Name of the local file or URL
 	  */
-	public void setFileName(String FileName);
+	public void setFileName (String FileName);
 
 	/** Get File Name.
 	  * Name of the local file or URL
@@ -193,7 +206,7 @@ public interface I_Z_LoadPago
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -206,7 +219,7 @@ public interface I_Z_LoadPago
 	/** Set Approved.
 	  * Indicates if this document requires approval
 	  */
-	public void setIsApproved(boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/** Get Approved.
 	  * Indicates if this document requires approval
@@ -219,7 +232,7 @@ public interface I_Z_LoadPago
 	/** Set Sales Transaction.
 	  * This is a Sales Transaction
 	  */
-	public void setIsSOTrx(boolean IsSOTrx);
+	public void setIsSOTrx (boolean IsSOTrx);
 
 	/** Get Sales Transaction.
 	  * This is a Sales Transaction
@@ -230,10 +243,23 @@ public interface I_Z_LoadPago
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
 	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
+	public void setProcessButton (String ProcessButton);
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
+
+    /** Column name ProcessButton2 */
+    public static final String COLUMNNAME_ProcessButton2 = "ProcessButton2";
+
+	/** Set ProcessButton2.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton2 (String ProcessButton2);
+
+	/** Get ProcessButton2.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton2();
 
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
@@ -241,7 +267,7 @@ public interface I_Z_LoadPago
 	/** Set Processed.
 	  * The document has been processed
 	  */
-	public void setProcessed(boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/** Get Processed.
 	  * The document has been processed
@@ -252,7 +278,7 @@ public interface I_Z_LoadPago
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/** Set Process Now	  */
-	public void setProcessing(boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
@@ -263,7 +289,7 @@ public interface I_Z_LoadPago
 	/** Set Quantity.
 	  * Quantity
 	  */
-	public void setQty(int Qty);
+	public void setQty (int Qty);
 
 	/** Get Quantity.
 	  * Quantity
@@ -276,7 +302,7 @@ public interface I_Z_LoadPago
 	/** Set Quantity count.
 	  * Counted Quantity
 	  */
-	public void setQtyCount(int QtyCount);
+	public void setQtyCount (int QtyCount);
 
 	/** Get Quantity count.
 	  * Counted Quantity
@@ -287,7 +313,7 @@ public interface I_Z_LoadPago
     public static final String COLUMNNAME_QtyReject = "QtyReject";
 
 	/** Set Qty Reject	  */
-	public void setQtyReject(int QtyReject);
+	public void setQtyReject (int QtyReject);
 
 	/** Get Qty Reject	  */
 	public int getQtyReject();
@@ -314,7 +340,7 @@ public interface I_Z_LoadPago
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -325,7 +351,7 @@ public interface I_Z_LoadPago
     public static final String COLUMNNAME_Z_LoadPago_ID = "Z_LoadPago_ID";
 
 	/** Set Z_LoadPago ID	  */
-	public void setZ_LoadPago_ID(int Z_LoadPago_ID);
+	public void setZ_LoadPago_ID (int Z_LoadPago_ID);
 
 	/** Get Z_LoadPago ID	  */
 	public int getZ_LoadPago_ID();
@@ -334,7 +360,7 @@ public interface I_Z_LoadPago
     public static final String COLUMNNAME_Z_MedioPago_ID = "Z_MedioPago_ID";
 
 	/** Set Z_MedioPago ID	  */
-	public void setZ_MedioPago_ID(int Z_MedioPago_ID);
+	public void setZ_MedioPago_ID (int Z_MedioPago_ID);
 
 	/** Get Z_MedioPago ID	  */
 	public int getZ_MedioPago_ID();

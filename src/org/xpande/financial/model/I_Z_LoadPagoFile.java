@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_LoadPagoFile
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_LoadPagoFile 
 {
@@ -31,7 +31,7 @@ public interface I_Z_LoadPagoFile
     /** TableName=Z_LoadPagoFile */
     public static final String Table_Name = "Z_LoadPagoFile";
 
-    /** AD_Table_ID=1000339 */
+    /** AD_Table_ID=1000275 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -56,7 +56,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Trx Organization.
 	  * Performing or initiating organization
 	  */
-	public void setAD_OrgTrx_ID(int AD_OrgTrx_ID);
+	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
 
 	/** Get Trx Organization.
 	  * Performing or initiating organization
@@ -82,7 +82,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Business Partner .
 	  * Identifies a Business Partner
 	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/** Get Business Partner .
 	  * Identifies a Business Partner
@@ -97,7 +97,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -128,7 +128,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Transaction Date.
 	  * Transaction Date
 	  */
-	public void setDateTrx(Timestamp DateTrx);
+	public void setDateTrx (Timestamp DateTrx);
 
 	/** Get Transaction Date.
 	  * Transaction Date
@@ -141,18 +141,31 @@ public interface I_Z_LoadPagoFile
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
 	  */
 	public String getDescription();
 
+    /** Column name DocumentNoRef */
+    public static final String COLUMNNAME_DocumentNoRef = "DocumentNoRef";
+
+	/** Set DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public void setDocumentNoRef (String DocumentNoRef);
+
+	/** Get DocumentNoRef.
+	  * Numero de documento referenciado
+	  */
+	public String getDocumentNoRef();
+
     /** Column name ErrorMsg */
     public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
 
 	/** Set Error Msg	  */
-	public void setErrorMsg(String ErrorMsg);
+	public void setErrorMsg (String ErrorMsg);
 
 	/** Get Error Msg	  */
 	public String getErrorMsg();
@@ -163,7 +176,7 @@ public interface I_Z_LoadPagoFile
 	/** Set FechaCadena.
 	  * Fecha en formato Cadena
 	  */
-	public void setFechaCadena(String FechaCadena);
+	public void setFechaCadena (String FechaCadena);
 
 	/** Get FechaCadena.
 	  * Fecha en formato Cadena
@@ -174,7 +187,7 @@ public interface I_Z_LoadPagoFile
     public static final String COLUMNNAME_FileLineText = "FileLineText";
 
 	/** Set FileLineText	  */
-	public void setFileLineText(String FileLineText);
+	public void setFileLineText (String FileLineText);
 
 	/** Get FileLineText	  */
 	public String getFileLineText();
@@ -185,7 +198,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Imported.
 	  * Has this import been processed
 	  */
-	public void setI_IsImported(boolean I_IsImported);
+	public void setI_IsImported (boolean I_IsImported);
 
 	/** Get Imported.
 	  * Has this import been processed
@@ -198,7 +211,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -211,7 +224,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Confirmed.
 	  * Assignment is confirmed
 	  */
-	public void setIsConfirmed(boolean IsConfirmed);
+	public void setIsConfirmed (boolean IsConfirmed);
 
 	/** Get Confirmed.
 	  * Assignment is confirmed
@@ -224,7 +237,7 @@ public interface I_Z_LoadPagoFile
 	/** Set IsOmitted.
 	  * Omitida si o no
 	  */
-	public void setIsOmitted(boolean IsOmitted);
+	public void setIsOmitted (boolean IsOmitted);
 
 	/** Get IsOmitted.
 	  * Omitida si o no
@@ -235,7 +248,7 @@ public interface I_Z_LoadPagoFile
     public static final String COLUMNNAME_LineNumber = "LineNumber";
 
 	/** Set LineNumber	  */
-	public void setLineNumber(int LineNumber);
+	public void setLineNumber (int LineNumber);
 
 	/** Get LineNumber	  */
 	public int getLineNumber();
@@ -246,7 +259,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Processed.
 	  * The document has been processed
 	  */
-	public void setProcessed(boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/** Get Processed.
 	  * The document has been processed
@@ -259,7 +272,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Tax ID.
 	  * Tax Identification
 	  */
-	public void setTaxID(String TaxID);
+	public void setTaxID (String TaxID);
 
 	/** Get Tax ID.
 	  * Tax Identification
@@ -272,7 +285,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Total Amount.
 	  * Total Amount
 	  */
-	public void setTotalAmt(BigDecimal TotalAmt);
+	public void setTotalAmt (BigDecimal TotalAmt);
 
 	/** Get Total Amount.
 	  * Total Amount
@@ -301,7 +314,7 @@ public interface I_Z_LoadPagoFile
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -312,7 +325,7 @@ public interface I_Z_LoadPagoFile
     public static final String COLUMNNAME_Z_LoadPagoFile_ID = "Z_LoadPagoFile_ID";
 
 	/** Set Z_LoadPagoFile ID	  */
-	public void setZ_LoadPagoFile_ID(int Z_LoadPagoFile_ID);
+	public void setZ_LoadPagoFile_ID (int Z_LoadPagoFile_ID);
 
 	/** Get Z_LoadPagoFile ID	  */
 	public int getZ_LoadPagoFile_ID();
@@ -321,7 +334,7 @@ public interface I_Z_LoadPagoFile
     public static final String COLUMNNAME_Z_LoadPago_ID = "Z_LoadPago_ID";
 
 	/** Set Z_LoadPago ID	  */
-	public void setZ_LoadPago_ID(int Z_LoadPago_ID);
+	public void setZ_LoadPago_ID (int Z_LoadPago_ID);
 
 	/** Get Z_LoadPago ID	  */
 	public int getZ_LoadPago_ID();
