@@ -96,15 +96,15 @@ public class EstadoCuenta {
 
             // Cadenas de insert en tablas del reporte
             action = " insert into " + TABLA_REPORTE + "(ad_user_id, tipofiltrofecha, ad_client_id, ad_org_id, " +
-                    " tiposocionegocio, c_currency_id, c_bpartner_id, description, amtsourcecr, amtsourcedr, amtstart, amtacumulado) ";
+                    " tiposocionegocio, c_currency_id, c_bpartner_id, amtsourcecr, amtsourcedr, amtstart, amtacumulado) ";
 
             sql = " select " + this.adUserID + ", '" + this.tipoFecha + "', " +
-                    " ad_client_id, ad_org_id, tiposocionegocio, c_currency_id, c_bpartner_id, description, " +
+                    " ad_client_id, ad_org_id, tiposocionegocio, c_currency_id, c_bpartner_id, " +
                     " 0, 0, (sum(amtsourcedr) - sum(amtsourcecr)), (sum(amtsourcedr) - sum(amtsourcecr)) " +
                     " from z_estadocuenta " +
                     " where c_bpartner_id not in (select c_bpartner_id from z_rp_estadocuenta where ad_user_id =" + this.adUserID + ") " +
                     whereClause +
-                    " group by ad_client_id, ad_org_id, tiposocionegocio, c_currency_id, c_bpartner_id " +
+                    " group by 1,2,3,4,5,6,7 " +
                     " order by ad_client_id, ad_org_id, tiposocionegocio, c_currency_id, c_bpartner_id";
 
             DB.executeUpdateEx(action + sql, null);

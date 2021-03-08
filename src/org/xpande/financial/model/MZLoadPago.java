@@ -723,9 +723,14 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 					loadPagoFile.setDateTrx(fecDoc);
 				}
 
-				if ((loadPagoFile.getTotalAmt() == null) || (loadPagoFile.getTotalAmt().compareTo(Env.ZERO) <= 0)){
+				if ((loadPagoFile.getTotalAmt() == null) || (loadPagoFile.getTotalAmt().compareTo(Env.ZERO) == 0)){
 					loadPagoFile.setIsConfirmed(false);
 					loadPagoFile.setErrorMsg("Debe indicar Importe");
+				}
+				else {
+					if (loadPagoFile.getTotalAmt().compareTo(Env.ZERO) < 0){
+						loadPagoFile.setTotalAmt(loadPagoFile.getTotalAmt().negate());
+					}
 				}
 
 				if (loadPagoFile.getC_Currency_ID() <= 0){
