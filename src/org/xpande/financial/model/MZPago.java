@@ -1295,7 +1295,13 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				int cInvoicePayScheduleID = rs.getInt("c_invoicepayschedule_id");
 				if (cInvoicePayScheduleID > 0){
 					// Debo verificar que tenga saldo abierta en la vista de saldos abiertos por vencimiento
-
+					sql = " select coalesce(amtopen,0) as amtopen from zv_financial_invschopen where c_invoicepayschedule_id =" + cInvoicePayScheduleID;
+					BigDecimal amtOpenPaySchedule = DB.getSQLValueBDEx(get_TrxName(), sql);
+					if (amtOpenPaySchedule != null){
+						if (amtOpenPaySchedule.compareTo(Env.ZERO) <= 0){
+							vencimientoOK = false;
+						}
+					}
 				}
 
 				// Si es un vencimiento de factura y no tiene saldo abierto, no proceso esta linea.
