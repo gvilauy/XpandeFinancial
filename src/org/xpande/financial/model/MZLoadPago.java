@@ -615,6 +615,7 @@ public class MZLoadPago extends X_Z_LoadPago implements DocAction, DocOptions {
 
 				lineaID = formatoImpArchivo.updateDB(lineaArchivo, getCtx(), get_TrxName());
 
+
 				if (lineaID <= 0){
 					MZLoadPagoFile loadPagoFile = new MZLoadPagoFile(getCtx(), 0, get_TrxName());
 					loadPagoFile.setZ_LoadPago_ID(this.get_ID());
