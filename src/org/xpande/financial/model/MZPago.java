@@ -425,6 +425,28 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		}
 
+		// En cobros actualizo información de credito del socio de negocio
+		if (this.isSOTrx()){
+			MBPartner partner = (MBPartner) this.getC_BPartner();
+			BigDecimal payAmt = MConversionRate.convertBase(getCtx(), this.getPayAmt(), getC_Currency_ID(), getDateDoc(), 114, getAD_Client_ID(), 0);
+			if (payAmt == null)
+			{
+				m_processMsg = "Could not convert C_Currency_ID=" + getC_Currency_ID()
+						+ " to base C_Currency_ID=" + MClient.get(Env.getCtx()).getC_Currency_ID();
+				return DocAction.STATUS_Invalid;
+			}
+			BigDecimal newCreditAmt = partner.getSO_CreditUsed();
+			if (newCreditAmt == null){
+				newCreditAmt = payAmt.negate();
+			}
+			else{
+				newCreditAmt = newCreditAmt.subtract(payAmt);
+			}
+			partner.setSO_CreditUsed(newCreditAmt);
+			partner.setSOCreditStatus();
+			partner.saveEx();
+		}
+
 		// Impactos en estado de cuenta del socio de negocio. Parte Acreedora y Deudora.
 		FinancialUtils.setEstadoCtaPago(getCtx(), this, true, get_TrxName());
 
@@ -945,7 +967,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			this.setTieneOrdenPago(false);
 		}
 
-
 		// Si es un pago y no tiene asociado ordenes de pago
 		if (!this.isSOTrx()){
 			if (!this.isTieneOrdenPago()){
@@ -997,6 +1018,28 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		if (m_processMsg != null)
 			return false;
 
+		// En cobros actualizo información de credito del socio de negocio
+		if (this.isSOTrx()){
+			MBPartner partner = (MBPartner) this.getC_BPartner();
+			BigDecimal payAmt = MConversionRate.convertBase(getCtx(), this.getPayAmt(), getC_Currency_ID(), getDateDoc(), 114, getAD_Client_ID(), 0);
+			if (payAmt == null)
+			{
+				m_processMsg = "Could not convert C_Currency_ID=" + getC_Currency_ID()
+						+ " to base C_Currency_ID=" + MClient.get(Env.getCtx()).getC_Currency_ID();
+				return false;
+			}
+			BigDecimal newCreditAmt = partner.getSO_CreditUsed();
+			if (newCreditAmt == null){
+				newCreditAmt = payAmt;
+			}
+			else{
+				newCreditAmt = newCreditAmt.add(payAmt);
+			}
+			partner.setSO_CreditUsed(newCreditAmt);
+			partner.setSOCreditStatus();
+			partner.saveEx();
+		}
+
 		// Impacto en estado de cuenta
 		FinancialUtils.setEstadoCtaPago(getCtx(), this, false, get_TrxName());
 
@@ -1004,7 +1047,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
 			return false;
-
 
 		this.setProcessed(false);
 		this.setPosted(false);
