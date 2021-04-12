@@ -1013,6 +1013,12 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				}
 			}
 		}
+		else{
+			// En cobros al reactivar desafecto medios de pago de terceros previamente generados
+			m_processMsg = this.desafectarMedioPagoTerceros(pagoMedioPagoList);
+			if (m_processMsg != null)
+				return false;
+		}
 
 		// Desafecto documentos asociados a este documento de pago/cobro
 		m_processMsg = this.desafectarDocumentos(ordenPagoList);
@@ -1056,6 +1062,45 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 		return true;
 	}	//	reActivateIt
+
+
+	/***
+	 * Desasocio y elimino item de medio de pago de una linea de medio de pago de un documento de cobro.
+	 * Xpande. Created by Gabriel Vila on 4/12/21.
+	 * @param pagoMedioPagoList
+	 * @return
+	 */
+	private String desafectarMedioPagoTerceros(List<MZPagoMedioPago> pagoMedioPagoList) {
+
+		String action;
+
+		try{
+
+			// No hago nada en pagos, esto es solo para cobros.
+			if (!this.isSOTrx()) return null;
+
+			// Recorro medios de pago
+			for (MZPagoMedioPago pagoMedioPago: pagoMedioPagoList){
+				// Si tengo item de medio de pago
+				if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+
+					// Desafecto item de medio de pago con este registro
+					action = " update z_pagomediopago set z_mediopagoitem_id = null where z_pagomediopago_id =" + pagoMedioPago.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
+
+					// Elimino item de medio de pago
+					MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+					medioPagoItem.deleteEx(true);
+				}
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return null;
+	}
 
 
 	/***
