@@ -999,9 +999,10 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 										medioPagoItem.deleteEx(true);
 									}
 									else{
-										// Desafecto emision del medio de pago
-										action = " update z_mediopagoitem set z_emisionmediopago_id = null, emitido ='N', entregado='N', " +
-												" z_pago_id =null, daterefpago =null " +
+										// Es un medio de pago de tercero que se incluyó en este documento de pago.
+										// Por lo tanto lo dejo como originalmente estaba en cartera.
+										action = " update z_mediopagoitem set entregado='N', " +
+												" z_pago_id = ref_cobro_id, ref_cobro_id = null, daterefpago =null " +
 												 " where z_mediopagoitem_id =" + medioPagoItem.get_ID();
 										DB.executeUpdateEx(action, get_TrxName());
 									}
@@ -1082,6 +1083,20 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					if (medioPagoItem.isConciliado()){
 						return "El Medio de Pago Número " + medioPagoItem.getNroMedioPago() + " esta Conciliado." +
 								" Debe anular dicha conciliación antes de continuar con esta acción.";
+					}
+
+					// Si es un cobro, y este medio de pago que entro en cartera, fue luego utilizado en un pago
+					if (this.isSOTrx()){
+						if (medioPagoItem.getRef_Cobro_ID() == this.get_ID()){
+							if (medioPagoItem.getZ_Pago_ID() != this.get_ID()){
+								MZPago pagoAux = new MZPago(getCtx(), medioPagoItem.getZ_Pago_ID(), null);
+								if ((pagoAux != null) && (pagoAux.get_ID() > 0)){
+									return "El Medio de Pago Número " + medioPagoItem.getNroMedioPago() + " esta incluído " +
+											" el documento de cuenta por pagar número: " + pagoAux.getDocumentNo() + "." +
+											" Debe anular este documento de cuenta por pagar antes de continuar con esta acción.";
+								}
+							}
+						}
 					}
 				}
 			}
