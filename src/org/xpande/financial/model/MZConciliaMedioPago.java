@@ -20,13 +20,17 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 /** Generated Model for Z_ConciliaMedioPago
  *  @author Adempiere (generated) 
@@ -227,7 +231,38 @@ public class MZConciliaMedioPago extends X_Z_ConciliaMedioPago implements DocAct
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		// Me aseguro que fecha del documento y fecha contable no sean mayor a hoy
+		Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+		if (this.getDateDoc().after(fechaHoy)){
+			this.setDateDoc(fechaHoy);
+		}
+		if (this.getDateAcct().after(fechaHoy)){
+			this.setDateAcct(fechaHoy);
+		}
+
+		// Obtengo lineas del documento.
+		List<MZConciliaMPagoLin> conciliaMPagoLinList = this.getLines();
+
+		// Validaciones del documento
+		m_processMsg = this.validateDocument(conciliaMPagoLinList);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
+		// Recorro medios de pago
+		for (MZConciliaMPagoLin conciliaMPagoLin: conciliaMPagoLinList){
+
+			// Marco item de medio de pago como conciliado
+			if (conciliaMPagoLin.getZ_MedioPagoItem_ID() > 0){
+				MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) conciliaMPagoLin.getZ_MedioPagoItem();
+				medioPagoItem.setConciliado(true);
+				medioPagoItem.setZ_ConciliaMedioPago_ID(this.get_ID());
+				medioPagoItem.setDateRefDeposito(this.getDateDoc());
+				medioPagoItem.saveEx();
+			}
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -316,10 +351,34 @@ public class MZConciliaMedioPago extends X_Z_ConciliaMedioPago implements DocAct
 	public boolean reActivateIt()
 	{
 		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Control de período contable
+		MPeriod.testPeriodOpen(getCtx(), this.getDateAcct(), this.getC_DocType_ID(), this.getAD_Org_ID());
+
+		// Elimino asientos contables
+		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
+
+		String action = " update z_mediopagoitem set conciliado='N', z_depositomediopago_id =null, " +
+				" daterefdeposito =null, c_bankaccount_id =null " +
+				" where z_depositomediopago_id =" + this.get_ID();
+		DB.executeUpdateEx(action, get_TrxName());
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(false);
+		this.setPosted(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
 	}	//	reActivateIt
 	
 	
@@ -386,4 +445,57 @@ public class MZConciliaMedioPago extends X_Z_ConciliaMedioPago implements DocAct
         .append(getSummary()).append("]");
       return sb.toString();
     }
+
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+
+		// Me aseguro de setear el valor de compra/venta según tipo de documento.
+		if (newRecord){
+			MDocType docType = (MDocType) this.getC_DocType();
+			this.setIsSOTrx(docType.isSOTrx());
+		}
+
+		return true;
+	}
+
+	/***
+	 * Obtiene y retorna lineas de este documento.
+	 * Xpande. Created by Gabriel Vila on 4/19/21.
+	 * @return
+	 */
+	public List<MZConciliaMPagoLin> getLines() {
+
+		String whereClause = X_Z_ConciliaMPagoLin.COLUMNNAME_Z_ConciliaMedioPago_ID + " =" + this.get_ID();
+
+		List<MZConciliaMPagoLin> lines = new Query(getCtx(), I_Z_ConciliaMPagoLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+	/***
+	 * Validaciones del documento al completar.
+	 * Xpande. Created by Gabriel Vila on 9/6/19.
+	 * @param conciliaMPagoLinList
+	 * @return
+	 */
+	private String validateDocument(List<MZConciliaMPagoLin> conciliaMPagoLinList){
+
+		try{
+			// Si no tengo monto total a conciliar, aviso y salgo
+			if ((this.getTotalAmt() == null) || (this.getTotalAmt().compareTo(Env.ZERO) <= 0)){
+				return "No hay importe a Conciliar.";
+			}
+
+			// Si el documento no tiene lineas, aviso y salgo
+			if (conciliaMPagoLinList.size() <= 0){
+				return "El documento no tiene lineas.";
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return null;
+	}
+
 }

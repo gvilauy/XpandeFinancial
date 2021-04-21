@@ -33,7 +33,7 @@ public class X_Z_ConciliaMPagoLin extends PO implements I_Z_ConciliaMPagoLin, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20210417L;
+	private static final long serialVersionUID = 20210419L;
 
     /** Standard Constructor */
     public X_Z_ConciliaMPagoLin (Properties ctx, int Z_ConciliaMPagoLin_ID, String trxName)

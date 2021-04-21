@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_MedioPagoItem
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_MedioPagoItem 
 {
@@ -193,6 +193,19 @@ public interface I_Z_MedioPagoItem
 	  */
 	public Timestamp getDateEmitted();
 
+    /** Column name DateRefConcilia */
+    public static final String COLUMNNAME_DateRefConcilia = "DateRefConcilia";
+
+	/** Set DateRefConcilia.
+	  * Fecha de conciliacion de medio de pago
+	  */
+	public void setDateRefConcilia (Timestamp DateRefConcilia);
+
+	/** Get DateRefConcilia.
+	  * Fecha de conciliacion de medio de pago
+	  */
+	public Timestamp getDateRefConcilia();
+
     /** Column name DateRefDeposito */
     public static final String COLUMNNAME_DateRefDeposito = "DateRefDeposito";
 
@@ -309,6 +322,19 @@ public interface I_Z_MedioPagoItem
 	  * The record is active in the system
 	  */
 	public boolean isActive();
+
+    /** Column name IsForzedPaid */
+    public static final String COLUMNNAME_IsForzedPaid = "IsForzedPaid";
+
+	/** Set IsForzedPaid.
+	  * Si esta o no marcada como pagada de manera forzada
+	  */
+	public void setIsForzedPaid (boolean IsForzedPaid);
+
+	/** Get IsForzedPaid.
+	  * Si esta o no marcada como pagada de manera forzada
+	  */
+	public boolean isForzedPaid();
 
     /** Column name IsOwn */
     public static final String COLUMNNAME_IsOwn = "IsOwn";
@@ -442,6 +468,17 @@ public interface I_Z_MedioPagoItem
 	  * User who updated this records
 	  */
 	public int getUpdatedBy();
+
+    /** Column name Z_ConciliaMedioPago_ID */
+    public static final String COLUMNNAME_Z_ConciliaMedioPago_ID = "Z_ConciliaMedioPago_ID";
+
+	/** Set Z_ConciliaMedioPago ID	  */
+	public void setZ_ConciliaMedioPago_ID (int Z_ConciliaMedioPago_ID);
+
+	/** Get Z_ConciliaMedioPago ID	  */
+	public int getZ_ConciliaMedioPago_ID();
+
+	public I_Z_ConciliaMedioPago getZ_ConciliaMedioPago() throws RuntimeException;
 
     /** Column name Z_DepositoMedioPago_ID */
     public static final String COLUMNNAME_Z_DepositoMedioPago_ID = "Z_DepositoMedioPago_ID";

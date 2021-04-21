@@ -26,14 +26,14 @@ import org.compiere.util.Env;
 
 /** Generated Model for Z_MedioPagoItem
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200730L;
+	private static final long serialVersionUID = 20210421L;
 
     /** Standard Constructor */
     public X_Z_MedioPagoItem (Properties ctx, int Z_MedioPagoItem_ID, String trxName)
@@ -51,6 +51,8 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 			setEmitido (false);
 // N
 			setEntregado (false);
+// N
+			setIsForzedPaid (false);
 // N
 			setIsOwn (true);
 // Y
@@ -299,6 +301,23 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 		return (Timestamp)get_Value(COLUMNNAME_DateEmitted);
 	}
 
+	/** Set DateRefConcilia.
+		@param DateRefConcilia 
+		Fecha de conciliacion de medio de pago
+	  */
+	public void setDateRefConcilia (Timestamp DateRefConcilia)
+	{
+		set_Value (COLUMNNAME_DateRefConcilia, DateRefConcilia);
+	}
+
+	/** Get DateRefConcilia.
+		@return Fecha de conciliacion de medio de pago
+	  */
+	public Timestamp getDateRefConcilia () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateRefConcilia);
+	}
+
 	/** Set DateRefDeposito.
 		@param DateRefDeposito 
 		Fecha referencia de un documento de Deposito de Medio de Pago
@@ -453,6 +472,30 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 	public String getID_Virtual () 
 	{
 		return (String)get_Value(COLUMNNAME_ID_Virtual);
+	}
+
+	/** Set IsForzedPaid.
+		@param IsForzedPaid 
+		Si esta o no marcada como pagada de manera forzada
+	  */
+	public void setIsForzedPaid (boolean IsForzedPaid)
+	{
+		set_Value (COLUMNNAME_IsForzedPaid, Boolean.valueOf(IsForzedPaid));
+	}
+
+	/** Get IsForzedPaid.
+		@return Si esta o no marcada como pagada de manera forzada
+	  */
+	public boolean isForzedPaid () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsForzedPaid);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set IsOwn.
@@ -643,6 +686,31 @@ public class X_Z_MedioPagoItem extends PO implements I_Z_MedioPagoItem, I_Persis
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	public I_Z_ConciliaMedioPago getZ_ConciliaMedioPago() throws RuntimeException
+    {
+		return (I_Z_ConciliaMedioPago)MTable.get(getCtx(), I_Z_ConciliaMedioPago.Table_Name)
+			.getPO(getZ_ConciliaMedioPago_ID(), get_TrxName());	}
+
+	/** Set Z_ConciliaMedioPago ID.
+		@param Z_ConciliaMedioPago_ID Z_ConciliaMedioPago ID	  */
+	public void setZ_ConciliaMedioPago_ID (int Z_ConciliaMedioPago_ID)
+	{
+		if (Z_ConciliaMedioPago_ID < 1) 
+			set_Value (COLUMNNAME_Z_ConciliaMedioPago_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_ConciliaMedioPago_ID, Integer.valueOf(Z_ConciliaMedioPago_ID));
+	}
+
+	/** Get Z_ConciliaMedioPago ID.
+		@return Z_ConciliaMedioPago ID	  */
+	public int getZ_ConciliaMedioPago_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ConciliaMedioPago_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_DepositoMedioPago getZ_DepositoMedioPago() throws RuntimeException

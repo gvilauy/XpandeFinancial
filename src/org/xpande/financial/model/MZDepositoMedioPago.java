@@ -496,7 +496,6 @@ public class MZDepositoMedioPago extends X_Z_DepositoMedioPago implements DocAct
 		}
 	}
 
-
 	/***
 	 * Obtiene y retorna lineas de este documento.
 	 * Xpande. Created by Gabriel Vila on 9/6/19.
