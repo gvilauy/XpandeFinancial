@@ -258,7 +258,7 @@ public class MZConciliaMedioPago extends X_Z_ConciliaMedioPago implements DocAct
 				MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) conciliaMPagoLin.getZ_MedioPagoItem();
 				medioPagoItem.setConciliado(true);
 				medioPagoItem.setZ_ConciliaMedioPago_ID(this.get_ID());
-				medioPagoItem.setDateRefDeposito(this.getDateDoc());
+				medioPagoItem.setDateRefConcilia(this.getDateDoc());
 				medioPagoItem.saveEx();
 			}
 		}
@@ -363,9 +363,8 @@ public class MZConciliaMedioPago extends X_Z_ConciliaMedioPago implements DocAct
 		// Elimino asientos contables
 		MFactAcct.deleteEx(this.get_Table_ID(), this.get_ID(), get_TrxName());
 
-		String action = " update z_mediopagoitem set conciliado='N', z_depositomediopago_id =null, " +
-				" daterefdeposito =null, c_bankaccount_id =null " +
-				" where z_depositomediopago_id =" + this.get_ID();
+		String action = " update z_mediopagoitem set conciliado='N', z_conciliamediopago_id =null, daterefconcilia =null " +
+						" where z_conciliamediopago_id =" + this.get_ID();
 		DB.executeUpdateEx(action, get_TrxName());
 
 		// After reActivate
@@ -496,6 +495,30 @@ public class MZConciliaMedioPago extends X_Z_ConciliaMedioPago implements DocAct
 		}
 
 		return null;
+	}
+
+	/***
+	 * Actualiza totales de este documento, segun montos de lineas.
+	 * Xpande. Created by Gabriel Vila on 4/23/21.
+	 */
+	public void updateTotals(){
+
+		String action = "", sql = "";
+
+		try{
+			// Obtengo suma de montos de medios de pago
+			sql = " select sum(coalesce(totalamt,0)) as total from z_conciliampagolin " +
+					" where z_conciliamediopago_id =" + this.get_ID();
+			BigDecimal sumMedios = DB.getSQLValueBDEx(get_TrxName(), sql);
+			if (sumMedios == null) sumMedios = Env.ZERO;
+
+			action = " update z_conciliamediopago set totalamt =" + sumMedios +
+					" where z_conciliamediopago_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
 	}
 
 }

@@ -36,13 +36,13 @@ public class MZDepositoMPagoLin extends X_Z_DepositoMPagoLin {
     @Override
     protected boolean afterSave(boolean newRecord, boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         try{
 
             MZDepositoMedioPago depositoMedioPago = (MZDepositoMedioPago) this.getZ_DepositoMedioPago();
 
-            if ((newRecord) || (is_ValueChanged(X_Z_PagoMedioPago.COLUMNNAME_TotalAmt))){
+            if ((newRecord) || (is_ValueChanged(X_Z_DepositoMPagoLin.COLUMNNAME_TotalAmt))){
 
                 // Actualizo totales del documento
                 depositoMedioPago.updateTotals();
@@ -58,7 +58,7 @@ public class MZDepositoMPagoLin extends X_Z_DepositoMPagoLin {
     @Override
     protected boolean afterDelete(boolean success) {
 
-        if (!success) return success;
+        if (!success) return false;
 
         // Actualizo totales del documento
         MZDepositoMedioPago depositoMedioPago = (MZDepositoMedioPago) this.getZ_DepositoMedioPago();
