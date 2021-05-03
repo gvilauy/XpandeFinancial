@@ -268,6 +268,23 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			}
 		}
 
+		List<MZPagoOrdenPago> ordenPagoList = null;
+
+		// Si es un pago obtengo ordenes asociadas
+		if (!this.isSOTrx()){
+			// Obtengo ordenes de pago asociadas a este documento (si existen)
+			ordenPagoList = this.getOrdenesPagoReferenciadas();
+			if (ordenPagoList.size() <= 0){
+				this.setTieneOrdenPago(false);
+			}
+			else {
+				// Si tiene ordenes asociadas, me aseguro que no quede marcado como anticipo.
+				this.setTieneOrdenPago(true);
+				this.setAnticipo(false);
+				this.setAnticipoDirecto(false);
+			}
+		}
+
 		// Si es un anticipo
 		if (this.isAnticipo()){
 			if ((this.getPayAmt() == null) || (this.getPayAmt().compareTo(Env.ZERO) <= 0)){
@@ -299,12 +316,6 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 
 				// Obtengo importe total de anticipos afectados en este recibo
 				this.setTotalAnticiposAfectados();
-
-				// Obtengo ordenes de pago asociadas a este documento (si existen)
-				List<MZPagoOrdenPago> ordenPagoList = this.getOrdenesPagoReferenciadas();
-				if (ordenPagoList.size() <= 0){
-					this.setTieneOrdenPago(false);
-				}
 
 				// Validaciones del documento
 				m_processMsg = this.validateDocument(pagoLinList, medioPagoList);

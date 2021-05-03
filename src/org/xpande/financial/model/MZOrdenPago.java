@@ -63,8 +63,7 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 		int newIndex = 0;
 
-		if ((docStatus.equalsIgnoreCase(STATUS_Drafted))
-				|| (docStatus.equalsIgnoreCase(STATUS_Invalid))
+		if ((docStatus.equalsIgnoreCase(STATUS_Drafted)) || (docStatus.equalsIgnoreCase(STATUS_Invalid))
 				|| (docStatus.equalsIgnoreCase(STATUS_InProgress))){
 
 			options[newIndex++] = DocumentEngine.ACTION_Complete;
