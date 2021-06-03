@@ -684,7 +684,7 @@ public class SaldoPendiente {
                 // Cuenta contable proveedores API
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
-                        " select account_id from fact_acct " +
+                        " select max(account_id) from fact_acct " +
                         " where ad_table_id =" + X_C_Invoice.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctcr != 0 " +
@@ -697,7 +697,7 @@ public class SaldoPendiente {
                 // Cuenta contable proveedores APC
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
-                        " select account_id from fact_acct " +
+                        " select max(account_id) from fact_acct " +
                         " where ad_table_id =" + X_C_Invoice.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctdr != 0 " +
@@ -710,7 +710,7 @@ public class SaldoPendiente {
                 // Cuenta contable deudores ARI
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
-                        " select account_id from fact_acct " +
+                        " select max(account_id) from fact_acct " +
                         " where ad_table_id =" + X_C_Invoice.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctdr != 0 " +
@@ -723,7 +723,7 @@ public class SaldoPendiente {
                 // Cuenta contable deudores ARC
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
-                        " select account_id from fact_acct " +
+                        " select max(account_id) from fact_acct " +
                         " where ad_table_id =" + X_C_Invoice.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctcr != 0 " +
@@ -737,7 +737,7 @@ public class SaldoPendiente {
                 // Cuenta contable transferencias de saldos
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
-                        " select account_id from fact_acct " +
+                        " select max(account_id) from fact_acct " +
                         " where ad_table_id =" + X_Z_TransferSaldo.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctcr != 0 " +
@@ -749,7 +749,7 @@ public class SaldoPendiente {
                 // Cuenta contable anticipos proveedores
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
-                        " select account_id from fact_acct " +
+                        " select max(account_id) from fact_acct " +
                         " where ad_table_id =" + X_Z_Pago.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctcr != 0 " +
@@ -762,7 +762,7 @@ public class SaldoPendiente {
                 // Cuenta contable Medios de Pago EMITIDOS
                 action = " update " + TABLA_REPORTE +
                         " set c_elementvalue_id = (" +
-                        " select account_id from fact_acct " +
+                        " select max(account_id) from fact_acct " +
                         " where ad_table_id =" + X_Z_EmisionMedioPago.Table_ID +
                         " and m_product_id is null and c_tax_id is null " +
                         " and amtacctcr != 0 " +
