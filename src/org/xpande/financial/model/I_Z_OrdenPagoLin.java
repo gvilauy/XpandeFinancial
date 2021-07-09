@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_OrdenPagoLin
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_OrdenPagoLin 
 {
@@ -268,6 +268,19 @@ public interface I_Z_OrdenPagoLin
 	  * Rate to multiple the source by to calculate the target.
 	  */
 	public BigDecimal getMultiplyRate();
+
+    /** Column name QuoteText */
+    public static final String COLUMNNAME_QuoteText = "QuoteText";
+
+	/** Set QuoteText.
+	  * Texto de cuota
+	  */
+	public void setQuoteText (String QuoteText);
+
+	/** Get QuoteText.
+	  * Texto de cuota
+	  */
+	public String getQuoteText();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";

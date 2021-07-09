@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_GeneraOrdenPagoLin
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_GeneraOrdenPagoLin 
 {
@@ -305,6 +305,15 @@ public interface I_Z_GeneraOrdenPagoLin
 
 	/** Get Selected	  */
 	public boolean isSelected();
+
+    /** Column name QuoteText */
+    public static final String COLUMNNAME_QuoteText = "QuoteText";
+
+	/** Set QuoteText	  */
+	public void setQuoteText (String QuoteText);
+
+	/** Get QuoteText	  */
+	public String getQuoteText();
 
     /** Column name ResguardoEmitido */
     public static final String COLUMNNAME_ResguardoEmitido = "ResguardoEmitido";

@@ -26,14 +26,14 @@ import org.compiere.util.Env;
 
 /** Generated Model for Z_GeneraOrdenPagoLin
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20201225L;
+	private static final long serialVersionUID = 20210709L;
 
     /** Standard Constructor */
     public X_Z_GeneraOrdenPagoLin (Properties ctx, int Z_GeneraOrdenPagoLin_ID, String trxName)
@@ -435,6 +435,20 @@ public class X_Z_GeneraOrdenPagoLin extends PO implements I_Z_GeneraOrdenPagoLin
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set QuoteText.
+		@param QuoteText QuoteText	  */
+	public void setQuoteText (String QuoteText)
+	{
+		set_Value (COLUMNNAME_QuoteText, QuoteText);
+	}
+
+	/** Get QuoteText.
+		@return QuoteText	  */
+	public String getQuoteText () 
+	{
+		return (String)get_Value(COLUMNNAME_QuoteText);
 	}
 
 	/** Set ResguardoEmitido.

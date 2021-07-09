@@ -26,14 +26,14 @@ import org.compiere.util.Env;
 
 /** Generated Model for Z_OrdenPagoLin
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_OrdenPagoLin extends PO implements I_Z_OrdenPagoLin, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20201225L;
+	private static final long serialVersionUID = 20210709L;
 
     /** Standard Constructor */
     public X_Z_OrdenPagoLin (Properties ctx, int Z_OrdenPagoLin_ID, String trxName)
@@ -352,6 +352,23 @@ public class X_Z_OrdenPagoLin extends PO implements I_Z_OrdenPagoLin, I_Persiste
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set QuoteText.
+		@param QuoteText 
+		Texto de cuota
+	  */
+	public void setQuoteText (String QuoteText)
+	{
+		set_Value (COLUMNNAME_QuoteText, QuoteText);
+	}
+
+	/** Get QuoteText.
+		@return Texto de cuota
+	  */
+	public String getQuoteText () 
+	{
+		return (String)get_Value(COLUMNNAME_QuoteText);
 	}
 
 	public I_Z_OrdenPago getZ_OrdenPago() throws RuntimeException

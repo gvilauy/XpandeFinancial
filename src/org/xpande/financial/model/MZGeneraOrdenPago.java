@@ -926,7 +926,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
             // Query
             sql = " select hdr.c_bpartner_id, hdr.c_invoice_id, hdr.c_doctypetarget_id, (hdr.documentserie || hdr.documentno) as documentno, " +
                     " hdr.dateinvoiced, hdr.c_currency_id, hdr.description, coalesce(ips.dueamt,hdr.grandtotal) as grandtotal, ips.c_invoicepayschedule_id, " +
-                    " iop.amtopen, bp.PaymentRulePO, " +
+                    " coalesce(ips.quotetext,'1/1') as quotetext, iop.amtopen, bp.PaymentRulePO, " +
                     " coalesce(hdr.isindispute,'N') as isindispute, doc.docbasetype, coalesce(hdr.TieneDtosNC,'N') as TieneDtosNC, " +
                     " coalesce(coalesce(ips.duedate, paymentTermDueDate(hdr.C_PaymentTerm_ID, hdr.DateInvoiced)), hdr.dateinvoiced)::timestamp without time zone  as duedate " +
                     " from c_invoice hdr " +
@@ -1029,6 +1029,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                 ordenPagoLin.setDocumentNoRef(rs.getString("documentno"));
                 ordenPagoLin.setDueDateMedioPago(ordenPagoLin.getDueDateDoc());
                 ordenPagoLin.setEstadoAprobacion("APROBADO");
+                ordenPagoLin.setQuoteText(rs.getString("quotetext"));
                 ordenPagoLin.setC_Invoice_ID(rs.getInt("c_invoice_id"));
 
                 if (cInvoicePayScheduleID > 0){
@@ -1453,6 +1454,7 @@ public class MZGeneraOrdenPago extends X_Z_GeneraOrdenPago implements DocAction,
                     ordenPagoLin.setDescription(generaLin.getDescription());
                     ordenPagoLin.setC_DocType_ID(generaLin.getC_DocType_ID());
                     ordenPagoLin.setDateDoc(generaLin.getDateDoc());
+                    ordenPagoLin.setQuoteText(generaLin.getQuoteText());
                     ordenPagoLin.setDueDateDoc(generaLin.getDueDateDoc());
                     ordenPagoLin.setDocumentNoRef(generaLin.getDocumentNoRef());
                     if (generaLin.getC_InvoicePaySchedule_ID() > 0){
