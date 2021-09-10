@@ -1218,8 +1218,10 @@ public class MZOrdenPago extends X_Z_OrdenPago implements DocAction, DocOptions 
 
 					// Marca invoice como no paga
 					MInvoice invoice = (MInvoice) pagoLin.getC_Invoice();
-					invoice.setIsPaid(false);
-					invoice.saveEx();
+					if ((invoice != null) && (invoice.get_ID() > 0)){
+						invoice.setIsPaid(false);
+						invoice.saveEx();
+					}
 
 					// Anulo afectacion para saldo de esta invoice
 					action = " delete from z_invoiceafectacion where z_ordenpago_id =" + this.get_ID();
