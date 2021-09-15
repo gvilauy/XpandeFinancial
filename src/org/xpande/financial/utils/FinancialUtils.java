@@ -567,8 +567,7 @@ public final class FinancialUtils {
                     else{
 
                         // Si tengo medios de pago, entonces este documento debe salir en el estado de cuento, sino no tiene sentido
-                        if ((pago.getTotalMediosPago() != null) && (pago.getTotalMediosPago().compareTo(Env.ZERO) != 0)){
-
+                        if (pago.getMediosPago().size() > 0){
                             BigDecimal amtAnticipo = pago.getAmtAnticipo();
                             if (amtAnticipo == null) amtAnticipo = Env.ZERO;
 
