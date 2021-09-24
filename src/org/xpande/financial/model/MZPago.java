@@ -75,7 +75,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
 			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
-			//options[newIndex++] = DocumentEngine.ACTION_Void;
+			options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
 		return newIndex;
@@ -771,35 +771,87 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			this.setTieneOrdenPago(false);
 		}
 
+		String action;
+
 		// Si es un pago y no tiene asociado ordenes de pago
-        if (!this.isSOTrx()){
+		if (!this.isSOTrx()){
 			if (!this.isTieneOrdenPago()){
-				// Anulo medios de pago emitidos en este pago/anticipo
+				// Anulo emision de medios de pago emitidos en este recibo que no tengan folio asociado (esto para no anular cheques por ejemplo, pero si transferencias.)
 				for (MZPagoMedioPago pagoMedioPago: pagoMedioPagoList){
-					if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
-						MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
-						if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
-							MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
-							emisionMedioPago.setModificable(true);
-							if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
-								this.m_processMsg = emisionMedioPago.getProcessMsg();
-								return false;
+					if (pagoMedioPago.getZ_OrdenPago_ID() <= 0){
+						if (pagoMedioPago.getZ_MedioPagoFolio_ID() <= 0){
+							if (pagoMedioPago.getZ_MedioPagoItem_ID() > 0){
+								MZMedioPagoItem medioPagoItem = (MZMedioPagoItem) pagoMedioPago.getZ_MedioPagoItem();
+								if (medioPagoItem.getZ_MedioPagoFolio_ID() <= 0){
+									if (medioPagoItem.getZ_EmisionMedioPago_ID() > 0){
+										MZEmisionMedioPago emisionMedioPago = (MZEmisionMedioPago) medioPagoItem.getZ_EmisionMedioPago();
+										if ((emisionMedioPago != null) && (emisionMedioPago.get_ID() > 0)){
+											emisionMedioPago.setModificable(true);
+											if (!emisionMedioPago.processIt(DocAction.ACTION_Void)){
+												this.m_processMsg = emisionMedioPago.getProcessMsg();
+												return false;
+											}
+											emisionMedioPago.saveEx();
+											emisionMedioPago.deleteEx(true);
+										}
+									}
+
+									// Si el medio de pago no es de terceros (ej: canje que ingreso en una cobranza)
+									if (medioPagoItem.isOwn()){
+										// Desafecto item de medio de pago de este recibo y lo elimino
+										action = " update z_pagomediopago set z_mediopagoitem_id = null where z_pagomediopago_id =" + pagoMedioPago.get_ID();
+										DB.executeUpdateEx(action, get_TrxName());
+
+										medioPagoItem.deleteEx(true);
+									}
+									else{
+										// Es un medio de pago de tercero que se incluyó en este documento de pago.
+										// Por lo tanto lo dejo como originalmente estaba en cartera.
+										action = " update z_mediopagoitem set entregado='N', " +
+												" z_pago_id = ref_cobro_id, ref_cobro_id = null, daterefpago =null " +
+												" where z_mediopagoitem_id =" + medioPagoItem.get_ID();
+										DB.executeUpdateEx(action, get_TrxName());
+									}
+								}
 							}
-							emisionMedioPago.saveEx();
-						}
-						else{
-							medioPagoItem.setAnulado(true);
-							medioPagoItem.saveEx();
 						}
 					}
 				}
 			}
+		}
+		else{
+			// En cobros al reactivar desafecto medios de pago de terceros previamente generados
+			m_processMsg = this.desafectarMedioPagoTerceros(pagoMedioPagoList);
+			if (m_processMsg != null)
+				return false;
 		}
 
 		// Desafecto documentos asociados a este documento de pago/cobro
 		m_processMsg = this.desafectarDocumentos(ordenPagoList);
 		if (m_processMsg != null)
 			return false;
+
+		// En cobros actualizo información de credito del socio de negocio
+		if (this.isSOTrx()){
+			MBPartner partner = (MBPartner) this.getC_BPartner();
+			BigDecimal payAmt = MConversionRate.convertBase(getCtx(), this.getPayAmt(), getC_Currency_ID(), getDateDoc(), 114, getAD_Client_ID(), 0);
+			if (payAmt == null)
+			{
+				m_processMsg = "Could not convert C_Currency_ID=" + getC_Currency_ID()
+						+ " to base C_Currency_ID=" + MClient.get(Env.getCtx()).getC_Currency_ID();
+				return false;
+			}
+			BigDecimal newCreditAmt = partner.getSO_CreditUsed();
+			if (newCreditAmt == null){
+				newCreditAmt = payAmt;
+			}
+			else{
+				newCreditAmt = newCreditAmt.add(payAmt);
+			}
+			partner.setSO_CreditUsed(newCreditAmt);
+			partner.setSOCreditStatus();
+			partner.saveEx();
+		}
 
 		// Impacto en estado de cuenta
 		FinancialUtils.setEstadoCtaPago(getCtx(), this, false, get_TrxName());
