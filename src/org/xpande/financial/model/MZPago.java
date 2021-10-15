@@ -413,6 +413,11 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					return DocAction.STATUS_Invalid;
 				}
 			}
+			// Si tengo lineas de documentos y lineas de medios de pago no es un anticipo para nada
+			if ((pagoLinList.size() > 0) && (medioPagoList.size() > 0)){
+				this.setAnticipo(false);
+				this.setAnticipoDirecto(false);
+			}
 
 			// Validaciones del documento de cobro, cuando no es un anticipo.
 			if (!this.isAnticipo()){

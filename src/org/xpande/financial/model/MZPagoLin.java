@@ -34,7 +34,7 @@ public class MZPagoLin extends X_Z_PagoLin {
         if (amtAllocation.compareTo(Env.ZERO) < 0) amtAllocation = amtAllocation.negate();
         if (amtOpen.compareTo(Env.ZERO) < 0) amtOpen = amtOpen.negate();
 
-        if (amtAllocation.compareTo(amtOpen) > 0){
+        if ((amtAllocation.compareTo(amtOpen) > 0) && (this.getZ_OrdenPago_ID() <= 0)){
             log.saveError("ATENCIÓN", "El monto a afectar no puede ser mayor que el monto pendiente.");
             return false;
         }
