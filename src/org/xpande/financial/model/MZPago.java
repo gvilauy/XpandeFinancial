@@ -439,6 +439,22 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				return DocAction.STATUS_Invalid;
 			}
 
+			// Actualiza credito del socio de negocio si es necesario
+			MBPartner partner = (MBPartner) this.getC_BPartner();
+			int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
+			if (creditLineIDAux > 0){
+				Timestamp creditDueDate = (Timestamp) partner.get_Value("CreditDueDate");
+				if (creditDueDate != null){
+					if (creditDueDate.compareTo(this.getDateDoc()) >= 0){
+						BigDecimal saldoActual = (BigDecimal) partner.get_Value("AmtCreditActual");
+						if (saldoActual == null) saldoActual = Env.ZERO;
+						BigDecimal saldoFinal = saldoActual.subtract(this.getPayAmt());
+						action = " update c_bpartner set amtcreditactual =" + saldoFinal +
+								" where c_bpartner_id =" + this.getC_BPartner_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+					}
+				}
+			}
 		}
 
 		// En cobros actualizo información de credito del socio de negocio
@@ -1086,6 +1102,23 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			m_processMsg = this.desafectarMedioPagoTerceros(pagoMedioPagoList);
 			if (m_processMsg != null)
 				return false;
+
+			// Actualiza credito del socio de negocio si es necesario
+			MBPartner partner = (MBPartner) this.getC_BPartner();
+			int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
+			if (creditLineIDAux > 0){
+				Timestamp creditDueDate = (Timestamp) partner.get_Value("CreditDueDate");
+				if (creditDueDate != null){
+					if (creditDueDate.compareTo(this.getDateDoc()) >= 0){
+						BigDecimal saldoActual = (BigDecimal) partner.get_Value("AmtCreditActual");
+						if (saldoActual == null) saldoActual = Env.ZERO;
+						BigDecimal saldoFinal = saldoActual.add(this.getPayAmt());
+						action = " update c_bpartner set amtcreditactual =" + saldoFinal +
+								" where c_bpartner_id =" + this.getC_BPartner_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+					}
+				}
+			}
 		}
 
 		// Desafecto documentos asociados a este documento de pago/cobro
