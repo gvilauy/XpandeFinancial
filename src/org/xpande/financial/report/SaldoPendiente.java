@@ -195,8 +195,7 @@ public class SaldoPendiente {
             sql = " select a.ad_client_id, a.ad_org_id, a.c_bpartner_id, bp.taxid, " +
                     " a.c_invoice_id, ips.c_invoicepayschedule_id, a.c_doctypetarget_id, " +
                     " (coalesce(a.documentserie, '') || a.documentno) as documentnoref, a.c_currency_id, a.description, a.dateinvoiced, " +
-                    " coalesce(coalesce(ips.duedate, paymentTermDueDate(a.C_PaymentTerm_ID, a.DateInvoiced)), " +
-                    "a.dateinvoiced)::timestamp without time zone as duedate, " +
+                    " coalesce(coalesce(ips.duedate, paymentTermDueDate(a.C_PaymentTerm_ID, a.DateInvoiced)), a.dateinvoiced)::timestamp without time zone as duedate, " +
                     " a.dateacct, a.issotrx, doc.docbasetype, " +
                     " coalesce(ips.dueamt, a.grandtotal) as amtdocument, coalesce(ips.dueamt, a.grandtotal) as amtopen, 0, " +
                     this.adUserID + ", '" + this.tipoFecha + "', '" + this.tipoSocioNegocio + "', '" +

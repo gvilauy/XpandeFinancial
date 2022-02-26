@@ -440,6 +440,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 			}
 
 			// Actualiza credito del socio de negocio si es necesario
+			/*
 			MBPartner partner = (MBPartner) this.getC_BPartner();
 			int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
 			if (creditLineIDAux > 0){
@@ -455,6 +456,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					}
 				}
 			}
+			 */
 		}
 
 		// En cobros actualizo información de credito del socio de negocio
@@ -1104,6 +1106,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 				return false;
 
 			// Actualiza credito del socio de negocio si es necesario
+			/*
 			MBPartner partner = (MBPartner) this.getC_BPartner();
 			int creditLineIDAux = partner.get_ValueAsInt("Z_CreditLine_ID");
 			if (creditLineIDAux > 0){
@@ -1119,6 +1122,7 @@ public class MZPago extends X_Z_Pago implements DocAction, DocOptions {
 					}
 				}
 			}
+			 */
 		}
 
 		// Desafecto documentos asociados a este documento de pago/cobro
