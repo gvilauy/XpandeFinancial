@@ -1,6 +1,8 @@
 package org.xpande.financial.model;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
+import org.compiere.util.DB;
 
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -38,4 +40,39 @@ public class MZMedioPago extends X_Z_MedioPago {
         return model;
     }
 
+    public static MZMedioPago getByPosValue(Properties ctx, String codMedioPagoPOS, String trxName) {
+
+        try{
+            String sql = " select z_mediopago_id from z_mediopagopos where codmediopagopos ='" + codMedioPagoPOS + "'";
+            int zMedioPagoID = DB.getSQLValueEx(trxName, sql);
+            if (zMedioPagoID <= 0){
+                return null;
+            }
+            MZMedioPago medioPago = new MZMedioPago(ctx, zMedioPagoID, trxName);
+            return medioPago;
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+
+    }
+
+    public MZMedioPagoIdent getMedioPagoIdentPOS(String codTarjetaPOS) {
+        try{
+            String sql = " select a.z_mediopagoident_id " +
+                    " from z_mediopagoident a " +
+                    " inner join z_mpagoidentpos b on (a.z_mediopagoident_id = b.z_mediopagoident_id " +
+                    " and b.codmediopagopos ='" + codTarjetaPOS + "') " +
+                    " where a.z_mediopago_id =" + this.get_ID();
+            int id = DB.getSQLValueEx(get_TrxName(), sql);
+            if (id <= 0){
+                return null;
+            }
+            MZMedioPagoIdent pagoIdent = new MZMedioPagoIdent(getCtx(), id, get_TrxName());
+            return pagoIdent;
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+    }
 }
