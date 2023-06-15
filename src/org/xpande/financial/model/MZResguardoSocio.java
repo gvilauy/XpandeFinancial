@@ -264,7 +264,8 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		}
 
 		//	Set Definitive Document No
-		setDefiniteDocumentNo();
+		//setDefiniteDocumentNo();
+		setDefiniteDocumentNo(this.getC_DocType_ID());
 
 		// Impacto en estado de cuenta
 		FinancialUtils.setEstadoCtaResguardo(getCtx(), this, true, get_TrxName());
@@ -905,6 +906,44 @@ public class MZResguardoSocio extends X_Z_ResguardoSocio implements DocAction, D
 		MZResguardoSocio model = new Query(ctx, I_Z_ResguardoSocio.Table_Name, whereClause, trxName).first();
 
 		return model;
+	}
+
+	/***
+	 * Metodo que setea numerador según ID de documento recibido.
+	 * Xpande. Created by Gabriel Vila on 1/19/20.
+	 * @param cDocTypeID
+	 */
+	private void setDefiniteDocumentNo(int cDocTypeID) {
+
+		String value = null;
+
+		MDocType dt = MDocType.get(getCtx(), cDocTypeID);
+
+		if (dt.isOverwriteDateOnComplete()) {
+			setDateDoc(new Timestamp (System.currentTimeMillis()));
+		}
+
+		if (dt.isOverwriteSeqOnComplete()) {
+
+			String sql = " select ad_sequence_id " +
+					" from Z_ComConfSeqOrg " +
+					" where ad_orgtrx_id =" + this.getAD_Org_ID() +
+					" and c_doctype_id =" + this.getC_DocType_ID() +
+					" and isactive ='Y' ";
+			int adSequenceID = DB.getSQLValueEx(get_TrxName(), sql);
+
+			if (adSequenceID > 0){
+				MSequence sequence = new MSequence(getCtx(), adSequenceID, get_TrxName());
+				value = sequence.getDocumentNo(get_TrxName(), true, this);
+			}
+
+			if (value == null){
+				value = DB.getDocumentNo(cDocTypeID, get_TrxName(), true, this);
+			}
+
+			if (value != null)
+				setDocumentNo(value);
+		}
 	}
 
 }
